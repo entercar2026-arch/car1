@@ -557,19 +557,10 @@ export default function App() {
               </p>
               
               <div className="pt-2 flex flex-col items-center gap-4 w-full">
-                <button
-                  id="hero-btn-catalog"
-                  onClick={() => scrollToAnchor('search-filters-container')}
-                  className="px-8 py-3.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-101 hover:brightness-110 active:scale-99 transition-all cursor-pointer"
-                  style={{ backgroundColor: brandPlum }}
-                >
-                  Explore Catalog
-                </button>
-
                 {/* Integrated Search Section with model/keywords input & Type of Car selector */}
                 <form 
                   onSubmit={(e) => { e.preventDefault(); handleHeroSearch(); }}
-                  className="w-full max-w-2xl bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-md flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4 select-none"
+                  className="w-full max-w-3xl bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-md flex flex-col md:flex-row items-stretch md:items-center gap-3 mt-4 select-none"
                 >
                   {/* Search text field */}
                   <div className="flex-1 relative">
@@ -587,7 +578,7 @@ export default function App() {
                   </div>
 
                   {/* Type of Car Dropdown */}
-                  <div className="relative sm:w-48">
+                  <div className="relative md:w-44">
                     <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400 pointer-events-none">
                       <CarFront className="h-4 w-4" />
                     </span>
@@ -609,16 +600,27 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Search Trigger Button */}
-                  <button
-                    id="hero-btn-search-trigger"
-                    type="submit"
-                    className="px-6 py-3 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-                    style={{ backgroundColor: brandPlum }}
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>Search</span>
-                  </button>
+                  {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <button
+                      id="hero-btn-search-trigger"
+                      type="submit"
+                      className="px-6 py-3 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
+                      style={{ backgroundColor: brandPlum }}
+                    >
+                      <Search className="w-4 h-4" />
+                      <span>Find</span>
+                    </button>
+
+                    <button
+                      id="hero-btn-catalog"
+                      type="button"
+                      onClick={() => scrollToAnchor('search-filters-container')}
+                      className="px-6 py-3 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
+                    >
+                      <span>Explore Catalog</span>
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -693,10 +695,38 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Gearbox Configuration Gear Filter option buttons */}
-              <div className="md:col-span-3">
+              {/* Type of Car Dropdown */}
+              <div className="md:col-span-2">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
-                  Gearbox Configuration
+                  Type of Car
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400 pointer-events-none">
+                    <CarFront className="h-4 w-4" />
+                  </span>
+                  <select
+                    id="filter-select-category"
+                    value={filters.category}
+                    onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full pl-10 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="All">All Types</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="SUV">SUV</option>
+                    <option value="MPV">MPV</option>
+                    <option value="Pickup">Pickup</option>
+                    <option value="Truck">Truck</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-stone-400">
+                    <ChevronDown className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Gearbox Configuration Gear Filter option buttons */}
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  Gearbox
                 </label>
                 <div className="grid grid-cols-3 gap-1 bg-stone-50 p-1 rounded-xl border border-stone-200">
                   {['All', 'Automatic', 'Manual'].map((mode) => (
@@ -705,16 +735,16 @@ export default function App() {
                       id={`filter-trans-${mode}`}
                       type="button"
                       onClick={() => setFilters(prev => ({ ...prev, transmission: mode }))}
-                      className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all text-center cursor-pointer ${filters.transmission === mode ? 'bg-[#4C0027] text-white shadow-2xs' : 'text-stone-500 hover:text-stone-700'}`}
+                      className={`py-2 px-1 text-[10px] font-bold rounded-lg transition-all text-center cursor-pointer ${filters.transmission === mode ? 'bg-[#4C0027] text-white shadow-2xs' : 'text-stone-500 hover:text-stone-700'}`}
                     >
-                      {mode === 'All' ? 'All Gears' : mode}
+                      {mode === 'All' ? 'All' : mode === 'Automatic' ? 'Auto' : 'Manual'}
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Fuel System selection dropdown */}
-              <div className="md:col-span-3">
+              <div className="md:col-span-2">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
                   Fuel System Type
                 </label>
