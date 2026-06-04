@@ -334,7 +334,7 @@ export default function App() {
 
   // Hero Search execution and viewport scroll
   const handleHeroSearch = () => {
-    scrollToAnchor('search-filters-container');
+    scrollToAnchor('catalog-section');
   };
 
   // Trigger booking success toast from CarCard notifications
@@ -548,71 +548,28 @@ export default function App() {
               </p>
               
               <div className="pt-2 flex flex-col items-center gap-4 w-full">
-                {/* Integrated Search Section with model/keywords input & Type of Car selector */}
-                <form 
-                  onSubmit={(e) => { e.preventDefault(); handleHeroSearch(); }}
-                  className="w-full max-w-3xl bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-md flex flex-col md:flex-row items-stretch md:items-center gap-3 mt-4 select-none"
-                >
-                  {/* Search text field */}
-                  <div className="flex-1 relative">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
-                      <Search className="h-4 w-4" />
-                    </span>
-                    <input
-                      id="hero-input-search"
-                      type="text"
-                      placeholder="Search brand, model, features..."
-                      value={filters.searchTerm}
-                      onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-150 rounded-xl text-stone-800 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027]/10 transition-all placeholder-stone-400"
-                    />
-                  </div>
+                {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
+                <div className="flex sm:flex-row flex-col items-stretch sm:items-center justify-center gap-3 mt-4 select-none w-full max-w-md">
+                  <button
+                    id="hero-btn-search-trigger"
+                    type="button"
+                    onClick={() => scrollToAnchor('search-filters-container')}
+                    className="flex-1 px-8 py-3.5 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
+                    style={{ backgroundColor: brandPlum }}
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Find</span>
+                  </button>
 
-                  {/* Type of Car Dropdown */}
-                  <div className="relative md:w-44">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400 pointer-events-none">
-                      <CarFront className="h-4 w-4" />
-                    </span>
-                    <select
-                      id="hero-select-category"
-                      value={filters.category}
-                      onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full pl-10 pr-8 py-3 bg-stone-50 border border-stone-150 rounded-xl text-stone-800 text-xs sm:text-sm font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027]/10 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="All">All Types</option>
-                      <option value="Sedan">Sedan</option>
-                      <option value="SUV">SUV</option>
-                      <option value="MPV">MPV</option>
-                      <option value="Pickup">Pickup</option>
-                      <option value="Truck">Truck</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-stone-400">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-
-                  {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    <button
-                      id="hero-btn-search-trigger"
-                      type="submit"
-                      className="px-6 py-3 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
-                      style={{ backgroundColor: brandPlum }}
-                    >
-                      <Search className="w-4 h-4" />
-                      <span>Find</span>
-                    </button>
-
-                    <button
-                      id="hero-btn-catalog"
-                      type="button"
-                      onClick={() => scrollToAnchor('search-filters-container')}
-                      className="px-6 py-3 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
-                    >
-                      <span>Explore Catalog</span>
-                    </button>
-                  </div>
-                </form>
+                  <button
+                    id="hero-btn-catalog"
+                    type="button"
+                    onClick={() => scrollToAnchor('category-filter-container')}
+                    className="flex-1 px-8 py-3.5 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
+                  >
+                    <span>Explore Catalog</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -642,7 +599,7 @@ export default function App() {
         {/* Catalog Anchor Target */}
         <section id="catalog-section" className="scroll-mt-24 select-none">
           {/* 3. Search parameters panel */}
-          <section id="search-filters-container" className="bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-6">
+          <section id="search-filters-container" className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2">
@@ -788,10 +745,11 @@ export default function App() {
           </section>
 
           {/* 4. Horizontal Category Tab Selector Bar */}
-          <section id="category-filter-container" className="bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-3.5 font-mono">
-              Filter by vehicle archetype
-            </span>
+          <section id="category-filter-container" className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8">
+            <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2 mb-4">
+              <CarFront className="w-5 h-5 text-[#4C0027]" style={{ color: brandPlum }} />
+              Explore our catalog
+            </h2>
             <div className="flex flex-wrap gap-1.5">
               {['All', 'Sedan', 'SUV', 'MPV', 'Pickup', 'Truck'].map((cat) => {
                 const isSelected = filters.category === cat;

@@ -240,7 +240,7 @@ export const CarCard: React.FC<CarCardProps> = ({
           </p>
 
           {/* Highlights Info Grid (Technical) */}
-          <div id={`car-specs-${car.id}`} className="grid grid-cols-4 gap-1 py-3 border-y border-stone-100 mb-4 bg-stone-55/40 rounded-xl px-1">
+          <div id={`car-specs-${car.id}`} className="grid grid-cols-3 gap-1 py-3 border-y border-stone-100 mb-4 bg-stone-55/40 rounded-xl px-1">
             <div className="flex flex-col items-center justify-center p-1">
               <Users className="w-4 h-4 text-stone-400 mb-1" />
               <span className="text-[9px] font-mono text-stone-500 font-bold">{car.seats} Seats</span>
@@ -249,11 +249,6 @@ export const CarCard: React.FC<CarCardProps> = ({
             <div className="flex flex-col items-center justify-center p-1 border-x border-stone-100">
               <Settings2 className="w-4 h-4 text-stone-400 mb-1" />
               <span className="text-[9px] font-mono text-stone-500 font-bold truncate max-w-full text-center">{car.transmission}</span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-1 border-r border-[#4C0027]/10 bg-[#4C0027]/5 rounded-xl">
-              <Calendar className="w-4 h-4 text-[#4C0027] mb-1" />
-              <span className="text-[10px] font-mono text-[#4C0027] font-extrabold truncate max-w-full text-center">{car.yearModel || '2024'}</span>
             </div>
             
             <div className="flex flex-col items-center justify-center p-1">
