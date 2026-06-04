@@ -105,10 +105,6 @@ export default function App() {
     fuelType: 'All',
   });
 
-  // Hero section search states
-  const [heroSearchTerm, setHeroSearchTerm] = useState('');
-  const [heroCategory, setHeroCategory] = useState('All');
-
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -338,12 +334,7 @@ export default function App() {
 
   // Hero Search execution and viewport scroll
   const handleHeroSearch = () => {
-    setFilters(prev => ({
-      ...prev,
-      searchTerm: heroSearchTerm,
-      category: heroCategory,
-    }));
-    scrollToAnchor('catalog-section');
+    scrollToAnchor('search-filters-container');
   };
 
   // Trigger booking success toast from CarCard notifications
@@ -550,7 +541,7 @@ export default function App() {
                 24/7 Nationwide Delivery
               </span>
               <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
-                Car Rental Service Over 25 Cities and Provinces with 24/7.
+                Car Rental Service Over 25 Cities/Provinces with 24/7.
               </h1>
               <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
                 Browse for your favorite car and we will bring the car to you. All cars are guaranteed in high quality and under well maintenance, fully detailed and mechanically inspected for your absolute peace of mind.
@@ -571,8 +562,8 @@ export default function App() {
                       id="hero-input-search"
                       type="text"
                       placeholder="Search brand, model, features..."
-                      value={heroSearchTerm}
-                      onChange={(e) => setHeroSearchTerm(e.target.value)}
+                      value={filters.searchTerm}
+                      onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
                       className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-150 rounded-xl text-stone-800 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027]/10 transition-all placeholder-stone-400"
                     />
                   </div>
@@ -584,8 +575,8 @@ export default function App() {
                     </span>
                     <select
                       id="hero-select-category"
-                      value={heroCategory}
-                      onChange={(e) => setHeroCategory(e.target.value)}
+                      value={filters.category}
+                      onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
                       className="w-full pl-10 pr-8 py-3 bg-stone-50 border border-stone-150 rounded-xl text-stone-800 text-xs sm:text-sm font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027]/10 transition-all appearance-none cursor-pointer"
                     >
                       <option value="All">All Types</option>
