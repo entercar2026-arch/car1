@@ -167,18 +167,19 @@ export const CarCard: React.FC<CarCardProps> = ({
   };
 
   return (
-    <motion.div
-      id={`car-card-${car.id}`}
-      layout
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.3 }}
-      className="bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between"
-    >
+    <>
+      <motion.div
+        id={`car-card-${car.id}`}
+        layout
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        whileHover={{ y: -8 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between"
+      >
       {/* Visual Header & Image */}
       <div id={`car-image-container-${car.id}`} className="relative h-48 bg-stone-50 overflow-hidden">
         <span 
@@ -302,6 +303,7 @@ export const CarCard: React.FC<CarCardProps> = ({
           )}
         </div>
       </div>
+    </motion.div>
 
       {/* Advanced Booking Reservation Modal */}
       <AnimatePresence>
@@ -797,6 +799,6 @@ export const CarCard: React.FC<CarCardProps> = ({
           </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </>
   );
 };

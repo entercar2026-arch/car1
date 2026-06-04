@@ -105,6 +105,10 @@ export default function App() {
     fuelType: 'All',
   });
 
+  // Hero section search states
+  const [heroSearchTerm, setHeroSearchTerm] = useState('');
+  const [heroCategory, setHeroCategory] = useState('All');
+
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -332,6 +336,16 @@ export default function App() {
     }
   };
 
+  // Hero Search execution and viewport scroll
+  const handleHeroSearch = () => {
+    setFilters(prev => ({
+      ...prev,
+      searchTerm: heroSearchTerm,
+      category: heroCategory,
+    }));
+    scrollToAnchor('catalog-section');
+  };
+
   // Trigger booking success toast from CarCard notifications
   const handleBookingToast = (carName: string) => {
     setBookingToast(`Successfully requested booking for ${carName}! Access code generated.`);
@@ -542,15 +556,70 @@ export default function App() {
                 Browse for your favorite car and we will bring the car to you. All cars are guaranteed in high quality and under well maintenance, fully detailed and mechanically inspected for your absolute peace of mind.
               </p>
               
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col items-center gap-4 w-full">
                 <button
                   id="hero-btn-catalog"
-                  onClick={() => scrollToAnchor('catalog-section')}
+                  onClick={() => scrollToAnchor('search-filters-container')}
                   className="px-8 py-3.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-101 hover:brightness-110 active:scale-99 transition-all cursor-pointer"
                   style={{ backgroundColor: brandPlum }}
                 >
                   Explore Catalog
                 </button>
+
+                {/* Integrated Search Section with model/keywords input & Type of Car selector */}
+                <form 
+                  onSubmit={(e) => { e.preventDefault(); handleHeroSearch(); }}
+                  className="w-full max-w-2xl bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-md flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4 select-none"
+                >
+                  {/* Search text field */}
+                  <div className="flex-1 relative">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <input
+                      id="hero-input-search"
+                      type="text"
+                      placeholder="Search brand, model, features..."
+                      value={heroSearchTerm}
+                      onChange={(e) => setHeroSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-150 rounded-xl text-stone-800 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027]/10 transition-all placeholder-stone-400"
+                    />
+                  </div>
+
+                  {/* Type of Car Dropdown */}
+                  <div className="relative sm:w-48">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400 pointer-events-none">
+                      <CarFront className="h-4 w-4" />
+                    </span>
+                    <select
+                      id="hero-select-category"
+                      value={heroCategory}
+                      onChange={(e) => setHeroCategory(e.target.value)}
+                      className="w-full pl-10 pr-8 py-3 bg-stone-50 border border-stone-150 rounded-xl text-stone-800 text-xs sm:text-sm font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027]/10 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="All">All Types</option>
+                      <option value="Sedan">Sedan</option>
+                      <option value="SUV">SUV</option>
+                      <option value="MPV">MPV</option>
+                      <option value="Pickup">Pickup</option>
+                      <option value="Truck">Truck</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-stone-400">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                  </div>
+
+                  {/* Search Trigger Button */}
+                  <button
+                    id="hero-btn-search-trigger"
+                    type="submit"
+                    className="px-6 py-3 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                    style={{ backgroundColor: brandPlum }}
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Search</span>
+                  </button>
+                </form>
               </div>
             </div>
           </div>
@@ -585,7 +654,7 @@ export default function App() {
               <div>
                 <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2">
                   <SlidersHorizontal className="w-5 h-5 text-[#4C0027]" style={{ color: brandPlum }} />
-                  Browse Interactive Fleet Catalog
+                  Find your favorite car
                 </h2>
                 <p className="text-xs text-stone-500 mt-1 leading-normal">
                   Refine our roster of high-end sedans, SUVs, and pristine high-performance electric categories.
