@@ -1,0 +1,839 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Car, ViewMode, CatalogFilters, Booking, Review } from './types';
+import { INITIAL_CARS } from './data';
+import { BrandLogo } from './components/BrandLogo';
+import { CarCard } from './components/CarCard';
+import { AdminLogin } from './components/AdminLogin';
+import { AdminDashboard } from './components/AdminDashboard';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Search, 
+  MapPin, 
+  Lock, 
+  RotateCcw, 
+  SlidersHorizontal, 
+  Sparkles, 
+  BadgePercent, 
+  CheckCircle2, 
+  PhoneCall, 
+  Menu,
+  X,
+  Plus,
+  HelpCircle,
+  CarFront,
+  Users,
+  Settings2,
+  Fuel,
+  TrendingUp,
+  Award,
+  ChevronRight,
+  ChevronDown,
+  ShieldCheck,
+  Building,
+  Camera,
+  FileText
+} from 'lucide-react';
+
+const SECURE_TOKEN_KEY = 'enter_admin_session_token';
+
+// Verification helper checking token integrity and session time window
+const isSessionTokenValid = (): boolean => {
+  try {
+    const token = localStorage.getItem(SECURE_TOKEN_KEY);
+    if (!token) return false;
+    const decoded = atob(token);
+    const session = JSON.parse(decoded);
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+    if (
+      session &&
+      session.root_auth === true &&
+      session.user === 'chan' &&
+      session.role === 'admin' &&
+      (now - session.verified_at < oneDay)
+    ) {
+      return true;
+    }
+  } catch (e) {
+    // Decrypting or validation failed
+  }
+  return false;
+};
+
+// Generation helper for state metadata
+const generateSessionToken = (): string => {
+  const session = {
+    root_auth: true,
+    user: 'chan',
+    role: 'admin',
+    verified_at: Date.now()
+  };
+  return btoa(JSON.stringify(session));
+};
+
+export default function App() {
+  // Cars Fleet State
+  const [cars, setCars] = useState<Car[]>(() => {
+    const saved = localStorage.getItem('enter_cars');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved cars', e);
+      }
+    }
+    return INITIAL_CARS;
+  });
+
+  // Track session authentication
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    return isSessionTokenValid();
+  });
+
+  // Current Screen / Node View
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const isAuth = isSessionTokenValid();
+    return isAuth ? 'admin' : 'customer';
+  });
+
+  // Filter criteria state
+  const [filters, setFilters] = useState<CatalogFilters>({
+    searchTerm: '',
+    category: 'All',
+    maxPrice: 5000,
+    transmission: 'All',
+    fuelType: 'All',
+  });
+
+  // Mobile drawer state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Booking details toast state
+  const [bookingToast, setBookingToast] = useState<string | null>(null);
+
+  // Persistence containers for bookings and reviews
+  const [bookings, setBookings] = useState<Booking[]>(() => {
+    const saved = localStorage.getItem('enter_bookings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved bookings', e);
+      }
+    }
+    return [];
+  });
+
+  const [reviews, setReviews] = useState<Review[]>(() => {
+    const saved = localStorage.getItem('enter_reviews');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse saved reviews', e);
+      }
+    }
+    // High-quality sample initial reviews
+    return [
+      {
+        id: 'rev-init-1',
+        carId: 'car-1',
+        customerName: 'Alistair Sterling',
+        rating: 5,
+        comment: 'Outstanding pickup service at the airport hub. The cabin was clean and smelled of fine leather.',
+        createdAt: '2026-06-02',
+        isApproved: true
+      },
+      {
+        id: 'rev-init-2',
+        carId: 'car-2',
+        customerName: 'Charlotte Vance',
+        rating: 5,
+        comment: 'Pure luxury. Cruising on zero emissions in the Mach-E was the highlight of our weekend trip.',
+        createdAt: '2026-06-03',
+        isApproved: true
+      },
+      {
+        id: 'rev-init-3',
+        carId: 'car-3',
+        customerName: 'Nathaniel West',
+        rating: 5,
+        comment: 'Absolute monster of a machine. Power delivery is linear, gearbox response is lightning fast.',
+        createdAt: '2026-06-03',
+        isApproved: false // awaits moderator approval
+      }
+    ];
+  });
+
+  // Synchronize state changes directly to Local Storage
+  useEffect(() => {
+    localStorage.setItem('enter_cars', JSON.stringify(cars));
+  }, [cars]);
+
+  useEffect(() => {
+    if (isAdminAuthenticated) {
+      localStorage.setItem('enter_admin_auth', 'true');
+      localStorage.setItem(SECURE_TOKEN_KEY, generateSessionToken());
+    } else {
+      localStorage.removeItem('enter_admin_auth');
+      localStorage.removeItem(SECURE_TOKEN_KEY);
+    }
+  }, [isAdminAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('enter_bookings', JSON.stringify(bookings));
+  }, [bookings]);
+
+  useEffect(() => {
+    localStorage.setItem('enter_reviews', JSON.stringify(reviews));
+  }, [reviews]);
+
+  // Handle addition of a new vehicle catalog item
+  const handleAddCar = (newCarFields: Omit<Car, 'id'>) => {
+    const freshCar: Car = {
+      ...newCarFields,
+      id: `car-${Date.now()}`
+    };
+    setCars(prev => [freshCar, ...prev]);
+  };
+
+  // Handle updating an existing vehicle listing
+  const handleUpdateCar = (updatedCar: Car) => {
+    setCars(prev => prev.map(car => car.id === updatedCar.id ? updatedCar : car));
+  };
+
+  // Handle removing a vehicle catalog item
+  const handleDeleteCar = (carId: string) => {
+    setCars(prev => prev.filter(car => car.id !== carId));
+  };
+
+  // Handle addition of reviews with moderation pending state
+  const handleAddReview = (carId: string, rating: number, comment: string, customerName: string) => {
+    const freshReview: Review = {
+      id: `rev-${Date.now()}`,
+      carId,
+      customerName,
+      rating,
+      comment,
+      createdAt: new Date().toISOString().split('T')[0],
+      isApproved: false // Awaits admin approval!
+    };
+    setReviews(prev => [freshReview, ...prev]);
+    
+    // Quick advisory toast
+    setBookingToast(`Review saved! An administrator will review your comment for approval.`);
+    setTimeout(() => setBookingToast(null), 4000);
+  };
+
+  // Handle booking reservations from customer catalog
+  const handleConfirmBook = (carId: string, bookingFields: {
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    pickupDate: string;
+    returnDate: string;
+    monthsCount: number;
+    totalCost: number;
+    passportPhoto?: string;
+  }): Booking => {
+    const targetCar = cars.find(c => c.id === carId);
+    
+    const freshBooking: Booking = {
+      id: `ENTR-${Math.floor(1000 + Math.random() * 9000)}`,
+      carId,
+      carName: targetCar ? targetCar.name : 'Exclusive Enterprise Model',
+      carImage: targetCar ? targetCar.image : '',
+      customerName: bookingFields.customerName,
+      customerEmail: bookingFields.customerEmail,
+      customerPhone: bookingFields.customerPhone,
+      pickupDate: bookingFields.pickupDate,
+      returnDate: bookingFields.returnDate,
+      monthsCount: bookingFields.monthsCount,
+      totalCost: bookingFields.totalCost,
+      status: 'Pending',
+      createdAt: new Date().toISOString().split('T')[0],
+      passportPhoto: bookingFields.passportPhoto
+    };
+
+    setBookings(prev => [freshBooking, ...prev]);
+    return freshBooking;
+  };
+
+  // Admin Bookings & Reviews controls
+  const handleUpdateBookingStatus = (bookingId: string, status: Booking['status']) => {
+    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
+  };
+
+  const handleDeleteBooking = (bookingId: string) => {
+    setBookings(prev => prev.filter(b => b.id !== bookingId));
+  };
+
+  const handleApproveReview = (reviewId: string) => {
+    setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, isApproved: true } : r));
+  };
+
+  const handleDeleteReview = (reviewId: string) => {
+    setReviews(prev => prev.filter(r => r.id !== reviewId));
+  };
+
+  // Handle login completion
+  const handleLoginSuccess = () => {
+    setIsAdminAuthenticated(true);
+    setViewMode('admin');
+  };
+
+  // Logout routine
+  const handleLogout = () => {
+    setIsAdminAuthenticated(false);
+    setViewMode('customer');
+  };
+
+  // Safe reset routine for filtering
+  const handleResetFilters = () => {
+    setFilters({
+      searchTerm: '',
+      category: 'All',
+      maxPrice: 5000,
+      transmission: 'All',
+      fuelType: 'All',
+    });
+  };
+
+  // Category statistics counting dynamically based on current fleet state
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: cars.length };
+    cars.forEach(car => {
+      counts[car.category] = (counts[car.category] || 0) + 1;
+    });
+    return counts;
+  }, [cars]);
+
+  // Filter computation logic
+  const filteredCars = useMemo(() => {
+    return cars.filter(car => {
+      const matchSearch = 
+        car.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        (car.description && car.description.toLowerCase().includes(filters.searchTerm.toLowerCase()));
+      const matchCategory = filters.category === 'All' || car.category === filters.category;
+      const matchPrice = car.price <= filters.maxPrice;
+      const matchTrans = filters.transmission === 'All' || car.transmission === filters.transmission;
+      const matchFuel = filters.fuelType === 'All' || car.fuelType === filters.fuelType;
+
+      return matchSearch && matchCategory && matchPrice && matchTrans && matchFuel;
+    });
+  }, [cars, filters]);
+
+  // Smooth scroll helper matching IDs
+  const scrollToAnchor = (elementId: string) => {
+    setIsMobileMenuOpen(false);
+    const target = document.getElementById(elementId);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Trigger booking success toast from CarCard notifications
+  const handleBookingToast = (carName: string) => {
+    setBookingToast(`Successfully requested booking for ${carName}! Access code generated.`);
+    setTimeout(() => {
+      setBookingToast(null);
+    }, 4500);
+  };
+
+  // Brand color constant
+  const brandPlum = '#4C0027';
+
+  // Master router render
+  if (viewMode === 'login') {
+    return (
+      <AdminLogin 
+        onLoginSuccess={handleLoginSuccess}
+        onBackToCustomer={() => setViewMode('customer')}
+      />
+    );
+  }
+
+  if (viewMode === 'admin' && isAdminAuthenticated) {
+    return (
+      <AdminDashboard
+        cars={cars}
+        onAddCar={handleAddCar}
+        onUpdateCar={handleUpdateCar}
+        onDeleteCar={handleDeleteCar}
+        onLogout={handleLogout}
+        onNavigateToCustomer={() => setViewMode('customer')}
+        
+        // Stateful administration parameters linked
+        bookings={bookings}
+        onUpdateBookingStatus={handleUpdateBookingStatus}
+        onDeleteBooking={handleDeleteBooking}
+        reviews={reviews}
+        onApproveReview={handleApproveReview}
+        onDeleteReview={handleDeleteReview}
+      />
+    );
+  }
+
+  return (
+    <div id="customer-application-root" className="min-h-screen bg-[#4C0027] text-stone-900 flex flex-col justify-between">
+      
+      {/* 1. Responsive & Sticky Navigation Header */}
+      <header id="main-public-header" className="bg-white border-b border-stone-150 sticky top-0 z-40 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => scrollToAnchor('home-panel')}>
+            <BrandLogo size="md" variant="light" />
+          </div>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-8 font-sans">
+            <button 
+              id="nav-link-home"
+              onClick={() => scrollToAnchor('home-panel')}
+              className="text-stone-605 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+            >
+              Home
+            </button>
+            <button 
+              id="nav-link-catalog"
+              onClick={() => scrollToAnchor('catalog-section')}
+              className="text-stone-605 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+            >
+              Car Catalog
+            </button>
+          </nav>
+
+          {/* Right Action buttons and hamburger logic */}
+          <div className="flex items-center gap-3">
+            {/* Quick Station info with Telegram & WhatsApp (Visible on both Mobile + Desktop) */}
+            <div className="flex items-center gap-3 select-none animate-fade-in border-r border-stone-100 pr-3 mr-1">
+              <div className="text-right flex flex-col items-end">
+                <a href="tel:0966714442" className="text-[10px] sm:text-xs font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1.5 mt-0.5" style={{ color: brandPlum }}>
+                  <PhoneCall className="w-3.5 h-3.5 text-[#4C0027]" style={{ color: brandPlum }} />
+                  <span>096 671 4442</span>
+                </a>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <a 
+                    href="https://t.me/+855966714442" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-[7px] sm:text-[8px] px-1 py-0.5 bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 font-bold rounded transition-all lowercase"
+                  >
+                    telegram
+                  </a>
+                  <a 
+                    href="https://wa.me/855966714442" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-[7px] sm:text-[8px] px-1 py-0.5 bg-[#25D366]/10 text-[#128C7E] hover:bg-[#25D366]/20 font-bold rounded transition-all lowercase"
+                  >
+                    whatsapp
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {isAdminAuthenticated ? (
+              <button
+                id="btn-nav-admin-direct"
+                onClick={() => setViewMode('admin')}
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition-all hover:scale-101 active:scale-99 cursor-pointer shadow-sm"
+                style={{ backgroundColor: brandPlum }}
+              >
+                <span>Dashboard</span>
+              </button>
+            ) : (
+              <button
+                id="btn-nav-admin-login"
+                onClick={() => setViewMode('login')}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-extrabold text-[#4C0027] hover:text-[#5E0030] bg-[#4C0027]/5 hover:bg-[#4C0027]/10 transition-all rounded-xl cursor-pointer"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>Admin Log</span>
+              </button>
+            )}
+
+            {/* Mobile Hamburger toggle */}
+            <button
+              id="mobile-menu-toggle"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 text-stone-750 hover:bg-stone-50 rounded-xl transition-all cursor-pointer"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Collapsible Mobile Navigation Drawer */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              id="mobile-drawer-panel"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden bg-white border-t border-stone-150 overflow-hidden font-sans shadow-lg select-none"
+            >
+              <div className="px-4 py-5 space-y-4">
+                <button
+                  id="mobile-link-home"
+                  onClick={() => scrollToAnchor('home-panel')}
+                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                >
+                  Home
+                </button>
+                <button
+                  id="mobile-link-catalog"
+                  onClick={() => scrollToAnchor('catalog-section')}
+                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                >
+                  Car Catalog
+                </button>
+                
+                <div className="pt-4 border-t border-stone-100 flex flex-col gap-3">
+                  {isAdminAuthenticated ? (
+                    <button
+                      id="mobile-btn-admin-direct"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setViewMode('admin');
+                      }}
+                      className="w-full text-center py-2.5 text-xs font-black uppercase text-white rounded-xl shadow-xs transition-colors"
+                      style={{ backgroundColor: brandPlum }}
+                    >
+                      Admin Dashboard
+                    </button>
+                  ) : (
+                    <button
+                      id="mobile-btn-admin-login"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setViewMode('login');
+                      }}
+                      className="w-full text-center py-2.5 text-xs font-black uppercase text-[#4C0027] border border-[#4C0027]/20 rounded-xl transition-colors bg-[#4C0027]/5"
+                    >
+                      Verify Administration Login
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* Main Public Body Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
+        
+        {/* Home Anchor panel wrapper */}
+        <section id="home-panel" className="scroll-mt-24 select-none pb-2">
+          {/* Hero Welcome Banner */}
+          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-150 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
+            
+            <div className="space-y-4 max-w-3xl flex flex-col items-center">
+              <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-[#4C0027]/10 text-[#4C0027] uppercase tracking-wider font-mono">
+                24/7 Nationwide Delivery
+              </span>
+              <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
+                Car Rental Service Over 25 Cities and Provinces with 24/7.
+              </h1>
+              <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
+                Browse for your favorite car and we will bring the car to you. All cars are guaranteed in high quality and under well maintenance, fully detailed and mechanically inspected for your absolute peace of mind.
+              </p>
+              
+              <div className="pt-2">
+                <button
+                  id="hero-btn-catalog"
+                  onClick={() => scrollToAnchor('catalog-section')}
+                  className="px-8 py-3.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-101 hover:brightness-110 active:scale-99 transition-all cursor-pointer"
+                  style={{ backgroundColor: brandPlum }}
+                >
+                  Explore Catalog
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Contract Requirement Visual Highlight Board */}
+          <div className="max-w-5xl mx-auto mt-8 mb-8 animate-fade-in">
+            <div className="bg-[#4C0027] text-white rounded-3xl p-6 sm:p-8 border border-[#4C0027]/20 shadow-lg relative overflow-hidden flex flex-col justify-center items-center text-center select-none">
+              {/* Subtle background abstract decorations */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
+                Contract Requirement
+              </span>
+              
+              <h2 className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-wider uppercase mb-3 drop-shadow-md">
+                6-Month Term
+              </h2>
+              
+              <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
+                1 Mo. Deposit + 1 Mo. Rent
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Catalog Anchor Target */}
+        <section id="catalog-section" className="scroll-mt-24 select-none">
+          {/* 3. Search parameters panel */}
+          <section id="search-filters-container" className="bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5 text-[#4C0027]" style={{ color: brandPlum }} />
+                  Browse Interactive Fleet Catalog
+                </h2>
+                <p className="text-xs text-stone-500 mt-1 leading-normal">
+                  Refine our roster of high-end sedans, SUVs, and pristine high-performance electric categories.
+                </p>
+              </div>
+
+              {/* Clear filters button */}
+              <button
+                id="btn-reset-filters"
+                onClick={handleResetFilters}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold text-stone-605 hover:bg-stone-50 hover:text-stone-800 transition-all cursor-pointer bg-white"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Filters</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-y-6 gap-x-4">
+              {/* Free Text Input field */}
+              <div className="md:col-span-3 relative">
+                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  Search Model / Keywords
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
+                    <Search className="h-4 w-4" />
+                  </span>
+                  <input
+                    id="filter-input-search"
+                    type="text"
+                    placeholder="e.g. Porsche, Tesla, SUV..."
+                    value={filters.searchTerm}
+                    onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
+                    className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Gearbox Configuration Gear Filter option buttons */}
+              <div className="md:col-span-3">
+                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  Gearbox Configuration
+                </label>
+                <div className="grid grid-cols-3 gap-1 bg-stone-50 p-1 rounded-xl border border-stone-200">
+                  {['All', 'Automatic', 'Manual'].map((mode) => (
+                    <button
+                      key={mode}
+                      id={`filter-trans-${mode}`}
+                      type="button"
+                      onClick={() => setFilters(prev => ({ ...prev, transmission: mode }))}
+                      className={`py-2 px-1 text-[11px] font-bold rounded-lg transition-all text-center cursor-pointer ${filters.transmission === mode ? 'bg-[#4C0027] text-white shadow-2xs' : 'text-stone-500 hover:text-stone-700'}`}
+                    >
+                      {mode === 'All' ? 'All Gears' : mode}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fuel System selection dropdown */}
+              <div className="md:col-span-3">
+                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  Fuel System Type
+                </label>
+                <div className="relative">
+                  <select
+                    id="filter-select-fuel"
+                    value={filters.fuelType}
+                    onChange={(e) => setFilters(prev => ({ ...prev, fuelType: e.target.value }))}
+                    className="w-full px-3.5 py-3 pr-10 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="All">All Fuels</option>
+                    <option value="Gasoline">Gasoline</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="LPG">LPG</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Electric">Electric</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-stone-400">
+                    <ChevronDown className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Price slider */}
+              <div className="md:col-span-3 select-none">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider font-mono">
+                    Max Monthly Fee
+                  </label>
+                  <span id="price-slider-display" className="text-xs font-mono font-extrabold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded-md">
+                    up to ${filters.maxPrice}/month
+                  </span>
+                </div>
+                <input
+                  id="filter-slider-price"
+                  type="range"
+                  min="300"
+                  max="5000"
+                  step="100"
+                  value={filters.maxPrice}
+                  onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
+                  className="w-full accent-[#4C0027] cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-stone-400 mt-1 font-mono">
+                  <span>$300/mo</span>
+                  <span>$5,000/mo</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 4. Horizontal Category Tab Selector Bar */}
+          <section id="category-filter-container" className="bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8">
+            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest block mb-3.5 font-mono">
+              Filter by vehicle archetype
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {['All', 'Sedan', 'SUV', 'MPV', 'Pickup', 'Truck'].map((cat) => {
+                const isSelected = filters.category === cat;
+                const count = categoryCounts[cat] || 0;
+                
+                return (
+                  <button
+                    key={cat}
+                    id={`filter-cat-tab-${cat}`}
+                    onClick={() => setFilters(prev => ({ ...prev, category: cat }))}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? 'bg-[#4C0027] text-white border-[#4C0027] shadow-sm' : 'bg-stone-50 border-stone-200 text-stone-605 hover:bg-stone-105 hover:text-stone-850'}`}
+                  >
+                    <span>{cat}</span>
+                    <span 
+                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-500'}`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* 5. Car catalog grid block */}
+          <div id="collection-grid-view">
+            {filteredCars.length === 0 ? (
+              <div className="bg-white rounded-3xl p-16 text-center border border-stone-100 shadow-xs flex flex-col items-center justify-center select-none">
+                <div className="w-16 h-16 bg-stone-50 text-stone-300 rounded-2xl flex items-center justify-center mb-4">
+                  <SlidersHorizontal className="w-7 h-7" />
+                </div>
+                <h3 className="font-extrabold text-stone-850 text-lg">No vehicles match filters</h3>
+                <p className="text-xs text-stone-500 mt-2 max-w-sm mx-auto leading-relaxed font-sans">
+                  Adjust your searching keywords, price limit settings, or category selection to retrieve archived vehicle records.
+                </p>
+                <button
+                  id="btn-empty-state-reset"
+                  onClick={handleResetFilters}
+                  className="mt-5 px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer"
+                  style={{ backgroundColor: brandPlum }}
+                >
+                  Restore Full Inventory
+                </button>
+              </div>
+            ) : (
+              <div id="cars-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence mode="popLayout animate-fade-in">
+                  {filteredCars.map((car) => (
+                    <CarCard 
+                      key={car.id} 
+                      car={car}
+                      onBookSuccess={handleBookingToast}
+                      reviews={reviews}
+                      onAddReview={handleAddReview}
+                      onConfirmBook={(bookingFields) => handleConfirmBook(car.id, bookingFields)}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </section>
+
+
+      </main>
+
+      {/* 7. Toast Alerts container absolutely positioned */}
+      <AnimatePresence>
+        {bookingToast !== null && (
+          <motion.div
+            id="global-toast-alert"
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-50 p-4 bg-stone-905 text-stone-105 rounded-2xl shadow-2xl border border-stone-800 flex items-center gap-3 max-w-sm"
+          >
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold leading-relaxed text-stone-200 font-sans">{bookingToast}</p>
+            </div>
+            <button
+              id="btn-close-toast"
+              onClick={() => setBookingToast(null)}
+              className="text-stone-400 hover:text-white font-black leading-none cursor-pointer text-sm"
+            >
+              &times;
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 8. Modern Aesthetic Footer */}
+      <footer id="global-theme-footer" className="bg-stone-900 text-stone-200 mt-20 border-t border-stone-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 select-none">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="md:col-span-2 space-y-4">
+              <BrandLogo size="md" variant="dark" />
+              <p className="text-xs text-stone-400 max-w-sm leading-relaxed font-sans">
+                Redefining premium vehicle mobilization. Enter car rental connects high-grade dispatcher administration with pristine security frameworks.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4">Quick Navigation</h4>
+              <ul className="space-y-2.5 text-xs text-stone-400">
+                <li><button onClick={() => scrollToAnchor('home-panel')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Home Dashboard</button></li>
+                <li><button onClick={() => scrollToAnchor('catalog-section')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Curated Catalog Grid</button></li>
+                <li><button onClick={() => setViewMode(isAdminAuthenticated ? 'admin' : 'login')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold text-[#4C0027] font-bold">Administrative Security Portal</button></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4 font-mono">AUTHORIZED STATION</h4>
+              <p className="text-xs text-stone-400 leading-relaxed font-sans">
+                Enter Car Rental Inc.<br />
+                Hub 1, Domestic Arrivals Gate B<br />
+                International Airport Road<br />
+                Houston Terminal Hub
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-500 font-sans">
+            <p>© 2026 Enter Car Rental Inc. All rights reserved. Managed with strict mechanics parameters.</p>
+            <div className="flex gap-4">
+              <span className="hover:text-stone-300 cursor-pointer">Privacy Policy</span>
+              <span>•</span>
+              <span className="hover:text-stone-300 cursor-pointer">Terms of Service</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

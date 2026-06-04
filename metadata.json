@@ -1,0 +1,6 @@
+{
+  "name": "Enter Car Rental",
+  "description": "Premium car rental experience custom-designed with a professional space-slate and navy blue corporate identity, complete with a fleet catalog, advanced search filters, and a secure administration CRUD dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
