@@ -1,4 +1,6 @@
 import React from 'react';
+// @ts-ignore
+import enterlogo from './enterlogo.png';
 
 interface BrandLogoProps {
   className?: string;
@@ -47,63 +49,15 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   const selectedSize = sizeClasses[size];
 
-  // SVG representation of the tilted 3D "Enter" key
+  // Render imported enterlogo.png image
   const renderEnterKey = () => {
-    const isPlumOrDark = variant === 'plum' || variant === 'dark';
-    const primaryColor = isPlumOrDark ? '#FAFAF9' : brandPrimary; // main key body color
-    const textColor = isPlumOrDark ? brandPrimary : '#FAFAF9'; // "Enter" text color inside key
-    const edgeColor = isPlumOrDark ? '#D6D3D1' : '#2D0017'; // 3D side edge color
-
     return (
-      <svg
-        id="enter-key-svg"
-        viewBox="0 0 100 100"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={`${selectedSize.svg} transition-transform duration-300 hover:scale-105 active:scale-95`}
-      >
-        {/* Shadow/Base depth underneath */}
-        <path
-          d="M25 40 C25 34 32 30 40 30 H75 C83 30 88 34 85 43 L77 78 C75 84 68 88 60 88 H25 C17 88 15 82 17 73 Z"
-          fill={variant === 'light' ? 'rgba(76, 0, 39, 0.15)' : 'rgba(0, 0, 0, 0.25)'}
-        />
-        
-        {/* 3D Side/Bottom edge of the key */}
-        <path
-          d="M20 37 C20 31 27 27 35 27 H70 C78 27 83 31 82 39 L74 74 C72 80 65 84 57 84 H22 C14 84 12 78 14 69 Z"
-          fill={edgeColor}
-        />
-
-        {/* Top Keycap Face */}
-        <path
-          d="M21 34 C21 28 28 24 36 24 H69 C77 24 81 28 80 35 L73 68 C71 74 64 78 56 78 H23 C15 78 14 72 15 65 Z"
-          fill={primaryColor}
-          stroke={edgeColor}
-          strokeWidth="1.5"
-        />
-
-        {/* Dynamic glossy highlight on keycap */}
-        <path
-          d="M36 26 H65 C72 26 75 28 75 32 L72 45 C72 41 68 38 60 38 H32 C26 38 23 34 24 30 L25 28 C26 26 31 26 36 26 Z"
-          fill="rgba(255,255,255,0.4)"
-        />
-
-        {/* "Enter" Label String */}
-        <text
-          x="44"
-          y="56"
-          fill={textColor}
-          fontSize="17"
-          fontWeight="bold"
-          fontStyle="italic"
-          fontFamily="system-ui, sans-serif"
-          textAnchor="middle"
-          transform="skewX(-10)"
-          className="select-none font-sans"
-        >
-          Enter
-        </text>
-      </svg>
+      <img
+        src={enterlogo}
+        alt="Enter Logo"
+        className={`${selectedSize.svg} object-contain transition-transform duration-300 hover:scale-105 active:scale-95`}
+        referrerPolicy="no-referrer"
+      />
     );
   };
 
