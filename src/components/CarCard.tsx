@@ -189,14 +189,7 @@ export const CarCard: React.FC<CarCardProps> = ({
           {car.category}
         </span>
         
-        {/* Rating and review badge wrapper (static read-only display) */}
-        <div
-          id={`rating-badge-static-${car.id}`}
-          className="absolute top-4 right-4 z-10 px-2.5 py-1.5 rounded-xl text-xs font-bold tracking-wide bg-white/95 text-stone-800 flex items-center gap-1.5 shadow-md border border-stone-100 select-none font-sans"
-        >
-          <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-          <span>{avgRatingDisplay}</span>
-        </div>
+        {/* Rating badge removed by user request */}
 
         {/* Zooming, Tilting & Rolling Scroll-linked Cover Image */}
         <motion.img

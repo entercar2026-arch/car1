@@ -31,7 +31,9 @@ import {
   ShieldCheck,
   Building,
   Camera,
-  FileText
+  FileText,
+  Send,
+  MessageCircle
 } from 'lucide-react';
 
 const SECURE_TOKEN_KEY = 'enter_admin_session_token';
@@ -430,22 +432,24 @@ export default function App() {
                   <PhoneCall className="w-4 h-4 text-[#4C0027]" style={{ color: brandPlum }} />
                   <span>096 671 4442</span>
                 </a>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <a 
                     href="https://t.me/+855966714442" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-[9px] sm:text-xs px-2.5 py-1 bg-sky-50 text-sky-600 hover:bg-sky-100 font-extrabold rounded-lg transition-all lowercase tracking-wider font-mono border border-sky-100/60 shadow-3xs"
+                    title="Telegram"
+                    className="p-2 bg-sky-50 text-sky-600 hover:bg-sky-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-sky-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
                   >
-                    telegram
+                    <Send className="w-4 h-4 -rotate-12 -translate-x-0.5" />
                   </a>
                   <a 
                     href="https://wa.me/855966714442" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-[9px] sm:text-xs px-2.5 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-extrabold rounded-lg transition-all lowercase tracking-wider font-mono border border-emerald-100/60 shadow-3xs"
+                    title="WhatsApp"
+                    className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-emerald-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
                   >
-                    whatsapp
+                    <MessageCircle className="w-4 h-4" />
                   </a>
                 </div>
               </div>
