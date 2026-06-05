@@ -38,10 +38,30 @@ import {
 
 const SECURE_TOKEN_KEY = "enter_admin_session_token";
 
+const safeStorage = {
+  getItem: (key: string) => {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {}
+  },
+  removeItem: (key: string) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {}
+  }
+};
+
 // Verification helper checking token integrity and session time window
 const isSessionTokenValid = (): boolean => {
   try {
-    const token = localStorage.getItem(SECURE_TOKEN_KEY);
+    const token = safeStorage.getItem(SECURE_TOKEN_KEY);
     if (!token) return false;
     const decoded = atob(token);
     const session = JSON.parse(decoded);
@@ -76,7 +96,7 @@ const generateSessionToken = (): string => {
 export default function App() {
   // Cars Fleet State
   const [cars, setCars] = useState<Car[]>(() => {
-    const saved = localStorage.getItem("enter_cars");
+    const saved = safeStorage.getItem("enter_cars");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -118,7 +138,7 @@ export default function App() {
 
   // Persistence containers for bookings and reviews
   const [bookings, setBookings] = useState<Booking[]>(() => {
-    const saved = localStorage.getItem("enter_bookings");
+    const saved = safeStorage.getItem("enter_bookings");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -130,7 +150,7 @@ export default function App() {
   });
 
   const [reviews, setReviews] = useState<Review[]>(() => {
-    const saved = localStorage.getItem("enter_reviews");
+    const saved = safeStorage.getItem("enter_reviews");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -175,25 +195,25 @@ export default function App() {
 
   // Synchronize state changes directly to Local Storage
   useEffect(() => {
-    localStorage.setItem("enter_cars", JSON.stringify(cars));
+    safeStorage.setItem("enter_cars", JSON.stringify(cars));
   }, [cars]);
 
   useEffect(() => {
     if (isAdminAuthenticated) {
-      localStorage.setItem("enter_admin_auth", "true");
-      localStorage.setItem(SECURE_TOKEN_KEY, generateSessionToken());
+      safeStorage.setItem("enter_admin_auth", "true");
+      safeStorage.setItem(SECURE_TOKEN_KEY, generateSessionToken());
     } else {
-      localStorage.removeItem("enter_admin_auth");
-      localStorage.removeItem(SECURE_TOKEN_KEY);
+      safeStorage.removeItem("enter_admin_auth");
+      safeStorage.removeItem(SECURE_TOKEN_KEY);
     }
   }, [isAdminAuthenticated]);
 
   useEffect(() => {
-    localStorage.setItem("enter_bookings", JSON.stringify(bookings));
+    safeStorage.setItem("enter_bookings", JSON.stringify(bookings));
   }, [bookings]);
 
   useEffect(() => {
-    localStorage.setItem("enter_reviews", JSON.stringify(reviews));
+    safeStorage.setItem("enter_reviews", JSON.stringify(reviews));
   }, [reviews]);
 
   // Handle addition of a new vehicle catalog item
