@@ -226,34 +226,30 @@ export const CarCard: React.FC<CarCardProps> = ({
       {/* Narrative & Info */}
       <div id={`car-body-${car.id}`} className="p-5 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex justify-between items-center mb-2 w-full gap-2 flex-wrap">
+          <div className="flex justify-between items-center mb-4 w-full gap-2 flex-wrap">
             <h3 id={`car-title-${car.id}`} className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-[#4C0027] leading-snug">
               {car.name}
             </h3>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-[#4C0027] text-white tracking-wider shadow-xs">
+            <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-mono font-black bg-[#4C0027] text-white tracking-widest shadow-sm">
               {car.yearModel || '2024'}
             </span>
           </div>
-          
-          <p className="text-xs text-stone-500 line-clamp-2 mb-4 leading-relaxed">
-            {car.description || `Experience pure pleasure. The luxury of driving the premium ${car.name} configured with standard luxury setups.`}
-          </p>
 
           {/* Highlights Info Grid (Technical) */}
-          <div id={`car-specs-${car.id}`} className="grid grid-cols-3 gap-1 py-3 border-y border-stone-100 mb-4 bg-stone-55/40 rounded-xl px-1">
+          <div id={`car-specs-${car.id}`} className="grid grid-cols-3 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1">
             <div className="flex flex-col items-center justify-center p-1">
-              <Users className="w-4 h-4 text-stone-400 mb-1" />
-              <span className="text-[9px] font-mono text-stone-500 font-bold">{car.seats} Seats</span>
+              <Users className="w-4 h-4 text-stone-700 mb-1" />
+              <span className="text-[10px] font-mono text-stone-900 font-extrabold">{car.seats} Seats</span>
             </div>
             
-            <div className="flex flex-col items-center justify-center p-1 border-x border-stone-100">
-              <Settings2 className="w-4 h-4 text-stone-400 mb-1" />
-              <span className="text-[9px] font-mono text-stone-500 font-bold truncate max-w-full text-center">{car.transmission}</span>
+            <div className="flex flex-col items-center justify-center p-1 border-x border-stone-200">
+              <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
+              <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">{car.transmission}</span>
             </div>
             
             <div className="flex flex-col items-center justify-center p-1">
-              <Fuel className="w-4 h-4 text-stone-400 mb-1" />
-              <span className="text-[9px] font-mono text-stone-500 font-bold truncate max-w-full text-center">{car.fuelType}</span>
+              <Fuel className="w-4 h-4 text-stone-700 mb-1" />
+              <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">{car.fuelType}</span>
             </div>
           </div>
         </div>
@@ -292,7 +288,7 @@ export const CarCard: React.FC<CarCardProps> = ({
               className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
               style={{ backgroundColor: brandPlum }}
             >
-              Rent Now
+              Enquire
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           )}
