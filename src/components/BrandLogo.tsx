@@ -1,6 +1,6 @@
 import React from 'react';
 // @ts-ignore
-import enterlogo from './Enter-Car-Rental-White.png';
+import enterlogo from './Enter-Car-Rental-White1.png';
 
 interface BrandLogoProps {
   className?: string;
@@ -28,22 +28,22 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       container: 'gap-2',
     },
     md: {
-      svg: 'h-11 w-11',
-      text: 'text-lg font-bold tracking-widest',
-      subText: 'text-[10px] tracking-widest',
-      container: 'gap-3',
+      svg: 'h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16',
+      text: 'text-base sm:text-lg md:text-xl lg:text-2xl font-black tracking-widest',
+      subText: 'text-[9px] sm:text-[10px] md:text-[11px] lg:text-[12px] tracking-widest',
+      container: 'gap-2 sm:gap-3',
     },
     lg: {
-      svg: 'h-16 w-16',
-      text: 'text-2xl font-black tracking-widest',
-      subText: 'text-xs tracking-widest',
-      container: 'gap-4',
+      svg: 'h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20',
+      text: 'text-xl sm:text-2xl md:text-3xl font-black tracking-widest',
+      subText: 'text-[10px] sm:text-xs md:text-sm tracking-widest',
+      container: 'gap-3 sm:gap-4',
     },
     xl: {
-      svg: 'h-24 w-24',
-      text: 'text-3xl font-black tracking-wider',
-      subText: 'text-sm tracking-widest font-medium uppercase',
-      container: 'gap-5',
+      svg: 'h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28',
+      text: 'text-2xl sm:text-3xl md:text-4xl font-black tracking-wider',
+      subText: 'text-xs sm:text-sm md:text-base tracking-widest font-medium uppercase',
+      container: 'gap-4 sm:gap-5',
     }
   };
 
@@ -85,13 +85,13 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {showSubText && (
         <div className="flex flex-col select-none">
           <span 
-            className={`font-sans font-extrabold uppercase leading-none tracking-widest`}
+            className={`font-sans font-extrabold uppercase leading-none tracking-widest ${selectedSize.text}`}
             style={{ color: variant === 'light' ? brandPrimary : '#FAFAF9' }}
           >
             ENTER
           </span>
           <span 
-            className={`font-mono font-medium tracking-[0.25em] leading-none mt-1 uppercase text-[9px]`}
+            className={`font-mono font-medium tracking-[0.25em] leading-none mt-1 uppercase ${selectedSize.subText}`}
             style={{ color: variant === 'light' ? brandSecondary : 'rgba(250, 250, 249, 0.7)' }}
           >
             CAR RENTAL
