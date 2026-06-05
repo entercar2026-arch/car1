@@ -427,29 +427,29 @@ export default function App() {
           <div className="flex items-center gap-3">
             {/* Quick Station info with Telegram & WhatsApp (Visible on both Mobile + Desktop) */}
             <div className="flex items-center select-none animate-fade-in pr-1">
-              <div className="flex flex-row flex-wrap items-center gap-3 sm:gap-4">
-                <a href="tel:0966714442" className="text-sm sm:text-lg font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1.5 font-mono" style={{ color: brandPlum }}>
-                  <PhoneCall className="w-4 h-4 text-[#4C0027]" style={{ color: brandPlum }} />
+              <div className="flex flex-row flex-nowrap items-center gap-1.5 sm:gap-4">
+                <a href="tel:0966714442" className="text-xs sm:text-lg font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1 sm:gap-1.5 font-mono" style={{ color: brandPlum }}>
+                  <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4C0027]" style={{ color: brandPlum }} />
                   <span>096 671 4442</span>
                 </a>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                   <a 
                     href="https://t.me/+855966714442" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     title="Telegram"
-                    className="p-2 bg-sky-50 text-sky-600 hover:bg-sky-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-sky-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
+                    className="p-1.5 sm:p-2 bg-sky-50 text-sky-600 hover:bg-sky-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-sky-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
                   >
-                    <Send className="w-4 h-4 -rotate-12 -translate-x-0.5" />
+                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 -rotate-12 -translate-x-0.5" />
                   </a>
                   <a 
                     href="https://wa.me/855966714442" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     title="WhatsApp"
-                    className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-emerald-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
+                    className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-emerald-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </a>
                 </div>
               </div>
