@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Car, ViewMode, CatalogFilters, Booking, Review } from './types';
 import { INITIAL_CARS } from './data';
 import { BrandLogo } from './components/BrandLogo';
-// @ts-ignore
-import footerLogo from './components/Enter-Car-Rental-White1.png';
 import { CarCard } from './components/CarCard';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
@@ -862,7 +860,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 select-none">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2 space-y-4">
-              <img src={footerLogo} alt="Enter Car Rental" className="h-12 w-auto object-contain" />
+              <BrandLogo size="md" variant="dark" />
               <p className="text-xs text-stone-400 max-w-sm leading-relaxed font-sans">
                 Redefining premium vehicle mobilization. Enter car rental connects high-grade dispatcher administration with pristine security frameworks.
               </p>
