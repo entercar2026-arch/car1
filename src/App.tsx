@@ -273,7 +273,9 @@ export default function App() {
       createdAt: new Date().toISOString().split("T")[0],
     };
 
-    setBookings((prev) => [freshBooking, ...prev]);
+    setTimeout(() => {
+      setBookings((prev) => [freshBooking, ...prev]);
+    }, 0);
     return freshBooking;
   };
 
@@ -444,7 +446,7 @@ export default function App() {
       {/* 1. Responsive & Sticky Navigation Header */}
       <header
         id="main-public-header"
-        className="bg-white border-b border-stone-150 sticky top-0 z-40 shadow-xs"
+        className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-xs"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div
@@ -459,14 +461,14 @@ export default function App() {
             <button
               id="nav-link-home"
               onClick={() => scrollToAnchor("home-panel")}
-              className="text-stone-605 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
               Home
             </button>
             <button
               id="nav-link-catalog"
               onClick={() => scrollToAnchor("catalog-section")}
-              className="text-stone-605 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
               Car Catalog
             </button>
@@ -534,7 +536,7 @@ export default function App() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-white border-t border-stone-150 overflow-hidden font-sans shadow-lg select-none"
+              className="lg:hidden bg-white border-t border-stone-200 overflow-hidden font-sans shadow-lg select-none"
             >
               <div className="px-4 py-5 space-y-4">
                 <button
@@ -562,7 +564,7 @@ export default function App() {
         {/* Home Anchor panel wrapper */}
         <section id="home-panel" className="scroll-mt-24 select-none pb-2">
           {/* Hero Welcome Banner */}
-          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-150 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs">
+          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-200 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
 
@@ -655,7 +657,7 @@ export default function App() {
               <button
                 id="btn-reset-filters"
                 onClick={handleResetFilters}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold text-stone-605 hover:bg-stone-50 hover:text-stone-800 transition-all cursor-pointer bg-white"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-800 transition-all cursor-pointer bg-white"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset Filters</span>
@@ -873,7 +875,7 @@ export default function App() {
                     onClick={() =>
                       setFilters((prev) => ({ ...prev, category: cat }))
                     }
-                    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-605 hover:bg-stone-105 hover:text-stone-850"}`}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-black"}`}
                   >
                     <span>{cat}</span>
                     <span
@@ -894,7 +896,7 @@ export default function App() {
                 <div className="w-16 h-16 bg-stone-50 text-stone-300 rounded-2xl flex items-center justify-center mb-4">
                   <SlidersHorizontal className="w-7 h-7" />
                 </div>
-                <h3 className="font-extrabold text-stone-850 text-lg">
+                <h3 className="font-extrabold text-black text-lg">
                   No vehicles match filters
                 </h3>
                 <p className="text-xs text-stone-500 mt-2 max-w-sm mx-auto leading-relaxed font-sans">
@@ -943,7 +945,7 @@ export default function App() {
             initial={{ opacity: 0, y: 50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 p-4 bg-stone-905 text-stone-105 rounded-2xl shadow-2xl border border-stone-800 flex items-center gap-3 max-w-sm"
+            className="fixed bottom-6 right-6 z-50 p-4 bg-stone-900 text-stone-100 rounded-2xl shadow-2xl border border-stone-800 flex items-center gap-3 max-w-sm"
           >
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
             <div className="flex-1">

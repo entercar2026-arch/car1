@@ -12,6 +12,7 @@ import {
   DollarSign,
   Eye,
   Sparkles,
+  Upload,
   Link2,
   X,
   AlertOctagon,
@@ -85,6 +86,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formFuel, setFormFuel] = useState<Car["fuelType"]>("Gasoline");
   const [formDescription, setFormDescription] = useState("");
   const [formYearModel, setFormYearModel] = useState(2024);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          setFormImage(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Suggestions for standard car images to assist users
   const SUGGESTED_IMAGES = [
@@ -254,7 +268,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
                 Fleet Strength
               </p>
-              <h3 className="text-2xl font-black text-stone-850 mt-0.5">
+              <h3 className="text-2xl font-black text-black mt-0.5">
                 {totalAssets} Vehicles
               </h3>
             </div>
@@ -268,7 +282,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
                 Average Rent Fee
               </p>
-              <h3 className="text-2xl font-black text-stone-850 mt-0.5">
+              <h3 className="text-2xl font-black text-black mt-0.5">
                 ${avgRate} /month
               </h3>
             </div>
@@ -282,7 +296,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
                 Approved Bookings
               </p>
-              <h3 className="text-2xl font-black text-stone-850 mt-0.5">
+              <h3 className="text-2xl font-black text-black mt-0.5">
                 {activeBookingsCount} active
               </h3>
             </div>
@@ -368,7 +382,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-stone-50 text-[10px] font-bold tracking-wider text-stone-400 uppercase border-b border-stone-150 select-none">
+                      <tr className="bg-stone-50 text-[10px] font-bold tracking-wider text-stone-400 uppercase border-b border-stone-200 select-none">
                         <th className="p-4 pl-6 w-24">Thumbnail</th>
                         <th className="p-4">Car Model Name</th>
                         <th className="p-4 w-28">Category</th>
@@ -410,7 +424,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </span>
                           </td>
                           <td className="p-4">
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-stone-105/50 text-stone-600 uppercase border border-stone-200">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-stone-100/50 text-stone-600 uppercase border border-stone-200">
                               {car.category}
                             </span>
                           </td>
@@ -496,7 +510,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-stone-50 text-[10px] font-bold tracking-wider text-stone-400 uppercase border-b border-stone-150 select-none">
+                      <tr className="bg-stone-50 text-[10px] font-bold tracking-wider text-stone-400 uppercase border-b border-stone-200 select-none">
                         <th className="p-4 pl-6">ID</th>
                         <th className="p-4">Customer Details</th>
                         <th className="p-4">Vehicle Model</th>
@@ -530,7 +544,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </span>
                             </div>
                           </td>
-                          <td className="p-4 font-bold text-stone-850">
+                          <td className="p-4 font-bold text-black">
                             {book.carName}
                           </td>
                           <td className="p-4">
@@ -554,7 +568,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                                   : book.status === "Cancelled"
                                     ? "bg-rose-50 text-rose-800 border border-rose-100"
-                                    : "bg-stone-105/70 text-stone-700 border border-stone-200 animate-pulse"
+                                    : "bg-stone-100/70 text-stone-700 border border-stone-200 animate-pulse"
                               }`}
                             >
                               {book.status}
@@ -641,7 +655,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="overflow-x-auto animate-fade-in">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-stone-50 text-[10px] font-bold tracking-wider text-stone-400 uppercase border-b border-stone-150 select-none">
+                      <tr className="bg-stone-50 text-[10px] font-bold tracking-wider text-stone-400 uppercase border-b border-stone-200 select-none">
                         <th className="p-4 pl-6 w-32">Client Author</th>
                         <th className="p-4">Review Star Value</th>
                         <th className="p-4">Comment Narrative</th>
@@ -681,7 +695,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </div>
                             </td>
                             <td className="p-4">
-                              <p className="text-stone-605 italic max-w-md break-words font-sans">
+                              <p className="text-stone-600 italic max-w-md break-words font-sans">
                                 "{rev.comment}"
                               </p>
                             </td>
@@ -789,7 +803,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="e.g. Ford Mustang Mach-E"
-                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                     />
                   </div>
 
@@ -810,7 +824,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         max="10000"
                         value={formPrice}
                         onChange={(e) => setFormPrice(Number(e.target.value))}
-                        className="w-full pl-7 pr-3 py-2 border border-stone-200 bg-stone-50 rounded-xl text-stone-850 text-xs font-mono focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                        className="w-full pl-7 pr-3 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs font-mono focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
                     </div>
                   </div>
@@ -826,7 +840,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onChange={(e) =>
                         setFormCategory(e.target.value as Car["category"])
                       }
-                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                     >
                       <option value="Sedan">Sedan</option>
                       <option value="SUV">SUV</option>
@@ -849,7 +863,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       max="2030"
                       value={formYearModel}
                       onChange={(e) => setFormYearModel(Number(e.target.value))}
-                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-stone-850 text-xs font-mono focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs font-mono focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                     />
                   </div>
 
@@ -889,7 +903,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onChange={(e) =>
                         setFormFuel(e.target.value as Car["fuelType"])
                       }
-                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                     >
                       <option value="Gasoline">Gasoline</option>
                       <option value="Electric">Electric</option>
@@ -922,20 +936,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   {/* Visual Image link */}
                   <div className="sm:col-span-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                      Car Image URL
-                    </label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Car Image (URL or Local)
+                      </label>
+                      <label className="text-[10px] font-bold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded cursor-pointer hover:bg-[#4C0027]/20 transition-colors flex items-center gap-1">
+                        <Upload className="w-3 h-3" />
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageUpload}
+                        />
+                      </label>
+                    </div>
                     <div className="relative">
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
                         <Link2 className="h-4 w-4" />
                       </span>
                       <input
                         id="input-car-image"
-                        type="url"
+                        type="text"
                         value={formImage}
                         onChange={(e) => setFormImage(e.target.value)}
-                        placeholder="https://images.unsplash.com/... or leave empty for template fallback"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                        placeholder="https://... or select upload"
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
                     </div>
 
@@ -950,7 +976,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             key={i}
                             type="button"
                             onClick={() => setFormImage(img.url)}
-                            className="text-[9px] font-semibold bg-stone-100 text-stone-605 hover:bg-stone-200 px-2 py-0.5 rounded-md border border-stone-150 transition-all cursor-pointer"
+                            className="text-[9px] font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 px-2 py-0.5 rounded-md border border-stone-200 transition-all cursor-pointer"
                           >
                             {img.name}
                           </button>
@@ -970,7 +996,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       value={formDescription}
                       onChange={(e) => setFormDescription(e.target.value)}
                       placeholder="Share what makes this vehicle magnificent..."
-                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
+                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
                     />
                   </div>
                 </div>

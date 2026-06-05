@@ -122,25 +122,13 @@ export const CarCard: React.FC<CarCardProps> = ({
     e.preventDefault();
     if (!customerName || !pickupDate || !pickupTime || !location) return;
 
-    if (onConfirmBook) {
-      const resultObj = onConfirmBook({
-        customerName,
-        pickupDate,
-        pickupTime,
-        location,
-        contactMethod,
-        message,
-        totalCost: totalBookingCost,
-      });
-      setConfirmedBooking(resultObj);
-    }
-
     // Format message for WhatsApp or Telegram
     const carDetails = `*Enquiry for: ${car.name}*`;
+    const carPhoto = `Photo: ${car.image}`;
     const customerDetails = `Name: ${customerName}`;
     const bookingDetails = `Pickup Location: ${location}\nDate: ${pickupDate}\nTime: ${pickupTime}`;
     const userMessage = message ? `\nMessage: ${message}` : "";
-    const fullText = `${carDetails}\n\n${customerDetails}\n\n${bookingDetails}${userMessage}`;
+    const fullText = `${carDetails}\n${carPhoto}\n\n${customerDetails}\n\n${bookingDetails}${userMessage}`;
 
     const adminPhone = "855966714442";
     const adminTelegram = "+855966714442";
@@ -157,7 +145,21 @@ export const CarCard: React.FC<CarCardProps> = ({
       );
     }
 
-    setIsSuccess(true);
+    setTimeout(() => {
+      if (onConfirmBook) {
+        const resultObj = onConfirmBook({
+          customerName,
+          pickupDate,
+          pickupTime,
+          location,
+          contactMethod,
+          message,
+          totalCost: totalBookingCost,
+        });
+        setConfirmedBooking(resultObj);
+      }
+      setIsSuccess(true);
+    }, 10);
   };
 
   const handleReviewSubmit = (e: React.FormEvent) => {
@@ -456,7 +458,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                       </div>
                     </div>
 
-                    <div className="pt-2.5 mt-3 border-t border-stone-150">
+                    <div className="pt-2.5 mt-3 border-t border-stone-200">
                       <p className="text-[9.5px] text-stone-500 font-semibold italic">
                         <span className="text-stone-700 not-italic uppercase tracking-widest font-mono text-[9px]">Remark: </span> 
                         A passport photo required.
@@ -493,14 +495,14 @@ export const CarCard: React.FC<CarCardProps> = ({
                           "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
                       }}
                       referrerPolicy="no-referrer"
-                      className="w-16 h-12 object-cover rounded-xl border border-stone-100"
+                      className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
                     />
                     <div>
-                      <h4 className="font-extrabold text-stone-900 text-sm leading-tight">
+                      <h4 className="font-extrabold text-stone-900 text-lg sm:text-xl leading-tight">
                         {car.name}
                       </h4>
-                      <p className="text-[10px] text-stone-400 font-mono font-bold mt-0.5">
-                        {car.yearModel} {car.category} FLEET COLLECTION
+                      <p className="text-sm sm:text-base text-stone-600 font-mono font-bold mt-0.5 drop-shadow-sm">
+                        {car.yearModel} <span className="text-stone-400 text-[10px] sm:text-xs ml-1 uppercase">{car.category} FLEET COLLECTION</span>
                       </p>
                     </div>
                   </div>
@@ -528,7 +530,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                             placeholder="e.g. Douglas Vance"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
-                            className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                            className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                           />
                         </div>
                       </div>
@@ -557,7 +559,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                     </div>
 
                     {/* Location, Date & Time Panel grouped together */}
-                    <div className="bg-stone-50 p-2.5 rounded-2xl border border-stone-105 space-y-2.5">
+                    <div className="bg-stone-50 p-2.5 rounded-2xl border border-stone-100 space-y-2.5">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
@@ -602,7 +604,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                             placeholder="City, Airport..."
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                            className="w-full text-xs pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-xl text-stone-850 focus:outline-none focus:border-[#4C0027] transition-all"
+                            className="w-full text-xs pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-xl text-black focus:outline-none focus:border-[#4C0027] transition-all"
                           />
                         </div>
                       </div>
@@ -622,7 +624,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}
                           rows={2}
-                          className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
+                          className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
                         />
                       </div>
                     </div>
@@ -666,7 +668,7 @@ export const CarCard: React.FC<CarCardProps> = ({
               </button>
 
               {/* Title Header with info */}
-              <div className="border-b border-stone-150 pb-4 mb-4 select-none">
+              <div className="border-b border-stone-200 pb-4 mb-4 select-none">
                 <div className="flex items-center gap-3">
                   <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
                   <h3 className="font-sans font-black text-stone-900 text-xl tracking-tight">
@@ -764,7 +766,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                           placeholder="e.g. Timothy Vance"
                           value={reviewAuthor}
                           onChange={(e) => setReviewAuthor(e.target.value)}
-                          className="w-full text-xs px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                          className="w-full text-xs px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       </div>
 
@@ -800,7 +802,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                           placeholder="Share the details of your driving pleasure..."
                           value={reviewComment}
                           onChange={(e) => setReviewComment(e.target.value)}
-                          className="w-full text-xs px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
+                          className="w-full text-xs px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
                         />
                       </div>
 
