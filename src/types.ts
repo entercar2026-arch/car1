@@ -20,6 +20,7 @@ export interface CatalogFilters {
   maxPrice: number;
   transmission: string;
   fuelType: string;
+  brand: string;
 }
 
 export interface Booking {

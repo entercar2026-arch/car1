@@ -103,6 +103,7 @@ export default function App() {
     maxPrice: 5000,
     transmission: 'All',
     fuelType: 'All',
+    brand: 'All',
   });
 
   // Mobile drawer state
@@ -296,8 +297,18 @@ export default function App() {
       maxPrice: 5000,
       transmission: 'All',
       fuelType: 'All',
+      brand: 'All',
     });
   };
+
+  // Dynamically extract unique brands from current fleet state
+  const dynamicBrands = useMemo(() => {
+    const list = cars.map(car => {
+      if (car.name.startsWith('Range Rover')) return 'Range Rover';
+      return car.name.split(' ')[0];
+    });
+    return ['All', ...Array.from(new Set(list))];
+  }, [cars]);
 
   // Category statistics counting dynamically based on current fleet state
   const categoryCounts = useMemo(() => {
@@ -319,7 +330,10 @@ export default function App() {
       const matchTrans = filters.transmission === 'All' || car.transmission === filters.transmission;
       const matchFuel = filters.fuelType === 'All' || car.fuelType === filters.fuelType;
 
-      return matchSearch && matchCategory && matchPrice && matchTrans && matchFuel;
+      const carBrand = car.name.startsWith('Range Rover') ? 'Range Rover' : car.name.split(' ')[0];
+      const matchBrand = filters.brand === 'All' || carBrand.toLowerCase() === filters.brand.toLowerCase();
+
+      return matchSearch && matchCategory && matchPrice && matchTrans && matchFuel && matchBrand;
     });
   }, [cars, filters]);
 
@@ -410,18 +424,18 @@ export default function App() {
           {/* Right Action buttons and hamburger logic */}
           <div className="flex items-center gap-3">
             {/* Quick Station info with Telegram & WhatsApp (Visible on both Mobile + Desktop) */}
-            <div className="flex items-center gap-3 select-none animate-fade-in border-r border-stone-100 pr-3 mr-1">
-              <div className="text-right flex flex-col items-end">
-                <a href="tel:0966714442" className="text-[10px] sm:text-xs font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1.5 mt-0.5" style={{ color: brandPlum }}>
-                  <PhoneCall className="w-3.5 h-3.5 text-[#4C0027]" style={{ color: brandPlum }} />
+            <div className="flex items-center select-none animate-fade-in pr-1">
+              <div className="flex flex-row flex-wrap items-center gap-3 sm:gap-4">
+                <a href="tel:0966714442" className="text-sm sm:text-lg font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1.5 font-mono" style={{ color: brandPlum }}>
+                  <PhoneCall className="w-4 h-4 text-[#4C0027]" style={{ color: brandPlum }} />
                   <span>096 671 4442</span>
                 </a>
-                <div className="flex items-center gap-1 mt-0.5">
+                <div className="flex items-center gap-1.5">
                   <a 
                     href="https://t.me/+855966714442" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-[7px] sm:text-[8px] px-1 py-0.5 bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 font-bold rounded transition-all lowercase"
+                    className="text-[9px] sm:text-xs px-2.5 py-1 bg-sky-50 text-sky-600 hover:bg-sky-100 font-extrabold rounded-lg transition-all lowercase tracking-wider font-mono border border-sky-100/60 shadow-3xs"
                   >
                     telegram
                   </a>
@@ -429,7 +443,7 @@ export default function App() {
                     href="https://wa.me/855966714442" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-[7px] sm:text-[8px] px-1 py-0.5 bg-[#25D366]/10 text-[#128C7E] hover:bg-[#25D366]/20 font-bold rounded transition-all lowercase"
+                    className="text-[9px] sm:text-xs px-2.5 py-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 font-extrabold rounded-lg transition-all lowercase tracking-wider font-mono border border-emerald-100/60 shadow-3xs"
                   >
                     whatsapp
                   </a>
@@ -437,31 +451,11 @@ export default function App() {
               </div>
             </div>
 
-            {isAdminAuthenticated ? (
-              <button
-                id="btn-nav-admin-direct"
-                onClick={() => setViewMode('admin')}
-                className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-white rounded-xl transition-all hover:scale-101 active:scale-99 cursor-pointer shadow-sm"
-                style={{ backgroundColor: brandPlum }}
-              >
-                <span>Dashboard</span>
-              </button>
-            ) : (
-              <button
-                id="btn-nav-admin-login"
-                onClick={() => setViewMode('login')}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-extrabold text-[#4C0027] hover:text-[#5E0030] bg-[#4C0027]/5 hover:bg-[#4C0027]/10 transition-all rounded-xl cursor-pointer"
-              >
-                <Lock className="w-3.5 h-3.5" />
-                <span>Admin Log</span>
-              </button>
-            )}
-
             {/* Mobile Hamburger toggle */}
             <button
               id="mobile-menu-toggle"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-stone-750 hover:bg-stone-50 rounded-xl transition-all cursor-pointer"
+              className="lg:hidden p-2 text-stone-750 hover:bg-stone-55 rounded-xl transition-all cursor-pointer"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -493,33 +487,6 @@ export default function App() {
                 >
                   Car Catalog
                 </button>
-                
-                <div className="pt-4 border-t border-stone-100 flex flex-col gap-3">
-                  {isAdminAuthenticated ? (
-                    <button
-                      id="mobile-btn-admin-direct"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setViewMode('admin');
-                      }}
-                      className="w-full text-center py-2.5 text-xs font-black uppercase text-white rounded-xl shadow-xs transition-colors"
-                      style={{ backgroundColor: brandPlum }}
-                    >
-                      Admin Dashboard
-                    </button>
-                  ) : (
-                    <button
-                      id="mobile-btn-admin-login"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setViewMode('login');
-                      }}
-                      className="w-full text-center py-2.5 text-xs font-black uppercase text-[#4C0027] border border-[#4C0027]/20 rounded-xl transition-colors bg-[#4C0027]/5"
-                    >
-                      Verify Administration Login
-                    </button>
-                  )}
-                </div>
               </div>
             </motion.div>
           )}
@@ -537,7 +504,7 @@ export default function App() {
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
             
             <div className="space-y-4 max-w-3xl flex flex-col items-center">
-              <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-[#4C0027]/10 text-[#4C0027] uppercase tracking-wider font-mono">
+              <span className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black bg-yellow-400 text-black border border-yellow-500/20 uppercase tracking-widest shadow-xs">
                 24/7 Nationwide Delivery
               </span>
               <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
@@ -622,14 +589,14 @@ export default function App() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-y-6 gap-x-4">
+            <div className="flex flex-col gap-5 max-w-2xl mx-auto">
               {/* Free Text Input field */}
-              <div className="md:col-span-3 relative">
-                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+              <div className="relative">
+                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
                   Search Model / Keywords
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400 font-mono">
                     <Search className="h-4 w-4" />
                   </span>
                   <input
@@ -638,91 +605,129 @@ export default function App() {
                     placeholder="e.g. Porsche, Tesla, SUV..."
                     value={filters.searchTerm}
                     onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-semibold"
                   />
                 </div>
               </div>
 
-              {/* Type of Car Dropdown */}
-              <div className="md:col-span-2">
-                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+              {/* Car Brand Tabs */}
+              <div>
+                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  Car Brand
+                </label>
+                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                  {dynamicBrands.map((b) => {
+                    const isSelected = filters.brand === b;
+                    return (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setFilters(prev => ({ ...prev, brand: b }))}
+                        className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
+                          isSelected 
+                            ? 'bg-[#4C0027] text-white shadow-xs' 
+                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
+                        }`}
+                        style={isSelected ? { backgroundColor: brandPlum } : {}}
+                      >
+                        {b}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Type of Car Tabs */}
+              <div>
+                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
                   Type of Car
                 </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400 pointer-events-none">
-                    <CarFront className="h-4 w-4" />
-                  </span>
-                  <select
-                    id="filter-select-category"
-                    value={filters.category}
-                    onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full pl-10 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="All">All Types</option>
-                    <option value="Sedan">Sedan</option>
-                    <option value="SUV">SUV</option>
-                    <option value="MPV">MPV</option>
-                    <option value="Pickup">Pickup</option>
-                    <option value="Truck">Truck</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-stone-400">
-                    <ChevronDown className="h-4 w-4" />
-                  </div>
+                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                  {['All', 'Sedan', 'SUV', 'MPV', 'Pickup', 'Truck'].map((cat) => {
+                    const isSelected = filters.category === cat;
+                    return (
+                      <button
+                        key={cat}
+                        id={`filter-cat-pills-${cat}`}
+                        type="button"
+                        onClick={() => setFilters(prev => ({ ...prev, category: cat }))}
+                        className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
+                          isSelected 
+                            ? 'bg-[#4C0027] text-white shadow-xs' 
+                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
+                        }`}
+                        style={isSelected ? { backgroundColor: brandPlum } : {}}
+                      >
+                        {cat}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Gearbox Configuration Gear Filter option buttons */}
-              <div className="md:col-span-2">
-                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
-                  Gearbox
-                </label>
-                <div className="grid grid-cols-3 gap-1 bg-stone-50 p-1 rounded-xl border border-stone-200">
-                  {['All', 'Automatic', 'Manual'].map((mode) => (
-                    <button
-                      key={mode}
-                      id={`filter-trans-${mode}`}
-                      type="button"
-                      onClick={() => setFilters(prev => ({ ...prev, transmission: mode }))}
-                      className={`py-2 px-1 text-[10px] font-bold rounded-lg transition-all text-center cursor-pointer ${filters.transmission === mode ? 'bg-[#4C0027] text-white shadow-2xs' : 'text-stone-500 hover:text-stone-700'}`}
-                    >
-                      {mode === 'All' ? 'All' : mode === 'Automatic' ? 'Auto' : 'Manual'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Fuel System selection dropdown */}
-              <div className="md:col-span-2">
-                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+              {/* Fuel System selection dropdown changed to Tabs */}
+              <div>
+                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
                   Fuel System Type
                 </label>
-                <div className="relative">
-                  <select
-                    id="filter-select-fuel"
-                    value={filters.fuelType}
-                    onChange={(e) => setFilters(prev => ({ ...prev, fuelType: e.target.value }))}
-                    className="w-full px-3.5 py-3 pr-10 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="All">All Fuels</option>
-                    <option value="Gasoline">Gasoline</option>
-                    <option value="Diesel">Diesel</option>
-                    <option value="LPG">LPG</option>
-                    <option value="Hybrid">Hybrid</option>
-                    <option value="Electric">Electric</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-stone-400">
-                    <ChevronDown className="h-4 w-4" />
-                  </div>
+                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                  {['All', 'Gasoline', 'Diesel', 'LPG', 'Hybrid', 'Electric'].map((fuel) => {
+                    const isSelected = filters.fuelType === fuel;
+                    return (
+                      <button
+                        key={fuel}
+                        id={`filter-fuel-pills-${fuel}`}
+                        type="button"
+                        onClick={() => setFilters(prev => ({ ...prev, fuelType: fuel }))}
+                        className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
+                          isSelected 
+                            ? 'bg-[#4C0027] text-white shadow-xs' 
+                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
+                        }`}
+                        style={isSelected ? { backgroundColor: brandPlum } : {}}
+                      >
+                        {fuel}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Price slider */}
-              <div className="md:col-span-3 select-none">
+              {/* Gearbox Configuration Gear Filter option buttons placed below fuel system */}
+              <div>
+                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  Gearbox
+                </label>
+                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                  {['All', 'Automatic', 'Manual'].map((mode) => {
+                    const isSelected = filters.transmission === mode;
+                    return (
+                      <button
+                        key={mode}
+                        id={`filter-trans-${mode}`}
+                        type="button"
+                        onClick={() => setFilters(prev => ({ ...prev, transmission: mode }))}
+                        className={`py-2 px-4 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
+                          isSelected 
+                            ? 'bg-[#4C0027] text-white shadow-xs' 
+                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
+                        }`}
+                        style={isSelected ? { backgroundColor: brandPlum } : {}}
+                      >
+                        {mode === 'All' ? 'All' : mode === 'Automatic' ? 'Auto' : 'Manual'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Price/Fee slider placed below gearbox */}
+              <div className="select-none">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider font-mono">
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider font-mono">
                     Max Monthly Fee
                   </label>
-                  <span id="price-slider-display" className="text-xs font-mono font-extrabold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded-md">
+                  <span id="price-slider-display" className="text-xs font-mono font-extrabold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded-md" style={{ color: brandPlum, backgroundColor: `${brandPlum}15` }}>
                     up to ${filters.maxPrice}/month
                   </span>
                 </div>
@@ -735,6 +740,7 @@ export default function App() {
                   value={filters.maxPrice}
                   onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
                   className="w-full accent-[#4C0027] cursor-pointer"
+                  style={{ accentColor: brandPlum }}
                 />
                 <div className="flex justify-between text-[10px] text-stone-400 mt-1 font-mono">
                   <span>$300/mo</span>
@@ -855,9 +861,7 @@ export default function App() {
             <div>
               <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4">Quick Navigation</h4>
               <ul className="space-y-2.5 text-xs text-stone-400">
-                <li><button onClick={() => scrollToAnchor('home-panel')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Home Dashboard</button></li>
-                <li><button onClick={() => scrollToAnchor('catalog-section')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Curated Catalog Grid</button></li>
-                <li><button onClick={() => setViewMode(isAdminAuthenticated ? 'admin' : 'login')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold text-[#4C0027] font-bold">Administrative Security Portal</button></li>
+                <li><button onClick={() => setViewMode(isAdminAuthenticated ? 'admin' : 'login')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold font-bold">Administrative Security Portal</button></li>
               </ul>
             </div>
 
