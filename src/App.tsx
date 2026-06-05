@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Car, ViewMode, CatalogFilters, Booking, Review } from './types';
-import { INITIAL_CARS } from './data';
-import { BrandLogo } from './components/BrandLogo';
-import { CarCard } from './components/CarCard';
-import { AdminLogin } from './components/AdminLogin';
-import { AdminDashboard } from './components/AdminDashboard';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Search, 
-  MapPin, 
-  Lock, 
-  RotateCcw, 
-  SlidersHorizontal, 
-  Sparkles, 
-  BadgePercent, 
-  CheckCircle2, 
-  PhoneCall, 
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Car, ViewMode, CatalogFilters, Booking, Review } from "./types";
+import { INITIAL_CARS } from "./data";
+import { BrandLogo } from "./components/BrandLogo";
+import { CarCard } from "./components/CarCard";
+import { AdminLogin } from "./components/AdminLogin";
+import { AdminDashboard } from "./components/AdminDashboard";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Search,
+  MapPin,
+  Lock,
+  RotateCcw,
+  SlidersHorizontal,
+  Sparkles,
+  BadgePercent,
+  CheckCircle2,
+  PhoneCall,
   Menu,
   X,
   Plus,
@@ -33,10 +33,10 @@ import {
   Camera,
   FileText,
   Send,
-  MessageCircle
-} from 'lucide-react';
+  MessageCircle,
+} from "lucide-react";
 
-const SECURE_TOKEN_KEY = 'enter_admin_session_token';
+const SECURE_TOKEN_KEY = "enter_admin_session_token";
 
 // Verification helper checking token integrity and session time window
 const isSessionTokenValid = (): boolean => {
@@ -50,9 +50,9 @@ const isSessionTokenValid = (): boolean => {
     if (
       session &&
       session.root_auth === true &&
-      session.user === 'chan' &&
-      session.role === 'admin' &&
-      (now - session.verified_at < oneDay)
+      session.user === "chan" &&
+      session.role === "admin" &&
+      now - session.verified_at < oneDay
     ) {
       return true;
     }
@@ -66,9 +66,9 @@ const isSessionTokenValid = (): boolean => {
 const generateSessionToken = (): string => {
   const session = {
     root_auth: true,
-    user: 'chan',
-    role: 'admin',
-    verified_at: Date.now()
+    user: "chan",
+    role: "admin",
+    verified_at: Date.now(),
   };
   return btoa(JSON.stringify(session));
 };
@@ -76,36 +76,38 @@ const generateSessionToken = (): string => {
 export default function App() {
   // Cars Fleet State
   const [cars, setCars] = useState<Car[]>(() => {
-    const saved = localStorage.getItem('enter_cars');
+    const saved = localStorage.getItem("enter_cars");
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error('Failed to parse saved cars', e);
+        console.error("Failed to parse saved cars", e);
       }
     }
     return INITIAL_CARS;
   });
 
   // Track session authentication
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
-    return isSessionTokenValid();
-  });
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(
+    () => {
+      return isSessionTokenValid();
+    },
+  );
 
   // Current Screen / Node View
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const isAuth = isSessionTokenValid();
-    return isAuth ? 'admin' : 'customer';
+    return isAuth ? "admin" : "customer";
   });
 
   // Filter criteria state
   const [filters, setFilters] = useState<CatalogFilters>({
-    searchTerm: '',
-    category: 'All',
+    searchTerm: "",
+    category: "All",
     maxPrice: 5000,
-    transmission: 'All',
-    fuelType: 'All',
-    brand: 'All',
+    transmission: "All",
+    fuelType: "All",
+    brand: "All",
   });
 
   // Mobile drawer state
@@ -116,206 +118,226 @@ export default function App() {
 
   // Persistence containers for bookings and reviews
   const [bookings, setBookings] = useState<Booking[]>(() => {
-    const saved = localStorage.getItem('enter_bookings');
+    const saved = localStorage.getItem("enter_bookings");
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error('Failed to parse saved bookings', e);
+        console.error("Failed to parse saved bookings", e);
       }
     }
     return [];
   });
 
   const [reviews, setReviews] = useState<Review[]>(() => {
-    const saved = localStorage.getItem('enter_reviews');
+    const saved = localStorage.getItem("enter_reviews");
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error('Failed to parse saved reviews', e);
+        console.error("Failed to parse saved reviews", e);
       }
     }
     // High-quality sample initial reviews
     return [
       {
-        id: 'rev-init-1',
-        carId: 'car-1',
-        customerName: 'Alistair Sterling',
+        id: "rev-init-1",
+        carId: "car-1",
+        customerName: "Alistair Sterling",
         rating: 5,
-        comment: 'Outstanding pickup service at the airport hub. The cabin was clean and smelled of fine leather.',
-        createdAt: '2026-06-02',
-        isApproved: true
+        comment:
+          "Outstanding pickup service at the airport hub. The cabin was clean and smelled of fine leather.",
+        createdAt: "2026-06-02",
+        isApproved: true,
       },
       {
-        id: 'rev-init-2',
-        carId: 'car-2',
-        customerName: 'Charlotte Vance',
+        id: "rev-init-2",
+        carId: "car-2",
+        customerName: "Charlotte Vance",
         rating: 5,
-        comment: 'Pure luxury. Cruising on zero emissions in the Mach-E was the highlight of our weekend trip.',
-        createdAt: '2026-06-03',
-        isApproved: true
+        comment:
+          "Pure luxury. Cruising on zero emissions in the Mach-E was the highlight of our weekend trip.",
+        createdAt: "2026-06-03",
+        isApproved: true,
       },
       {
-        id: 'rev-init-3',
-        carId: 'car-3',
-        customerName: 'Nathaniel West',
+        id: "rev-init-3",
+        carId: "car-3",
+        customerName: "Nathaniel West",
         rating: 5,
-        comment: 'Absolute monster of a machine. Power delivery is linear, gearbox response is lightning fast.',
-        createdAt: '2026-06-03',
-        isApproved: false // awaits moderator approval
-      }
+        comment:
+          "Absolute monster of a machine. Power delivery is linear, gearbox response is lightning fast.",
+        createdAt: "2026-06-03",
+        isApproved: false, // awaits moderator approval
+      },
     ];
   });
 
   // Synchronize state changes directly to Local Storage
   useEffect(() => {
-    localStorage.setItem('enter_cars', JSON.stringify(cars));
+    localStorage.setItem("enter_cars", JSON.stringify(cars));
   }, [cars]);
 
   useEffect(() => {
     if (isAdminAuthenticated) {
-      localStorage.setItem('enter_admin_auth', 'true');
+      localStorage.setItem("enter_admin_auth", "true");
       localStorage.setItem(SECURE_TOKEN_KEY, generateSessionToken());
     } else {
-      localStorage.removeItem('enter_admin_auth');
+      localStorage.removeItem("enter_admin_auth");
       localStorage.removeItem(SECURE_TOKEN_KEY);
     }
   }, [isAdminAuthenticated]);
 
   useEffect(() => {
-    localStorage.setItem('enter_bookings', JSON.stringify(bookings));
+    localStorage.setItem("enter_bookings", JSON.stringify(bookings));
   }, [bookings]);
 
   useEffect(() => {
-    localStorage.setItem('enter_reviews', JSON.stringify(reviews));
+    localStorage.setItem("enter_reviews", JSON.stringify(reviews));
   }, [reviews]);
 
   // Handle addition of a new vehicle catalog item
-  const handleAddCar = (newCarFields: Omit<Car, 'id'>) => {
+  const handleAddCar = (newCarFields: Omit<Car, "id">) => {
     const freshCar: Car = {
       ...newCarFields,
-      id: `car-${Date.now()}`
+      id: `car-${Date.now()}`,
     };
-    setCars(prev => [freshCar, ...prev]);
+    setCars((prev) => [freshCar, ...prev]);
   };
 
   // Handle updating an existing vehicle listing
   const handleUpdateCar = (updatedCar: Car) => {
-    setCars(prev => prev.map(car => car.id === updatedCar.id ? updatedCar : car));
+    setCars((prev) =>
+      prev.map((car) => (car.id === updatedCar.id ? updatedCar : car)),
+    );
   };
 
   // Handle removing a vehicle catalog item
   const handleDeleteCar = (carId: string) => {
-    setCars(prev => prev.filter(car => car.id !== carId));
+    setCars((prev) => prev.filter((car) => car.id !== carId));
   };
 
   // Handle addition of reviews with moderation pending state
-  const handleAddReview = (carId: string, rating: number, comment: string, customerName: string) => {
+  const handleAddReview = (
+    carId: string,
+    rating: number,
+    comment: string,
+    customerName: string,
+  ) => {
     const freshReview: Review = {
       id: `rev-${Date.now()}`,
       carId,
       customerName,
       rating,
       comment,
-      createdAt: new Date().toISOString().split('T')[0],
-      isApproved: false // Awaits admin approval!
+      createdAt: new Date().toISOString().split("T")[0],
+      isApproved: false, // Awaits admin approval!
     };
-    setReviews(prev => [freshReview, ...prev]);
-    
+    setReviews((prev) => [freshReview, ...prev]);
+
     // Quick advisory toast
-    setBookingToast(`Review saved! An administrator will review your comment for approval.`);
+    setBookingToast(
+      `Review saved! An administrator will review your comment for approval.`,
+    );
     setTimeout(() => setBookingToast(null), 4000);
   };
 
   // Handle booking reservations from customer catalog
-  const handleConfirmBook = (carId: string, bookingFields: {
-    customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-    pickupDate: string;
-    returnDate: string;
-    monthsCount: number;
-    totalCost: number;
-    passportPhoto?: string;
-  }): Booking => {
-    const targetCar = cars.find(c => c.id === carId);
-    
+  const handleConfirmBook = (
+    carId: string,
+    bookingFields: {
+      customerName: string;
+      pickupDate: string;
+      pickupTime: string;
+      location: string;
+      contactMethod: "whatsapp" | "telegram";
+      message: string;
+      totalCost: number;
+    },
+  ): Booking => {
+    const targetCar = cars.find((c) => c.id === carId);
+
     const freshBooking: Booking = {
       id: `ENTR-${Math.floor(1000 + Math.random() * 9000)}`,
       carId,
-      carName: targetCar ? targetCar.name : 'Exclusive Enterprise Model',
-      carImage: targetCar ? targetCar.image : '',
+      carName: targetCar ? targetCar.name : "Exclusive Enterprise Model",
+      carImage: targetCar ? targetCar.image : "",
       customerName: bookingFields.customerName,
-      customerEmail: bookingFields.customerEmail,
-      customerPhone: bookingFields.customerPhone,
       pickupDate: bookingFields.pickupDate,
-      returnDate: bookingFields.returnDate,
-      monthsCount: bookingFields.monthsCount,
+      pickupTime: bookingFields.pickupTime,
+      location: bookingFields.location,
+      contactMethod: bookingFields.contactMethod,
+      message: bookingFields.message,
       totalCost: bookingFields.totalCost,
-      status: 'Pending',
-      createdAt: new Date().toISOString().split('T')[0],
-      passportPhoto: bookingFields.passportPhoto
+      status: "Pending",
+      createdAt: new Date().toISOString().split("T")[0],
     };
 
-    setBookings(prev => [freshBooking, ...prev]);
+    setBookings((prev) => [freshBooking, ...prev]);
     return freshBooking;
   };
 
   // Admin Bookings & Reviews controls
-  const handleUpdateBookingStatus = (bookingId: string, status: Booking['status']) => {
-    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
+  const handleUpdateBookingStatus = (
+    bookingId: string,
+    status: Booking["status"],
+  ) => {
+    setBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, status } : b)),
+    );
   };
 
   const handleDeleteBooking = (bookingId: string) => {
-    setBookings(prev => prev.filter(b => b.id !== bookingId));
+    setBookings((prev) => prev.filter((b) => b.id !== bookingId));
   };
 
   const handleApproveReview = (reviewId: string) => {
-    setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, isApproved: true } : r));
+    setReviews((prev) =>
+      prev.map((r) => (r.id === reviewId ? { ...r, isApproved: true } : r)),
+    );
   };
 
   const handleDeleteReview = (reviewId: string) => {
-    setReviews(prev => prev.filter(r => r.id !== reviewId));
+    setReviews((prev) => prev.filter((r) => r.id !== reviewId));
   };
 
   // Handle login completion
   const handleLoginSuccess = () => {
     setIsAdminAuthenticated(true);
-    setViewMode('admin');
+    setViewMode("admin");
   };
 
   // Logout routine
   const handleLogout = () => {
     setIsAdminAuthenticated(false);
-    setViewMode('customer');
+    setViewMode("customer");
   };
 
   // Safe reset routine for filtering
   const handleResetFilters = () => {
     setFilters({
-      searchTerm: '',
-      category: 'All',
+      searchTerm: "",
+      category: "All",
       maxPrice: 5000,
-      transmission: 'All',
-      fuelType: 'All',
-      brand: 'All',
+      transmission: "All",
+      fuelType: "All",
+      brand: "All",
     });
   };
 
   // Dynamically extract unique brands from current fleet state
   const dynamicBrands = useMemo(() => {
-    const list = cars.map(car => {
-      if (car.name.startsWith('Range Rover')) return 'Range Rover';
-      return car.name.split(' ')[0];
+    const list = cars.map((car) => {
+      if (car.name.startsWith("Range Rover")) return "Range Rover";
+      return car.name.split(" ")[0];
     });
-    return ['All', ...Array.from(new Set(list))];
+    return ["All", ...Array.from(new Set(list))];
   }, [cars]);
 
   // Category statistics counting dynamically based on current fleet state
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { All: cars.length };
-    cars.forEach(car => {
+    cars.forEach((car) => {
       counts[car.category] = (counts[car.category] || 0) + 1;
     });
     return counts;
@@ -323,19 +345,37 @@ export default function App() {
 
   // Filter computation logic
   const filteredCars = useMemo(() => {
-    return cars.filter(car => {
-      const matchSearch = 
+    return cars.filter((car) => {
+      const matchSearch =
         car.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        (car.description && car.description.toLowerCase().includes(filters.searchTerm.toLowerCase()));
-      const matchCategory = filters.category === 'All' || car.category === filters.category;
+        (car.description &&
+          car.description
+            .toLowerCase()
+            .includes(filters.searchTerm.toLowerCase()));
+      const matchCategory =
+        filters.category === "All" || car.category === filters.category;
       const matchPrice = car.price <= filters.maxPrice;
-      const matchTrans = filters.transmission === 'All' || car.transmission === filters.transmission;
-      const matchFuel = filters.fuelType === 'All' || car.fuelType === filters.fuelType;
+      const matchTrans =
+        filters.transmission === "All" ||
+        car.transmission === filters.transmission;
+      const matchFuel =
+        filters.fuelType === "All" || car.fuelType === filters.fuelType;
 
-      const carBrand = car.name.startsWith('Range Rover') ? 'Range Rover' : car.name.split(' ')[0];
-      const matchBrand = filters.brand === 'All' || carBrand.toLowerCase() === filters.brand.toLowerCase();
+      const carBrand = car.name.startsWith("Range Rover")
+        ? "Range Rover"
+        : car.name.split(" ")[0];
+      const matchBrand =
+        filters.brand === "All" ||
+        carBrand.toLowerCase() === filters.brand.toLowerCase();
 
-      return matchSearch && matchCategory && matchPrice && matchTrans && matchFuel && matchBrand;
+      return (
+        matchSearch &&
+        matchCategory &&
+        matchPrice &&
+        matchTrans &&
+        matchFuel &&
+        matchBrand
+      );
     });
   }, [cars, filters]);
 
@@ -344,37 +384,39 @@ export default function App() {
     setIsMobileMenuOpen(false);
     const target = document.getElementById(elementId);
     if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
   // Hero Search execution and viewport scroll
   const handleHeroSearch = () => {
-    scrollToAnchor('catalog-section');
+    scrollToAnchor("catalog-section");
   };
 
   // Trigger booking success toast from CarCard notifications
   const handleBookingToast = (carName: string) => {
-    setBookingToast(`Successfully requested booking for ${carName}! Access code generated.`);
+    setBookingToast(
+      `Successfully requested booking for ${carName}! Access code generated.`,
+    );
     setTimeout(() => {
       setBookingToast(null);
     }, 4500);
   };
 
   // Brand color constant
-  const brandPlum = '#4C0027';
+  const brandPlum = "#4C0027";
 
   // Master router render
-  if (viewMode === 'login') {
+  if (viewMode === "login") {
     return (
-      <AdminLogin 
+      <AdminLogin
         onLoginSuccess={handleLoginSuccess}
-        onBackToCustomer={() => setViewMode('customer')}
+        onBackToCustomer={() => setViewMode("customer")}
       />
     );
   }
 
-  if (viewMode === 'admin' && isAdminAuthenticated) {
+  if (viewMode === "admin" && isAdminAuthenticated) {
     return (
       <AdminDashboard
         cars={cars}
@@ -382,8 +424,7 @@ export default function App() {
         onUpdateCar={handleUpdateCar}
         onDeleteCar={handleDeleteCar}
         onLogout={handleLogout}
-        onNavigateToCustomer={() => setViewMode('customer')}
-        
+        onNavigateToCustomer={() => setViewMode("customer")}
         // Stateful administration parameters linked
         bookings={bookings}
         onUpdateBookingStatus={handleUpdateBookingStatus}
@@ -396,27 +437,35 @@ export default function App() {
   }
 
   return (
-    <div id="customer-application-root" className="min-h-screen bg-[#4C0027] text-stone-900 flex flex-col justify-between">
-      
+    <div
+      id="customer-application-root"
+      className="min-h-screen bg-[#4C0027] text-stone-900 flex flex-col justify-between"
+    >
       {/* 1. Responsive & Sticky Navigation Header */}
-      <header id="main-public-header" className="bg-white border-b border-stone-150 sticky top-0 z-40 shadow-xs">
+      <header
+        id="main-public-header"
+        className="bg-white border-b border-stone-150 sticky top-0 z-40 shadow-xs"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => scrollToAnchor('home-panel')}>
+          <div
+            className="flex items-center gap-2 cursor-pointer select-none"
+            onClick={() => scrollToAnchor("home-panel")}
+          >
             <BrandLogo size="md" variant="light" />
           </div>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8 font-sans">
-            <button 
+            <button
               id="nav-link-home"
-              onClick={() => scrollToAnchor('home-panel')}
+              onClick={() => scrollToAnchor("home-panel")}
               className="text-stone-605 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
               Home
             </button>
-            <button 
+            <button
               id="nav-link-catalog"
-              onClick={() => scrollToAnchor('catalog-section')}
+              onClick={() => scrollToAnchor("catalog-section")}
               className="text-stone-605 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
               Car Catalog
@@ -428,24 +477,31 @@ export default function App() {
             {/* Quick Station info with Telegram & WhatsApp (Visible on both Mobile + Desktop) */}
             <div className="flex items-center select-none animate-fade-in pr-1">
               <div className="flex flex-row flex-nowrap items-center gap-1.5 sm:gap-4">
-                <a href="tel:0966714442" className="text-xs sm:text-lg font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1 sm:gap-1.5 font-mono" style={{ color: brandPlum }}>
-                  <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4C0027]" style={{ color: brandPlum }} />
+                <a
+                  href="tel:0966714442"
+                  className="text-xs sm:text-lg font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1 sm:gap-1.5 font-mono"
+                  style={{ color: brandPlum }}
+                >
+                  <PhoneCall
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4C0027]"
+                    style={{ color: brandPlum }}
+                  />
                   <span>096 671 4442</span>
                 </a>
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                  <a 
-                    href="https://t.me/+855966714442" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                  <a
+                    href="https://t.me/+855966714442"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     title="Telegram"
                     className="p-1.5 sm:p-2 bg-sky-50 text-sky-600 hover:bg-sky-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-sky-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 -rotate-12 -translate-x-0.5" />
                   </a>
-                  <a 
-                    href="https://wa.me/855966714442" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                  <a
+                    href="https://wa.me/855966714442"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     title="WhatsApp"
                     className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-90 rounded-full transition-all border border-emerald-100/60 shadow-3xs flex items-center justify-center cursor-pointer"
                   >
@@ -461,7 +517,11 @@ export default function App() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 text-stone-750 hover:bg-stone-55 rounded-xl transition-all cursor-pointer"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
@@ -472,21 +532,21 @@ export default function App() {
             <motion.div
               id="mobile-drawer-panel"
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="lg:hidden bg-white border-t border-stone-150 overflow-hidden font-sans shadow-lg select-none"
             >
               <div className="px-4 py-5 space-y-4">
                 <button
                   id="mobile-link-home"
-                  onClick={() => scrollToAnchor('home-panel')}
+                  onClick={() => scrollToAnchor("home-panel")}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
                   Home
                 </button>
                 <button
                   id="mobile-link-catalog"
-                  onClick={() => scrollToAnchor('catalog-section')}
+                  onClick={() => scrollToAnchor("catalog-section")}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
                   Car Catalog
@@ -499,14 +559,13 @@ export default function App() {
 
       {/* Main Public Body Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
-        
         {/* Home Anchor panel wrapper */}
         <section id="home-panel" className="scroll-mt-24 select-none pb-2">
           {/* Hero Welcome Banner */}
           <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-150 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
-            
+
             <div className="space-y-4 max-w-3xl flex flex-col items-center">
               <span className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black bg-yellow-400 text-black border border-yellow-500/20 uppercase tracking-widest shadow-xs">
                 24/7 Nationwide Delivery
@@ -515,16 +574,19 @@ export default function App() {
                 Car Rental Service Over 25 Cities/Provinces with 24/7.
               </h1>
               <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
-                Browse for your favorite car and we will bring the car to you. All cars are guaranteed in high quality and under well maintenance, fully detailed and mechanically inspected for your absolute peace of mind.
+                Browse for your favorite car and we will bring the car to you.
+                All cars are guaranteed in high quality and under well
+                maintenance, fully detailed and mechanically inspected for your
+                absolute peace of mind.
               </p>
-              
+
               <div className="pt-2 flex flex-col items-center gap-4 w-full">
                 {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
                 <div className="flex sm:flex-row flex-col items-stretch sm:items-center justify-center gap-3 mt-4 select-none w-full max-w-md">
                   <button
                     id="hero-btn-search-trigger"
                     type="button"
-                    onClick={() => scrollToAnchor('search-filters-container')}
+                    onClick={() => scrollToAnchor("search-filters-container")}
                     className="flex-1 px-8 py-3.5 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
                     style={{ backgroundColor: brandPlum }}
                   >
@@ -535,7 +597,7 @@ export default function App() {
                   <button
                     id="hero-btn-catalog"
                     type="button"
-                    onClick={() => scrollToAnchor('category-filter-container')}
+                    onClick={() => scrollToAnchor("category-filter-container")}
                     className="flex-1 px-8 py-3.5 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
                   >
                     <span>Explore Catalog</span>
@@ -551,15 +613,15 @@ export default function App() {
               {/* Subtle background abstract decorations */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-              
+
               <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
                 Contract Requirement
               </span>
-              
+
               <h2 className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-wider uppercase mb-3 drop-shadow-md">
                 6-Month Term
               </h2>
-              
+
               <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
                 1 Mo. Deposit + 1 Mo. Rent
               </p>
@@ -570,15 +632,22 @@ export default function App() {
         {/* Catalog Anchor Target */}
         <section id="catalog-section" className="scroll-mt-24 select-none">
           {/* 3. Search parameters panel */}
-          <section id="search-filters-container" className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-6">
+          <section
+            id="search-filters-container"
+            className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-6"
+          >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2">
-                  <SlidersHorizontal className="w-5 h-5 text-[#4C0027]" style={{ color: brandPlum }} />
+                  <SlidersHorizontal
+                    className="w-5 h-5 text-[#4C0027]"
+                    style={{ color: brandPlum }}
+                  />
                   Find your favorite car
                 </h2>
                 <p className="text-xs text-stone-500 mt-1 leading-normal">
-                  Refine our roster of high-end sedans, SUVs, and pristine high-performance electric categories.
+                  Refine our roster of high-end sedans, SUVs, and pristine
+                  high-performance electric categories.
                 </p>
               </div>
 
@@ -593,14 +662,14 @@ export default function App() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-5 max-w-2xl mx-auto">
-              {/* Free Text Input field */}
-              <div className="relative">
-                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+              {/* Row 1: Search & Price */}
+              <div className="col-span-1 lg:col-span-7">
+                <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
                   Search Model / Keywords
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400 font-mono">
+                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-stone-400">
                     <Search className="h-4 w-4" />
                   </span>
                   <input
@@ -608,150 +677,172 @@ export default function App() {
                     type="text"
                     placeholder="e.g. Porsche, Tesla, SUV..."
                     value={filters.searchTerm}
-                    onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-850 text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-semibold"
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        searchTerm: e.target.value,
+                      }))
+                    }
+                    className="w-full pl-11 pr-4 py-3.5 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
                   />
                 </div>
               </div>
 
-              {/* Car Brand Tabs */}
-              <div>
-                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
-                  Car Brand
-                </label>
-                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                  {dynamicBrands.map((b) => {
-                    const isSelected = filters.brand === b;
-                    return (
-                      <button
-                        key={b}
-                        type="button"
-                        onClick={() => setFilters(prev => ({ ...prev, brand: b }))}
-                        className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
-                          isSelected 
-                            ? 'bg-[#4C0027] text-white shadow-xs' 
-                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
-                        }`}
-                        style={isSelected ? { backgroundColor: brandPlum } : {}}
-                      >
-                        {b}
-                      </button>
-                    );
-                  })}
+              <div className="col-span-1 lg:col-span-5 flex flex-col justify-center bg-stone-50 rounded-xl px-5 py-4 border border-stone-100">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider font-mono">
+                    Max Monthly Fee
+                  </label>
+                  <span
+                    id="price-slider-display"
+                    className="text-xs font-mono font-bold text-[#4C0027] bg-white px-2.5 py-1 rounded-md border border-stone-200 shadow-sm"
+                    style={{ color: brandPlum }}
+                  >
+                    up to ${filters.maxPrice}/month
+                  </span>
+                </div>
+                <input
+                  id="filter-slider-price"
+                  type="range"
+                  min="300"
+                  max="5000"
+                  step="100"
+                  value={filters.maxPrice}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      maxPrice: Number(e.target.value),
+                    }))
+                  }
+                  className="w-full accent-[#4C0027] cursor-pointer"
+                  style={{ accentColor: brandPlum }}
+                />
+                <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
+                  <span>$300/mo</span>
+                  <span>$5,000/mo</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Type of Car Tabs */}
+              {/* Row 2: Dropdowns */}
+              <div className="col-span-1 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 border-t border-stone-100 pt-6">
                 <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
+                    Car Brand
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={filters.brand}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          brand: e.target.value,
+                        }))
+                      }
+                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                    >
+                      {dynamicBrands.map((b) => (
+                        <option value={b} key={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
                     Type of Car
                   </label>
-                  <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                    {['All', 'Sedan', 'SUV', 'MPV', 'Pickup', 'Truck'].map((cat) => {
-                      const isSelected = filters.category === cat;
-                      return (
-                        <button
-                          key={cat}
-                          id={`filter-cat-pills-${cat}`}
-                          type="button"
-                          onClick={() => setFilters(prev => ({ ...prev, category: cat }))}
-                          className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
-                            isSelected 
-                              ? 'bg-[#4C0027] text-white shadow-xs' 
-                              : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
-                          }`}
-                          style={isSelected ? { backgroundColor: brandPlum } : {}}
-                        >
-                          {cat}
-                        </button>
-                      );
-                    })}
+                  <div className="relative">
+                    <select
+                      value={filters.category}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          category: e.target.value as any,
+                        }))
+                      }
+                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                    >
+                      {["All", "Sedan", "SUV", "MPV", "Pickup", "Truck"].map(
+                        (cat) => (
+                          <option value={cat} key={cat}>
+                            {cat}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
                   </div>
                 </div>
 
-                {/* Fuel System selection dropdown changed to Tabs */}
                 <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
                     Fuel System Type
                   </label>
-                  <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                    {['All', 'Gasoline', 'Diesel', 'LPG', 'Hybrid', 'Electric'].map((fuel) => {
-                      const isSelected = filters.fuelType === fuel;
-                      return (
-                        <button
-                          key={fuel}
-                          id={`filter-fuel-pills-${fuel}`}
-                          type="button"
-                          onClick={() => setFilters(prev => ({ ...prev, fuelType: fuel }))}
-                          className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
-                            isSelected 
-                              ? 'bg-[#4C0027] text-white shadow-xs' 
-                              : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
-                          }`}
-                          style={isSelected ? { backgroundColor: brandPlum } : {}}
-                        >
+                  <div className="relative">
+                    <select
+                      value={filters.fuelType}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          fuelType: e.target.value as any,
+                        }))
+                      }
+                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                    >
+                      {[
+                        "All",
+                        "Gasoline",
+                        "Diesel",
+                        "LPG",
+                        "Hybrid",
+                        "Electric",
+                      ].map((fuel) => (
+                        <option value={fuel} key={fuel}>
                           {fuel}
-                        </button>
-                      );
-                    })}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Gearbox Configuration Gear Filter option buttons placed below fuel system */}
                 <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
                     Gearbox
                   </label>
-                  <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                    {['All', 'Automatic', 'Manual'].map((mode) => {
-                      const isSelected = filters.transmission === mode;
-                      return (
-                        <button
-                          key={mode}
-                          id={`filter-trans-${mode}`}
-                          type="button"
-                          onClick={() => setFilters(prev => ({ ...prev, transmission: mode }))}
-                          className={`py-2 px-4 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
-                            isSelected 
-                              ? 'bg-[#4C0027] text-white shadow-xs' 
-                              : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
-                          }`}
-                          style={isSelected ? { backgroundColor: brandPlum } : {}}
-                        >
-                          {mode === 'All' ? 'All' : mode === 'Automatic' ? 'Auto' : 'Manual'}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Price/Fee slider placed below gearbox */}
-                <div className="select-none flex flex-col justify-center">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider font-mono">
-                      Max Monthly Fee
-                    </label>
-                    <span id="price-slider-display" className="text-xs font-mono font-extrabold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded-md" style={{ color: brandPlum, backgroundColor: `${brandPlum}15` }}>
-                      up to ${filters.maxPrice}/month
-                    </span>
-                  </div>
-                  <input
-                    id="filter-slider-price"
-                    type="range"
-                    min="300"
-                    max="5000"
-                    step="100"
-                    value={filters.maxPrice}
-                    onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
-                    className="w-full accent-[#4C0027] cursor-pointer"
-                    style={{ accentColor: brandPlum }}
-                  />
-                  <div className="flex justify-between text-[10px] text-stone-400 mt-1 font-mono">
-                    <span>$300/mo</span>
-                    <span>$5,000/mo</span>
+                  <div className="relative">
+                    <select
+                      value={filters.transmission}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          transmission: e.target.value as any,
+                        }))
+                      }
+                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                    >
+                      {["All", "Automatic", "Manual"].map((mode) => (
+                        <option value={mode} key={mode}>
+                          {mode === "All"
+                            ? "All"
+                            : mode === "Automatic"
+                              ? "Auto"
+                              : "Manual"}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -759,26 +850,34 @@ export default function App() {
           </section>
 
           {/* 4. Horizontal Category Tab Selector Bar */}
-          <section id="category-filter-container" className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8">
+          <section
+            id="category-filter-container"
+            className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8"
+          >
             <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2 mb-4">
-              <CarFront className="w-5 h-5 text-[#4C0027]" style={{ color: brandPlum }} />
+              <CarFront
+                className="w-5 h-5 text-[#4C0027]"
+                style={{ color: brandPlum }}
+              />
               Explore our catalog
             </h2>
             <div className="flex flex-wrap gap-1.5">
-              {['All', 'Sedan', 'SUV', 'MPV', 'Pickup', 'Truck'].map((cat) => {
+              {["All", "Sedan", "SUV", "MPV", "Pickup", "Truck"].map((cat) => {
                 const isSelected = filters.category === cat;
                 const count = categoryCounts[cat] || 0;
-                
+
                 return (
                   <button
                     key={cat}
                     id={`filter-cat-tab-${cat}`}
-                    onClick={() => setFilters(prev => ({ ...prev, category: cat }))}
-                    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? 'bg-[#4C0027] text-white border-[#4C0027] shadow-sm' : 'bg-stone-50 border-stone-200 text-stone-605 hover:bg-stone-105 hover:text-stone-850'}`}
+                    onClick={() =>
+                      setFilters((prev) => ({ ...prev, category: cat }))
+                    }
+                    className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-605 hover:bg-stone-105 hover:text-stone-850"}`}
                   >
                     <span>{cat}</span>
-                    <span 
-                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-500'}`}
+                    <span
+                      className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${isSelected ? "bg-white/20 text-white" : "bg-stone-200 text-stone-500"}`}
                     >
                       {count}
                     </span>
@@ -795,9 +894,12 @@ export default function App() {
                 <div className="w-16 h-16 bg-stone-50 text-stone-300 rounded-2xl flex items-center justify-center mb-4">
                   <SlidersHorizontal className="w-7 h-7" />
                 </div>
-                <h3 className="font-extrabold text-stone-850 text-lg">No vehicles match filters</h3>
+                <h3 className="font-extrabold text-stone-850 text-lg">
+                  No vehicles match filters
+                </h3>
                 <p className="text-xs text-stone-500 mt-2 max-w-sm mx-auto leading-relaxed font-sans">
-                  Adjust your searching keywords, price limit settings, or category selection to retrieve archived vehicle records.
+                  Adjust your searching keywords, price limit settings, or
+                  category selection to retrieve archived vehicle records.
                 </p>
                 <button
                   id="btn-empty-state-reset"
@@ -809,16 +911,21 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <div id="cars-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div
+                id="cars-grid"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
                 <AnimatePresence mode="popLayout animate-fade-in">
                   {filteredCars.map((car) => (
-                    <CarCard 
-                      key={car.id} 
+                    <CarCard
+                      key={car.id}
                       car={car}
                       onBookSuccess={handleBookingToast}
                       reviews={reviews}
                       onAddReview={handleAddReview}
-                      onConfirmBook={(bookingFields) => handleConfirmBook(car.id, bookingFields)}
+                      onConfirmBook={(bookingFields) =>
+                        handleConfirmBook(car.id, bookingFields)
+                      }
                     />
                   ))}
                 </AnimatePresence>
@@ -826,8 +933,6 @@ export default function App() {
             )}
           </div>
         </section>
-
-
       </main>
 
       {/* 7. Toast Alerts container absolutely positioned */}
@@ -842,7 +947,9 @@ export default function App() {
           >
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
             <div className="flex-1">
-              <p className="text-xs font-semibold leading-relaxed text-stone-200 font-sans">{bookingToast}</p>
+              <p className="text-xs font-semibold leading-relaxed text-stone-200 font-sans">
+                {bookingToast}
+              </p>
             </div>
             <button
               id="btn-close-toast"
@@ -856,40 +963,67 @@ export default function App() {
       </AnimatePresence>
 
       {/* 8. Modern Aesthetic Footer */}
-      <footer id="global-theme-footer" className="bg-stone-900 text-stone-200 mt-20 border-t border-stone-800">
+      <footer
+        id="global-theme-footer"
+        className="bg-stone-900 text-stone-200 mt-20 border-t border-stone-800"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 select-none">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2 space-y-4">
               <BrandLogo size="md" variant="dark" />
               <p className="text-xs text-stone-400 max-w-sm leading-relaxed font-sans">
-                Redefining premium vehicle mobilization. Enter car rental connects high-grade dispatcher administration with pristine security frameworks.
+                Redefining premium vehicle mobilization. Enter car rental
+                connects high-grade dispatcher administration with pristine
+                security frameworks.
               </p>
             </div>
 
             <div>
-              <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4">Quick Navigation</h4>
+              <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4">
+                Quick Navigation
+              </h4>
               <ul className="space-y-2.5 text-xs text-stone-400">
-                <li><button onClick={() => setViewMode(isAdminAuthenticated ? 'admin' : 'login')} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold font-bold">Administrative Security Portal</button></li>
+                <li>
+                  <button
+                    onClick={() =>
+                      setViewMode(isAdminAuthenticated ? "admin" : "login")
+                    }
+                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold font-bold"
+                  >
+                    Administrative Security Portal
+                  </button>
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4 font-mono">AUTHORIZED STATION</h4>
+              <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4 font-mono">
+                AUTHORIZED STATION
+              </h4>
               <p className="text-xs text-stone-400 leading-relaxed font-sans">
-                Enter Car Rental Inc.<br />
+                Enter Car Rental Inc.
+                <br />
                 Hub 1, Domestic Arrivals Gate B<br />
-                International Airport Road<br />
+                International Airport Road
+                <br />
                 Houston Terminal Hub
               </p>
             </div>
           </div>
 
           <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-500 font-sans">
-            <p>© 2026 Enter Car Rental Inc. All rights reserved. Managed with strict mechanics parameters.</p>
+            <p>
+              © 2026 Enter Car Rental Inc. All rights reserved. Managed with
+              strict mechanics parameters.
+            </p>
             <div className="flex gap-4">
-              <span className="hover:text-stone-300 cursor-pointer">Privacy Policy</span>
+              <span className="hover:text-stone-300 cursor-pointer">
+                Privacy Policy
+              </span>
               <span>•</span>
-              <span className="hover:text-stone-300 cursor-pointer">Terms of Service</span>
+              <span className="hover:text-stone-300 cursor-pointer">
+                Terms of Service
+              </span>
             </div>
           </div>
         </div>
