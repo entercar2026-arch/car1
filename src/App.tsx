@@ -571,7 +571,7 @@ export default function App() {
                 24/7 Nationwide Delivery
               </span>
               <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
-                Car Rental Service Over 25 Cities/Provinces with 24/7.
+                Car Rental Service Over 25 Cities/Provinces.
               </h1>
               <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
                 Browse for your favorite car and we will bring the car to you.
@@ -634,7 +634,7 @@ export default function App() {
           {/* 3. Search parameters panel */}
           <section
             id="search-filters-container"
-            className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-6"
+            className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-4"
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
@@ -662,7 +662,7 @@ export default function App() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
               {/* Row 1: Search & Price */}
               <div className="col-span-1 lg:col-span-7">
                 <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
@@ -724,7 +724,7 @@ export default function App() {
               </div>
 
               {/* Row 2: Dropdowns */}
-              <div className="col-span-1 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 border-t border-stone-100 pt-6">
+              <div className="col-span-1 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
                     Car Brand
