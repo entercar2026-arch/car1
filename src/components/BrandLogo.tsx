@@ -1,6 +1,6 @@
 import React from 'react';
 // @ts-ignore
-import enterlogo from './enterlogo.png';
+import enterlogo from '../enterlogo1.png';
 
 interface BrandLogoProps {
   className?: string;

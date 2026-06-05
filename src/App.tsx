@@ -641,114 +641,118 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Type of Car Tabs */}
-              <div>
-                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
-                  Type of Car
-                </label>
-                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                  {['All', 'Sedan', 'SUV', 'MPV', 'Pickup', 'Truck'].map((cat) => {
-                    const isSelected = filters.category === cat;
-                    return (
-                      <button
-                        key={cat}
-                        id={`filter-cat-pills-${cat}`}
-                        type="button"
-                        onClick={() => setFilters(prev => ({ ...prev, category: cat }))}
-                        className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
-                          isSelected 
-                            ? 'bg-[#4C0027] text-white shadow-xs' 
-                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
-                        }`}
-                        style={isSelected ? { backgroundColor: brandPlum } : {}}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Fuel System selection dropdown changed to Tabs */}
-              <div>
-                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
-                  Fuel System Type
-                </label>
-                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                  {['All', 'Gasoline', 'Diesel', 'LPG', 'Hybrid', 'Electric'].map((fuel) => {
-                    const isSelected = filters.fuelType === fuel;
-                    return (
-                      <button
-                        key={fuel}
-                        id={`filter-fuel-pills-${fuel}`}
-                        type="button"
-                        onClick={() => setFilters(prev => ({ ...prev, fuelType: fuel }))}
-                        className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
-                          isSelected 
-                            ? 'bg-[#4C0027] text-white shadow-xs' 
-                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
-                        }`}
-                        style={isSelected ? { backgroundColor: brandPlum } : {}}
-                      >
-                        {fuel}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Gearbox Configuration Gear Filter option buttons placed below fuel system */}
-              <div>
-                <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
-                  Gearbox
-                </label>
-                <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
-                  {['All', 'Automatic', 'Manual'].map((mode) => {
-                    const isSelected = filters.transmission === mode;
-                    return (
-                      <button
-                        key={mode}
-                        id={`filter-trans-${mode}`}
-                        type="button"
-                        onClick={() => setFilters(prev => ({ ...prev, transmission: mode }))}
-                        className={`py-2 px-4 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
-                          isSelected 
-                            ? 'bg-[#4C0027] text-white shadow-xs' 
-                            : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
-                        }`}
-                        style={isSelected ? { backgroundColor: brandPlum } : {}}
-                      >
-                        {mode === 'All' ? 'All' : mode === 'Automatic' ? 'Auto' : 'Manual'}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Price/Fee slider placed below gearbox */}
-              <div className="select-none">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider font-mono">
-                    Max Monthly Fee
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Type of Car Tabs */}
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                    Type of Car
                   </label>
-                  <span id="price-slider-display" className="text-xs font-mono font-extrabold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded-md" style={{ color: brandPlum, backgroundColor: `${brandPlum}15` }}>
-                    up to ${filters.maxPrice}/month
-                  </span>
+                  <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                    {['All', 'Sedan', 'SUV', 'MPV', 'Pickup', 'Truck'].map((cat) => {
+                      const isSelected = filters.category === cat;
+                      return (
+                        <button
+                          key={cat}
+                          id={`filter-cat-pills-${cat}`}
+                          type="button"
+                          onClick={() => setFilters(prev => ({ ...prev, category: cat }))}
+                          className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
+                            isSelected 
+                              ? 'bg-[#4C0027] text-white shadow-xs' 
+                              : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
+                          }`}
+                          style={isSelected ? { backgroundColor: brandPlum } : {}}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <input
-                  id="filter-slider-price"
-                  type="range"
-                  min="300"
-                  max="5000"
-                  step="100"
-                  value={filters.maxPrice}
-                  onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
-                  className="w-full accent-[#4C0027] cursor-pointer"
-                  style={{ accentColor: brandPlum }}
-                />
-                <div className="flex justify-between text-[10px] text-stone-400 mt-1 font-mono">
-                  <span>$300/mo</span>
-                  <span>$5,000/mo</span>
+
+                {/* Fuel System selection dropdown changed to Tabs */}
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                    Fuel System Type
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                    {['All', 'Gasoline', 'Diesel', 'LPG', 'Hybrid', 'Electric'].map((fuel) => {
+                      const isSelected = filters.fuelType === fuel;
+                      return (
+                        <button
+                          key={fuel}
+                          id={`filter-fuel-pills-${fuel}`}
+                          type="button"
+                          onClick={() => setFilters(prev => ({ ...prev, fuelType: fuel }))}
+                          className={`py-2 px-3.5 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
+                            isSelected 
+                              ? 'bg-[#4C0027] text-white shadow-xs' 
+                              : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
+                          }`}
+                          style={isSelected ? { backgroundColor: brandPlum } : {}}
+                        >
+                          {fuel}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Gearbox Configuration Gear Filter option buttons placed below fuel system */}
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2 font-mono">
+                    Gearbox
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 bg-stone-50 p-2 rounded-xl border border-stone-200">
+                    {['All', 'Automatic', 'Manual'].map((mode) => {
+                      const isSelected = filters.transmission === mode;
+                      return (
+                        <button
+                          key={mode}
+                          id={`filter-trans-${mode}`}
+                          type="button"
+                          onClick={() => setFilters(prev => ({ ...prev, transmission: mode }))}
+                          className={`py-2 px-4 text-[10px] sm:text-xs font-black rounded-lg transition-all text-center cursor-pointer ${
+                            isSelected 
+                              ? 'bg-[#4C0027] text-white shadow-xs' 
+                              : 'text-stone-550 hover:text-stone-850 hover:bg-stone-100/50'
+                          }`}
+                          style={isSelected ? { backgroundColor: brandPlum } : {}}
+                        >
+                          {mode === 'All' ? 'All' : mode === 'Automatic' ? 'Auto' : 'Manual'}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Price/Fee slider placed below gearbox */}
+                <div className="select-none flex flex-col justify-center">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider font-mono">
+                      Max Monthly Fee
+                    </label>
+                    <span id="price-slider-display" className="text-xs font-mono font-extrabold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded-md" style={{ color: brandPlum, backgroundColor: `${brandPlum}15` }}>
+                      up to ${filters.maxPrice}/month
+                    </span>
+                  </div>
+                  <input
+                    id="filter-slider-price"
+                    type="range"
+                    min="300"
+                    max="5000"
+                    step="100"
+                    value={filters.maxPrice}
+                    onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: Number(e.target.value) }))}
+                    className="w-full accent-[#4C0027] cursor-pointer"
+                    style={{ accentColor: brandPlum }}
+                  />
+                  <div className="flex justify-between text-[10px] text-stone-400 mt-1 font-mono">
+                    <span>$300/mo</span>
+                    <span>$5,000/mo</span>
+                  </div>
                 </div>
               </div>
             </div>
