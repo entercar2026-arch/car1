@@ -56,10 +56,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       <motion.img
         src={enterlogo}
         alt="Enter Logo"
-        className={`${selectedSize.svg} object-contain transition-transform duration-300 hover:scale-105 active:scale-95`}
+        className={`${selectedSize.svg} object-contain`}
         referrerPolicy="no-referrer"
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ rotateY: [0, 360] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 4 }}
       />
     );
   };
