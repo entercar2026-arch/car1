@@ -235,29 +235,48 @@ export const CarCard: React.FC<CarCardProps> = ({
             />
           </button>
 
-          {/* Rating badge removed by user request */}
-
-          {/* Zooming, Tilting & Rolling Scroll-linked Cover Image */}
-          <motion.img
-            id={`car-photo-${car.id}`}
-            src={car.image}
-            alt={car.name}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-            }}
-            initial={{ scale: 0.94, rotate: -2, y: 15 }}
-            whileInView={{
-              scale: isHovered ? 1.15 : 1.01,
-              x: isHovered ? 8 : 0,
-              y: isHovered ? -4 : 0,
-              rotate: isHovered ? -0.8 : 0,
-            }}
-            viewport={{ once: false, amount: 0.15 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover select-none"
-          />
+          {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
+          {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
+            <motion.video
+              id={`car-photo-${car.id}`}
+              src={car.image}
+              autoPlay
+              loop
+              muted
+              playsInline
+              initial={{ scale: 0.94, rotate: -2, y: 15 }}
+              whileInView={{
+                scale: isHovered ? 1.15 : 1.01,
+                x: isHovered ? 8 : 0,
+                y: isHovered ? -4 : 0,
+                rotate: isHovered ? -0.8 : 0,
+              }}
+              viewport={{ once: false, amount: 0.15 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+              className="w-full h-full object-cover select-none"
+            />
+          ) : (
+            <motion.img
+              id={`car-photo-${car.id}`}
+              src={car.image}
+              alt={car.name}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+              }}
+              initial={{ scale: 0.94, rotate: -2, y: 15 }}
+              whileInView={{
+                scale: isHovered ? 1.15 : 1.01,
+                x: isHovered ? 8 : 0,
+                y: isHovered ? -4 : 0,
+                rotate: isHovered ? -0.8 : 0,
+              }}
+              viewport={{ once: false, amount: 0.15 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover select-none"
+            />
+          )}
 
           {/* Beautiful linear cover shadow */}
           <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
@@ -507,16 +526,27 @@ export const CarCard: React.FC<CarCardProps> = ({
               ) : (
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
-                    <img
-                      src={car.image}
-                      alt={car.name}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-                      }}
-                      referrerPolicy="no-referrer"
-                      className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
-                    />
+                    {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
+                      <video
+                        src={car.image}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
+                      />
+                    ) : (
+                      <img
+                        src={car.image}
+                        alt={car.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                        }}
+                        referrerPolicy="no-referrer"
+                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
+                      />
+                    )}
                     <div>
                       <h4 className="font-extrabold text-stone-900 text-lg sm:text-xl leading-tight">
                         {car.name}

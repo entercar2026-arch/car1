@@ -80,6 +80,21 @@ CREATE POLICY "Public can view available cars"
   ON cars FOR SELECT
   USING (true);
 
+-- Allow public insert access for cars (Admin dashboard manages this from client without actual auth for now)
+CREATE POLICY "Public can insert cars"
+  ON cars FOR INSERT
+  WITH CHECK (true);
+
+-- Allow public update access for cars
+CREATE POLICY "Public can update cars"
+  ON cars FOR UPDATE
+  USING (true);
+
+-- Allow public delete access for cars
+CREATE POLICY "Public can delete cars"
+  ON cars FOR DELETE
+  USING (true);
+
 -- Allow public read access to approved reviews
 CREATE POLICY "Public can view approved reviews"
   ON reviews FOR SELECT

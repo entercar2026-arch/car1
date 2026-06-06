@@ -111,8 +111,25 @@ export default function App() {
 
   useEffect(() => {
     if (supabase) {
-      db.cars.getAll().then((data) => {
-        if (data && data.length > 0) setCars(data);
+      db.cars.getAll().then(async (data) => {
+        if (data) {
+          if (data.length === 0) {
+            // Seed initial data to Supabase
+            console.log("Database is empty. Seeding initial cars...");
+            for (const car of INITIAL_CARS) {
+              try {
+                await db.cars.create(car);
+              } catch (e) {
+                console.error("Failed to seed car", e);
+              }
+            }
+            // Fetch again after seeding
+            const refreshedData = await db.cars.getAll();
+            if (refreshedData) setCars(refreshedData);
+          } else {
+            setCars(data);
+          }
+        }
       }).catch(err => console.error("Failed to fetch initial cars from Supabase", err));
     }
   }, []);
@@ -258,8 +275,9 @@ export default function App() {
         if (dbCar) {
           setCars((prev) => prev.map(c => c.id === freshCar.id ? dbCar : c));
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to add car to Supabase", err);
+        alert(`Failed to sync with Supabase: ${err.message || "Unknown error"}. Please make sure your database schema is up-to-date.`);
       }
     }
   };
@@ -272,8 +290,9 @@ export default function App() {
     if (supabase) {
       try {
         await db.cars.update(updatedCar.id, updatedCar);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to update car in Supabase", err);
+        alert(`Failed to sync with Supabase: ${err.message || "Unknown error"}`);
       }
     }
   };
@@ -284,8 +303,9 @@ export default function App() {
     if (supabase) {
       try {
         await db.cars.delete(carId);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to delete car from Supabase", err);
+        alert(`Failed to delete from Supabase: ${err.message || "Unknown error"}`);
       }
     }
   };

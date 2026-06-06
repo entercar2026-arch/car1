@@ -90,6 +90,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File size exceeds 10MB limit. Please provide a URL instead of uploading large media directly.");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
@@ -399,17 +403,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="hover:bg-stone-50/40 transition-colors"
                         >
                           <td className="p-4 pl-6 text-center">
-                            <img
-                              id={`admin-thumb-${car.id}`}
-                              src={car.image}
-                              alt={car.name}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-                              }}
-                              referrerPolicy="no-referrer"
-                              className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
-                            />
+                            {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
+                              <video
+                                id={`admin-thumb-${car.id}`}
+                                src={car.image}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
+                              />
+                            ) : (
+                              <img
+                                id={`admin-thumb-${car.id}`}
+                                src={car.image}
+                                alt={car.name}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                                }}
+                                referrerPolicy="no-referrer"
+                                className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
+                              />
+                            )}
                           </td>
                           <td className="p-4">
                             <span
@@ -938,14 +954,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="sm:col-span-2">
                     <div className="flex justify-between items-center mb-1">
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Car Image (URL or Local)
+                        Car Image or Video URL
                       </label>
                       <label className="text-[10px] font-bold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded cursor-pointer hover:bg-[#4C0027]/20 transition-colors flex items-center gap-1">
                         <Upload className="w-3 h-3" />
                         Upload
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,video/*"
                           className="hidden"
                           onChange={handleImageUpload}
                         />
@@ -955,14 +971,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
                         <Link2 className="h-4 w-4" />
                       </span>
-                      <input
-                        id="input-car-image"
-                        type="text"
-                        value={formImage}
-                        onChange={(e) => setFormImage(e.target.value)}
-                        placeholder="https://... or select upload"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
-                      />
+                      {formImage.length > 200 && formImage.startsWith("data:") ? (
+                        <div className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-100 rounded-xl text-stone-600 text-xs flex justify-between items-center">
+                          <span className="truncate">Local media uploaded</span>
+                          <button type="button" onClick={() => setFormImage("")} className="text-rose-500 hover:text-rose-700 font-bold ml-2 shrink-0">&times;</button>
+                        </div>
+                      ) : (
+                        <input
+                          id="input-car-image"
+                          type="text"
+                          value={formImage}
+                          onChange={(e) => setFormImage(e.target.value)}
+                          placeholder="https://... or select upload"
+                          className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                        />
+                      )}
                     </div>
 
                     {/* Tiny visual pre-selection pills */}
