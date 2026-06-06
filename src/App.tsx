@@ -430,12 +430,22 @@ export default function App() {
     });
   };
 
+  const getBrandFromName = (name: string) => {
+    const multiWordBrands = [
+      "Range Rover", "Land Rover", "Aston Martin", "Alfa Romeo", "Ssang Yong", 
+      "Rolls Royce", "Mercedes Benz", "Great Wall"
+    ];
+    for (const brand of multiWordBrands) {
+      if (name.toLowerCase().startsWith(brand.toLowerCase())) {
+        return brand;
+      }
+    }
+    return name.split(" ")[0];
+  };
+
   // Dynamically extract unique brands from current fleet state
   const dynamicBrands = useMemo(() => {
-    const list = cars.map((car) => {
-      if (car.name.startsWith("Range Rover")) return "Range Rover";
-      return car.name.split(" ")[0];
-    });
+    const list = cars.map((car) => getBrandFromName(car.name));
     return ["All", ...Array.from(new Set(list))];
   }, [cars]);
 
@@ -482,9 +492,7 @@ export default function App() {
       const matchFuel =
         activeFilters.fuelType === "All" || car.fuelType === activeFilters.fuelType;
 
-      const carBrand = car.name.startsWith("Range Rover")
-        ? "Range Rover"
-        : car.name.split(" ")[0];
+      const carBrand = getBrandFromName(car.name);
       const matchBrand =
         activeFilters.brand === "All" ||
         carBrand.toLowerCase() === activeFilters.brand.toLowerCase();
