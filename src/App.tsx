@@ -343,7 +343,7 @@ export default function App() {
       pickupDate: string;
       pickupTime: string;
       location: string;
-      contactMethod: "whatsapp" | "telegram";
+      contactMethod: "whatsapp" | "telegram" | "none";
       message: string;
       totalCost: number;
     },

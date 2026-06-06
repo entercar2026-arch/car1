@@ -33,7 +33,7 @@ export interface Booking {
   pickupDate: string;
   pickupTime: string;
   location: string;
-  contactMethod: "whatsapp" | "telegram";
+  contactMethod: "whatsapp" | "telegram" | "none";
   message: string;
   totalCost: number;
   status: "Pending" | "Approved" | "Completed" | "Cancelled";

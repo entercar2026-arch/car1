@@ -44,7 +44,7 @@ interface CarCardProps {
     pickupDate: string;
     pickupTime: string;
     location: string;
-    contactMethod: "whatsapp" | "telegram";
+    contactMethod: "whatsapp" | "telegram" | "none";
     message: string;
     totalCost: number;
   }) => Booking;
@@ -68,15 +68,24 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [pickupDate, setPickupDate] = useState("2026-06-04");
-  const [pickupTime, setPickupTime] = useState("10:00");
+  const [pickupDate, setPickupDate] = useState(() => {
+    const today = new Date();
+    const offset = today.getTimezoneOffset() * 60000;
+    return new Date(today.getTime() - offset).toISOString().split("T")[0];
+  });
+  const [pickupTime, setPickupTime] = useState(() => {
+    const today = new Date();
+    const offset = today.getTimezoneOffset() * 60000;
+    return new Date(today.getTime() - offset).toISOString().split("T")[1].substring(0, 5);
+  });
   const [location, setLocation] = useState("");
-  const [contactMethod, setContactMethod] = useState<"whatsapp" | "telegram">(
-    "whatsapp",
+  const [contactMethod, setContactMethod] = useState<"whatsapp" | "telegram" | "none">(
+    "none",
   );
   const [message, setMessage] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(
     null,
   );
@@ -126,6 +135,10 @@ export const CarCard: React.FC<CarCardProps> = ({
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName || !pickupDate || !pickupTime || !location) return;
+    if (contactMethod === "none") {
+      alert("Please select either WhatsApp or Telegram to send your enquiry.");
+      return;
+    }
 
     // Format message for WhatsApp or Telegram
     const carDetails = `*Enquiry for: ${car.name}*`;
@@ -143,14 +156,10 @@ export const CarCard: React.FC<CarCardProps> = ({
         ? `https://wa.me/${adminPhone}?text=${encodeURIComponent(fullText)}`
         : `https://t.me/${adminTelegram}?text=${encodeURIComponent(fullText)}`;
 
-    // Use anchor click to bypass some iframe popup blockers safely
-    const link = document.createElement("a");
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setRedirectUrl(url);
+
+    // Try a direct window open first
+    window.open(url, "_blank");
 
     setTimeout(() => {
       if (onConfirmBook) {
@@ -516,10 +525,21 @@ export const CarCard: React.FC<CarCardProps> = ({
                     account. Feel free to contact dispatchers.
                   </p>
 
+                  {redirectUrl && (
+                    <a
+                      href={redirectUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full mt-5 py-3 text-xs font-bold text-white rounded-xl shadow-md transition-all text-center uppercase tracking-wider block bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      Open {confirmedBooking.contactMethod === "whatsapp" ? "WhatsApp" : "Telegram"} manually (if blocked)
+                    </a>
+                  )}
+
                   <button
                     id={`btn-close-receipt-${car.id}`}
                     onClick={handleCloseBookingModal}
-                    className="w-full mt-5 py-3 text-xs font-bold text-white rounded-xl shadow-md transition-all text-center uppercase tracking-wider cursor-pointer"
+                    className="w-full mt-3 py-3 text-xs font-bold text-white rounded-xl shadow-md transition-all text-center uppercase tracking-wider cursor-pointer"
                     style={{ backgroundColor: brandPlum }}
                   >
                     Done & Return
@@ -621,7 +641,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                             id={`book-pickup-${car.id}`}
                             type="date"
                             required
-                            min="2026-06-04"
+                            min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0]}
                             value={pickupDate}
                             onChange={(e) => setPickupDate(e.target.value)}
                             className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono"
