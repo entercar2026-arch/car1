@@ -326,7 +326,7 @@ export const CarCard: React.FC<CarCardProps> = ({
           className="p-5 flex-1 flex flex-col justify-between"
         >
           <div>
-            <div className="flex justify-between items-center mb-4 w-full gap-2 flex-wrap">
+            <div className="flex justify-between items-center mb-1 w-full gap-2 flex-wrap">
               <h3
                 id={`car-title-${car.id}`}
                 className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-[#4C0027] leading-snug"
@@ -334,6 +334,11 @@ export const CarCard: React.FC<CarCardProps> = ({
                 {car.name}
               </h3>
             </div>
+            {car.description && (
+              <p className="text-xs text-stone-500 mb-4 line-clamp-2" title={car.description}>
+                {car.description}
+              </p>
+            )}
 
             {/* Highlights Info Grid (Technical) */}
             <div
