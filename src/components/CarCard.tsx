@@ -313,9 +313,6 @@ export const CarCard: React.FC<CarCardProps> = ({
               >
                 {car.name}
               </h3>
-              <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-mono font-black bg-[#4C0027] text-white tracking-widest shadow-sm">
-                {car.yearModel || "2024"}
-              </span>
             </div>
 
             {/* Highlights Info Grid (Technical) */}
@@ -436,7 +433,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                       Your Enquiry Sent!
                     </h3>
                     <p className="text-xs text-stone-500 max-w-xs mx-auto mb-5 leading-normal">
-                      We will get back to you ..........
+                      Thank you for your inquiry. We will check availability and follow up shortly with specific car photos and details.
                     </p>
                   </div>
 
@@ -446,11 +443,11 @@ export const CarCard: React.FC<CarCardProps> = ({
                       <div className="flex items-center gap-2">
                         <Receipt className="w-4 h-4 text-stone-400" />
                         <span className="font-mono font-bold uppercase tracking-wider text-stone-400 text-[10px]">
-                          ENQUIRY NO.
+                          DATE-TIME
                         </span>
                       </div>
                       <span className="font-mono font-black text-stone-900 tracking-wider text-sm">
-                        {confirmedBooking.id}
+                        {new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                       </span>
                     </div>
 
@@ -460,7 +457,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                           SELECTED VEHICLE
                         </p>
                         <p className="font-bold text-stone-800 truncate mt-0.5">
-                          {car.yearModel} {car.name}
+                          {car.name}
                         </p>
                       </div>
                       <div>
@@ -571,7 +568,7 @@ export const CarCard: React.FC<CarCardProps> = ({
                         {car.name}
                       </h4>
                       <p className="text-sm sm:text-base text-stone-600 font-mono font-bold mt-0.5 drop-shadow-sm">
-                        {car.yearModel} <span className="text-stone-400 text-[10px] sm:text-xs ml-1 uppercase">{car.category} FLEET COLLECTION</span>
+                        <span className="text-stone-400 text-[10px] sm:text-xs uppercase">{car.category} FLEET COLLECTION</span>
                       </p>
                     </div>
                   </div>

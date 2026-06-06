@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import { Car, ViewMode, CatalogFilters, Booking, Review } from "./types";
 import { INITIAL_CARS } from "./data";
 import { BrandLogo } from "./components/BrandLogo";
@@ -449,31 +449,47 @@ export default function App() {
   }, [cars]);
 
   // Filter computation logic
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<CatalogFilters>(filters);
+  const filterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setIsFiltering(true);
+    if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
+    filterTimeoutRef.current = setTimeout(() => {
+      setActiveFilters(filters);
+      setIsFiltering(false);
+    }, 300);
+    return () => {
+      if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
+    };
+  }, [filters]);
+
   const filteredCars = useMemo(() => {
     return cars.filter((car) => {
       const matchSearch =
-        car.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        car.name.toLowerCase().includes(activeFilters.searchTerm.toLowerCase()) ||
         (car.description &&
           car.description
             .toLowerCase()
-            .includes(filters.searchTerm.toLowerCase()));
+            .includes(activeFilters.searchTerm.toLowerCase()));
       const matchCategory =
-        filters.category === "All" || car.category === filters.category;
-      const matchPrice = car.price <= filters.maxPrice;
+        activeFilters.category === "All" || car.category === activeFilters.category;
+      const matchPrice = car.price <= activeFilters.maxPrice;
       const matchTrans =
-        filters.transmission === "All" ||
-        car.transmission === filters.transmission;
+        activeFilters.transmission === "All" ||
+        car.transmission === activeFilters.transmission;
       const matchFuel =
-        filters.fuelType === "All" || car.fuelType === filters.fuelType;
+        activeFilters.fuelType === "All" || car.fuelType === activeFilters.fuelType;
 
       const carBrand = car.name.startsWith("Range Rover")
         ? "Range Rover"
         : car.name.split(" ")[0];
       const matchBrand =
-        filters.brand === "All" ||
-        carBrand.toLowerCase() === filters.brand.toLowerCase();
+        activeFilters.brand === "All" ||
+        carBrand.toLowerCase() === activeFilters.brand.toLowerCase();
 
-      const matchLiked = !filters.likedOnly || likedCars.includes(car.id);
+      const matchLiked = !activeFilters.likedOnly || likedCars.includes(car.id);
 
       return (
         matchSearch &&
@@ -485,7 +501,7 @@ export default function App() {
         matchLiked
       );
     });
-  }, [cars, filters, likedCars]);
+  }, [cars, activeFilters, likedCars]);
 
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
@@ -1013,7 +1029,30 @@ export default function App() {
 
           {/* 5. Car catalog grid block */}
           <div id="collection-grid-view">
-            {filteredCars.length === 0 ? (
+            {isFiltering ? (
+              <div
+                id="cars-grid-loading"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-3xl p-3 border border-stone-100 shadow-sm animate-pulse flex flex-col justify-between" style={{ minHeight: '380px' }}>
+                    <div className="w-full h-40 sm:h-52 bg-stone-100 rounded-2xl mb-4" />
+                    <div className="px-3">
+                      <div className="w-3/4 h-6 bg-stone-200 rounded-lg mb-2" />
+                      <div className="flex gap-2 mb-4">
+                        <div className="w-1/3 h-8 bg-stone-100 rounded-xl" />
+                        <div className="w-1/3 h-8 bg-stone-100 rounded-xl" />
+                        <div className="w-1/3 h-8 bg-stone-100 rounded-xl" />
+                      </div>
+                      <div className="flex justify-between items-end mt-4">
+                        <div className="w-20 h-8 bg-stone-200 rounded-md" />
+                        <div className="w-24 h-10 bg-stone-200 rounded-xl" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredCars.length === 0 ? (
               <div className="bg-white rounded-3xl p-16 text-center border border-stone-100 shadow-xs flex flex-col items-center justify-center select-none">
                 <div className="w-16 h-16 bg-stone-50 text-stone-300 rounded-2xl flex items-center justify-center mb-4">
                   <SlidersHorizontal className="w-7 h-7" />
