@@ -134,11 +134,10 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   const targetUrl = useMemo(() => {
     const carDetails = `*Enquiry for: ${car.name}*`;
-    const carPhoto = `Photo: ${car.image}`;
     const customerDetails = `Name: ${customerName}`;
     const bookingDetails = `Pickup Location: ${location}\nDate: ${pickupDate}\nTime: ${pickupTime}`;
     const userMessage = message ? `\nMessage: ${message}` : "";
-    const fullText = `${carDetails}\n${carPhoto}\n\n${customerDetails}\n\n${bookingDetails}${userMessage}`;
+    const fullText = `${carDetails}\n\n${customerDetails}\n\n${bookingDetails}${userMessage}`;
 
     const adminPhone = "855966714442";
     const adminTelegram = "+855966714442";
@@ -162,25 +161,28 @@ export const CarCard: React.FC<CarCardProps> = ({
     }
 
     setRedirectUrl(targetUrl);
-
-    // Try a direct window open first if submitted via Enter key (might be blocked, but fallback is visible link on success screen so it's fine)
-    window.open(targetUrl, "_blank");
-
-    setTimeout(() => {
-      if (onConfirmBook) {
-        const resultObj = onConfirmBook({
-          customerName,
-          pickupDate,
-          pickupTime,
-          location,
-          contactMethod: contactMethod as "whatsapp" | "telegram",
-          message,
-          totalCost: totalBookingCost,
-        });
-        setConfirmedBooking(resultObj);
+    
+    // Attempt automatic popup
+    if (targetUrl !== "#") {
+      const newWin = window.open(targetUrl, "_blank");
+      if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
+        console.warn("Popup blocked, user needs to click link manually.");
       }
-      setIsSuccess(true);
-    }, 10);
+    }
+
+    if (onConfirmBook) {
+      const resultObj = onConfirmBook({
+        customerName,
+        pickupDate,
+        pickupTime,
+        location,
+        contactMethod: contactMethod as "whatsapp" | "telegram",
+        message,
+        totalCost: totalBookingCost,
+      });
+      setConfirmedBooking(resultObj);
+    }
+    setIsSuccess(true);
   };
 
   const handleReviewSubmit = (e: React.FormEvent) => {
@@ -530,16 +532,6 @@ export const CarCard: React.FC<CarCardProps> = ({
                     account. Feel free to contact dispatchers.
                   </p>
 
-                  {redirectUrl && (
-                    <a
-                      href={redirectUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full mt-5 py-3 text-xs font-bold text-white rounded-xl shadow-md transition-all text-center uppercase tracking-wider block bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      Open {confirmedBooking.contactMethod === "whatsapp" ? "WhatsApp" : "Telegram"} manually (if blocked)
-                    </a>
-                  )}
 
                   <button
                     id={`btn-close-receipt-${car.id}`}
@@ -707,50 +699,19 @@ export const CarCard: React.FC<CarCardProps> = ({
                     </div>
                   </div>
 
-                  {isFormComplete ? (
-                    <a
-                      id={`btn-confirm-reserve-${car.id}`}
-                      href={targetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => {
-                        setRedirectUrl(targetUrl);
-                        setTimeout(() => {
-                          if (onConfirmBook) {
-                            const resultObj = onConfirmBook({
-                              customerName,
-                              pickupDate,
-                              pickupTime,
-                              location,
-                              contactMethod: contactMethod as "whatsapp" | "telegram",
-                              message,
-                              totalCost: totalBookingCost,
-                            });
-                            setConfirmedBooking(resultObj);
-                          }
-                          setIsSuccess(true);
-                        }, 50);
-                      }}
-                      className="w-full py-3.5 block text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center uppercase tracking-wider mt-2.5"
-                      style={{ backgroundColor: brandPlum }}
-                    >
-                      Send Enquiry Now
-                    </a>
-                  ) : (
-                    <button
-                      id={`btn-confirm-reserve-${car.id}`}
-                      type="submit"
-                      className="w-full py-3.5 text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center uppercase tracking-wider mt-2.5 opacity-90"
-                      style={{ backgroundColor: brandPlum }}
-                      onClick={() => {
-                        if (contactMethod === "none") {
-                          alert("Please select either WhatsApp or Telegram to send your enquiry.");
-                        }
-                      }}
-                    >
-                      Send Enquiry Now
-                    </button>
-                  )}
+                  <button
+                    id={`btn-confirm-reserve-${car.id}`}
+                    type="submit"
+                    className="w-full py-3.5 text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center uppercase tracking-wider mt-2.5 opacity-90"
+                    style={{ backgroundColor: brandPlum }}
+                    onClick={() => {
+                      if (contactMethod === "none") {
+                        alert("Please select either WhatsApp or Telegram to send your enquiry.");
+                      }
+                    }}
+                  >
+                    Send Enquiry Now
+                  </button>
                 </form>
               )}
             </motion.div>
