@@ -10,7 +10,6 @@ export const INITIAL_CARS: Car[] = [
     transmission: 'Automatic',
     seats: 4,
     fuelType: 'Gasoline',
-    yearModel: 2024,
     description: 'The ultimate sports driving experience. Timeless style meets peerless precision and pure mechanical thrill.'
   },
   {
@@ -22,7 +21,6 @@ export const INITIAL_CARS: Car[] = [
     transmission: 'Automatic',
     seats: 5,
     fuelType: 'Electric',
-    yearModel: 2025,
     description: 'Unmatched electric range meets hypercar-level acceleration. Step into the cockpit of the future.'
   },
   {
@@ -34,7 +32,6 @@ export const INITIAL_CARS: Car[] = [
     transmission: 'Automatic',
     seats: 7,
     fuelType: 'Hybrid',
-    yearModel: 2023,
     description: 'Supreme comfort, robust off-road capability, and a command driving position that turns heads on every avenue.'
   },
   {
@@ -46,7 +43,6 @@ export const INITIAL_CARS: Car[] = [
     transmission: 'Automatic',
     seats: 5,
     fuelType: 'Gasoline',
-    yearModel: 2024,
     description: 'Rugged desert runner engineered for extreme off-road terrains and heavy payload capacity.'
   },
   {
@@ -58,7 +54,6 @@ export const INITIAL_CARS: Car[] = [
     transmission: 'Automatic',
     seats: 7,
     fuelType: 'Hybrid',
-    yearModel: 2024,
     description: 'Ultimate first-class travel on land. Features plush reclining captains chairs, dual sunroofs, and private workspace cabin.'
   },
   {
@@ -70,7 +65,6 @@ export const INITIAL_CARS: Car[] = [
     transmission: 'Automatic',
     seats: 2,
     fuelType: 'Diesel',
-    yearModel: 2023,
     description: 'Uncompromising transport power designed for massive freight logistics with exceptional fuel efficiency and driver comfort.'
   }
 ];

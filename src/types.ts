@@ -9,7 +9,6 @@ export interface Car {
   fuelType: "Electric" | "Gasoline" | "Hybrid" | "Diesel" | "LPG";
   description?: string;
   isAvailable?: boolean;
-  yearModel: number; // e.g. 2024, 2025
 }
 
 export type ViewMode = "customer" | "admin" | "login";

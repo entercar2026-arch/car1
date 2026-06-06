@@ -85,7 +85,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formSeats, setFormSeats] = useState(5);
   const [formFuel, setFormFuel] = useState<Car["fuelType"]>("Gasoline");
   const [formDescription, setFormDescription] = useState("");
-  const [formYearModel, setFormYearModel] = useState(2024);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,7 +136,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormSeats(5);
     setFormFuel("Gasoline");
     setFormDescription("");
-    setFormYearModel(2024);
     setIsFormOpen(true);
   };
 
@@ -152,7 +150,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormSeats(car.seats);
     setFormFuel(car.fuelType);
     setFormDescription(car.description || "");
-    setFormYearModel(car.yearModel || 2024);
     setIsFormOpen(true);
   };
 
@@ -185,7 +182,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         seats: Number(formSeats),
         fuelType: formFuel,
         description: formDescription,
-        yearModel: Number(formYearModel),
       });
     } else {
       onAddCar({
@@ -197,7 +193,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         seats: Number(formSeats),
         fuelType: formFuel,
         description: formDescription,
-        yearModel: Number(formYearModel),
       });
     }
     setIsFormOpen(false);
@@ -874,23 +869,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </select>
                   </div>
 
-                  {/* Year Model Field */}
-                  <div>
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                      Year Model *
-                    </label>
-                    <input
-                      id="input-car-year-model"
-                      type="number"
-                      required
-                      min="1990"
-                      max="2030"
-                      value={formYearModel}
-                      onChange={(e) => setFormYearModel(Number(e.target.value))}
-                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs font-mono focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
-                    />
-                  </div>
-
                   {/* Transmission Selector */}
                   <div>
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
@@ -994,25 +972,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
-                    </div>
-
-                    {/* Tiny visual pre-selection pills */}
-                    <div className="mt-2">
-                      <span className="text-[9px] text-stone-400 font-sans block mb-1">
-                        Choose a suggested preset image placeholder:
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {SUGGESTED_IMAGES.map((img, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => setFormImage(img.url)}
-                            className="text-[9px] font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 px-2 py-0.5 rounded-md border border-stone-200 transition-all cursor-pointer"
-                          >
-                            {img.name}
-                          </button>
-                        ))}
-                      </div>
                     </div>
                   </div>
 
