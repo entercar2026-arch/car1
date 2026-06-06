@@ -66,6 +66,10 @@ export const CarCard: React.FC<CarCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  const [imageError, setImageError] = useState(false);
+  const isGoogleDrive = car.image.includes("drive.google.com/uc");
+  const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
+
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [pickupDate, setPickupDate] = useState(() => {
@@ -273,14 +277,30 @@ export const CarCard: React.FC<CarCardProps> = ({
               transition={{ duration: 0.55, ease: "easeOut" }}
               className="w-full h-full object-cover select-none"
             />
+          ) : imageError && isGoogleDrive && driveId ? (
+            <motion.iframe
+              id={`car-photo-${car.id}`}
+              src={`https://drive.google.com/file/d/${driveId}/preview`}
+              className="w-full h-full object-cover select-none"
+              allow="autoplay"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: false }}
+              title={car.name}
+              style={{ border: "none" }}
+            />
           ) : (
             <motion.img
               id={`car-photo-${car.id}`}
               src={car.image}
               alt={car.name}
               onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                if (isGoogleDrive) {
+                  setImageError(true);
+                } else {
+                  (e.target as HTMLImageElement).src =
+                    "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                }
               }}
               initial={{ scale: 0.94, rotate: -2, y: 15 }}
               whileInView={{
@@ -551,13 +571,24 @@ export const CarCard: React.FC<CarCardProps> = ({
                         playsInline
                         className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
                       />
+                    ) : imageError && isGoogleDrive && driveId ? (
+                      <iframe
+                        src={`https://drive.google.com/file/d/${driveId}/preview`}
+                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
+                        allow="autoplay"
+                        style={{ border: "none" }}
+                      />
                     ) : (
                       <img
                         src={car.image}
                         alt={car.name}
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                          if (isGoogleDrive) {
+                            setImageError(true);
+                          } else {
+                            (e.target as HTMLImageElement).src =
+                              "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                          }
                         }}
                         referrerPolicy="no-referrer"
                         className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
