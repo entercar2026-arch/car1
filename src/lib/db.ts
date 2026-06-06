@@ -23,6 +23,7 @@ const carToDb = (car: Omit<Car, 'id'>) => ({
   seats: car.seats,
   fuel_type: car.fuelType,
   description: car.description,
+  year_model: 2024,
 });
 
 export const db = {
