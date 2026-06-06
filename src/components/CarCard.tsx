@@ -138,17 +138,19 @@ export const CarCard: React.FC<CarCardProps> = ({
     const adminPhone = "855966714442";
     const adminTelegram = "+855966714442";
 
-    if (contactMethod === "whatsapp") {
-      window.open(
-        `https://wa.me/${adminPhone}?text=${encodeURIComponent(fullText)}`,
-        "_blank",
-      );
-    } else {
-      window.open(
-        `https://t.me/${adminTelegram}?text=${encodeURIComponent(fullText)}`,
-        "_blank",
-      );
-    }
+    const url =
+      contactMethod === "whatsapp"
+        ? `https://wa.me/${adminPhone}?text=${encodeURIComponent(fullText)}`
+        : `https://t.me/${adminTelegram}?text=${encodeURIComponent(fullText)}`;
+
+    // Use anchor click to bypass some iframe popup blockers safely
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
     setTimeout(() => {
       if (onConfirmBook) {
