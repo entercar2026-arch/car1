@@ -160,10 +160,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    let processedImage = formImage.trim();
+
+    // Check for Google Drive links and convert them to direct image links
+    const driveMatch = processedImage.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+    if (driveMatch && driveMatch[1]) {
+      processedImage = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+    }
+
     // Ensure accurate image url fallback
     const targetImageUrl =
-      formImage.trim() !== ""
-        ? formImage
+      processedImage !== ""
+        ? processedImage
         : "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
 
     if (editingCar) {
@@ -982,7 +990,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           type="text"
                           value={formImage}
                           onChange={(e) => setFormImage(e.target.value)}
-                          placeholder="https://... or select upload"
+                          placeholder="https://... or Google Drive link"
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
