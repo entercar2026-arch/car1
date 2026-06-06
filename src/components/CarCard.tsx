@@ -334,11 +334,16 @@ export const CarCard: React.FC<CarCardProps> = ({
                 {car.name}
               </h3>
             </div>
-            {car.description && (
-              <p className="text-xs text-stone-500 mb-4 line-clamp-2" title={car.description}>
-                {car.description}
+            <div className="mb-4">
+              {car.description && (
+                <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
+                  {car.description}
+                </p>
+              )}
+              <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
+                This is a sample car photo/video. Please click Enquire to request the actual available car photos/videos.
               </p>
-            )}
+            </div>
 
             {/* Highlights Info Grid (Technical) */}
             <div
