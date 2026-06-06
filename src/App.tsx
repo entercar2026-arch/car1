@@ -137,10 +137,11 @@ export default function App() {
   const [filters, setFilters] = useState<CatalogFilters>({
     searchTerm: "",
     category: "All",
-    maxPrice: 5000,
+    maxPrice: 10000,
     transmission: "All",
     fuelType: "All",
     brand: "All",
+    likedOnly: false,
   });
 
   // Mobile drawer state
@@ -357,7 +358,7 @@ export default function App() {
     setFilters({
       searchTerm: "",
       category: "All",
-      maxPrice: 5000,
+      maxPrice: 10000,
       transmission: "All",
       fuelType: "All",
       brand: "All",
@@ -757,7 +758,7 @@ export default function App() {
                   id="filter-slider-price"
                   type="range"
                   min="300"
-                  max="5000"
+                  max="10000"
                   step="100"
                   value={filters.maxPrice}
                   onChange={(e) =>
@@ -771,7 +772,7 @@ export default function App() {
                 />
                 <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
                   <span>$300/mo</span>
-                  <span>$5,000/mo</span>
+                  <span>$10,000/mo</span>
                 </div>
               </div>
 
