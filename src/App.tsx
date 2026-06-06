@@ -107,6 +107,19 @@ export default function App() {
     return INITIAL_CARS;
   });
 
+  // Liked cars state
+  const [likedCars, setLikedCars] = useState<string[]>(() => {
+    const saved = safeStorage.getItem("enter_liked_cars");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved liked cars", e);
+      }
+    }
+    return [];
+  });
+
   // Track session authentication
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(
     () => {
@@ -215,6 +228,10 @@ export default function App() {
   useEffect(() => {
     safeStorage.setItem("enter_reviews", JSON.stringify(reviews));
   }, [reviews]);
+
+  useEffect(() => {
+    safeStorage.setItem("enter_liked_cars", JSON.stringify(likedCars));
+  }, [likedCars]);
 
   // Handle addition of a new vehicle catalog item
   const handleAddCar = (newCarFields: Omit<Car, "id">) => {
@@ -344,6 +361,16 @@ export default function App() {
       transmission: "All",
       fuelType: "All",
       brand: "All",
+      likedOnly: false,
+    });
+  };
+
+  const handleToggleLike = (carId: string) => {
+    setLikedCars((prev) => {
+      if (prev.includes(carId)) {
+        return prev.filter((id) => id !== carId);
+      }
+      return [...prev, carId];
     });
   };
 
@@ -390,16 +417,19 @@ export default function App() {
         filters.brand === "All" ||
         carBrand.toLowerCase() === filters.brand.toLowerCase();
 
+      const matchLiked = !filters.likedOnly || likedCars.includes(car.id);
+
       return (
         matchSearch &&
         matchCategory &&
         matchPrice &&
         matchTrans &&
         matchFuel &&
-        matchBrand
+        matchBrand &&
+        matchLiked
       );
     });
-  }, [cars, filters]);
+  }, [cars, filters, likedCars]);
 
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
@@ -883,7 +913,23 @@ export default function App() {
               />
               Explore our catalog
             </h2>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {/* Liked Filter Button */}
+              <button
+                id="filter-liked-cars"
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, likedOnly: !prev.likedOnly }))
+                }
+                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
+              >
+                <span>Liked</span>
+                <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${filters.likedOnly ? "bg-rose-200/50 text-rose-700" : "bg-stone-100 text-stone-400"}`}>
+                  {likedCars.length}
+                </span>
+              </button>
+
+              <div className="w-[1px] h-6 bg-stone-200 mx-2 hidden sm:block"></div>
+
               {["All", "Sedan", "SUV", "MPV", "Pickup", "Truck"].map((cat) => {
                 const isSelected = filters.category === cat;
                 const count = categoryCounts[cat] || 0;
@@ -948,6 +994,8 @@ export default function App() {
                       onConfirmBook={(bookingFields) =>
                         handleConfirmBook(car.id, bookingFields)
                       }
+                      isLiked={likedCars.includes(car.id)}
+                      onToggleLike={handleToggleLike}
                     />
                   ))}
                 </AnimatePresence>

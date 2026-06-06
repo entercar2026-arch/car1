@@ -21,6 +21,7 @@ export interface CatalogFilters {
   transmission: string;
   fuelType: string;
   brand: string;
+  likedOnly?: boolean;
 }
 
 export interface Booking {

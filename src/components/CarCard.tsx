@@ -23,6 +23,7 @@ import {
   MessageCircle,
   FileWarning,
   X,
+  Heart,
 } from "lucide-react";
 
 interface CarCardProps {
@@ -47,6 +48,8 @@ interface CarCardProps {
     message: string;
     totalCost: number;
   }) => Booking;
+  isLiked?: boolean;
+  onToggleLike?: (carId: string) => void;
 }
 
 export const CarCard: React.FC<CarCardProps> = ({
@@ -58,6 +61,8 @@ export const CarCard: React.FC<CarCardProps> = ({
   reviews = [],
   onAddReview,
   onConfirmBook,
+  isLiked = false,
+  onToggleLike,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -214,6 +219,21 @@ export const CarCard: React.FC<CarCardProps> = ({
           >
             {car.category}
           </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleLike && onToggleLike(car.id);
+            }}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-rose-50 transition-colors border border-stone-100 cursor-pointer"
+          >
+            <Heart
+              className={`w-4 h-4 transition-colors ${
+                isLiked
+                  ? "fill-rose-500 text-rose-500"
+                  : "text-stone-500 hover:text-rose-500"
+              }`}
+            />
+          </button>
 
           {/* Rating badge removed by user request */}
 
