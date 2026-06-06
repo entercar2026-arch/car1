@@ -78,7 +78,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Form Fields State
   const [formName, setFormName] = useState("");
   const [formCategory, setFormCategory] = useState<Car["category"]>("Sedan");
-  const [formPrice, setFormPrice] = useState(100);
+  const [formPrice, setFormPrice] = useState<number | "">("");
   const [formImage, setFormImage] = useState("");
   const [formTransmission, setFormTransmission] =
     useState<Car["transmission"]>("Automatic");
@@ -103,25 +103,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // Suggestions for standard car images to assist users
-  const SUGGESTED_IMAGES = [
-    {
-      name: "Porsche 911 Coupe",
-      url: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600",
-    },
-    {
-      name: "Mercedes G-Wagon",
-      url: "https://images.unsplash.com/photo-1520050206274-a1ae446cb3cc?auto=format&fit=crop&q=80&w=600",
-    },
-    {
-      name: "Tesla Model S Custom",
-      url: "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600",
-    },
-    {
-      name: "Range Rover Sport",
-      url: "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=600",
-    },
-  ];
 
   const brandPlum = "#4C0027";
 
@@ -130,7 +111,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setEditingCar(null);
     setFormName("");
     setFormCategory("Sedan");
-    setFormPrice(1000); // good monthly starting point
+    setFormPrice(""); // clean monthly starting point
     setFormImage("");
     setFormTransmission("Automatic");
     setFormSeats(5);
@@ -842,7 +823,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         min="1"
                         max="10000"
                         value={formPrice}
-                        onChange={(e) => setFormPrice(Number(e.target.value))}
+                        onChange={(e) => setFormPrice(e.target.value ? Number(e.target.value) : "")}
                         className="w-full pl-7 pr-3 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs font-mono focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
                     </div>
