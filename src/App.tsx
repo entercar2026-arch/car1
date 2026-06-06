@@ -602,6 +602,32 @@ export default function App() {
             >
               Car Catalog
             </button>
+
+            {/* Desktop Global Search Bar */}
+            <div className="relative w-64 xl:w-80 ml-4 group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-stone-400 group-focus-within:text-[#4C0027] transition-colors" />
+              </div>
+              <input
+                id="global-input-search-desktop"
+                type="text"
+                placeholder="Search models, brands..."
+                value={filters.searchTerm}
+                onChange={(e) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    searchTerm: e.target.value,
+                  }))
+                }
+                onFocus={() => scrollToAnchor("catalog-section")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    scrollToAnchor("catalog-section");
+                  }
+                }}
+                className="w-full pl-[38px] pr-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-stone-800 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-2 focus:ring-[#4C0027]/20 transition-all font-sans font-medium placeholder:text-stone-400"
+              />
+            </div>
           </nav>
 
           {/* Right Action buttons and hamburger logic */}
@@ -669,16 +695,52 @@ export default function App() {
               className="lg:hidden bg-white border-t border-stone-200 overflow-hidden font-sans shadow-lg select-none"
             >
               <div className="px-4 py-5 space-y-4">
+                {/* Mobile Global Search Bar */}
+                <div className="relative w-full mb-2 group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-stone-400 group-focus-within:text-[#4C0027] transition-colors" />
+                  </div>
+                  <input
+                    id="global-input-search-mobile"
+                    type="text"
+                    placeholder="Search models, brands..."
+                    value={filters.searchTerm}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        searchTerm: e.target.value,
+                      }))
+                    }
+                    onFocus={() => {
+                        scrollToAnchor("catalog-section");
+                        setIsMobileMenuOpen(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        scrollToAnchor("catalog-section");
+                        setIsMobileMenuOpen(false);
+                      }
+                    }}
+                    className="w-full pl-[38px] pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
+                  />
+                </div>
+
                 <button
                   id="mobile-link-home"
-                  onClick={() => scrollToAnchor("home-panel")}
+                  onClick={() => {
+                    scrollToAnchor("home-panel");
+                    setIsMobileMenuOpen(false);
+                  }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
                   Home
                 </button>
                 <button
                   id="mobile-link-catalog"
-                  onClick={() => scrollToAnchor("catalog-section")}
+                  onClick={() => {
+                    scrollToAnchor("catalog-section");
+                    setIsMobileMenuOpen(false);
+                  }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
                   Car Catalog

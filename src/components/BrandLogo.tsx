@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 // @ts-ignore
 import enterlogo from './Enter-Car-Rental-White1.png';
 
@@ -52,11 +53,13 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   // Render imported enterlogo.png image
   const renderEnterKey = () => {
     return (
-      <img
+      <motion.img
         src={enterlogo}
         alt="Enter Logo"
         className={`${selectedSize.svg} object-contain transition-transform duration-300 hover:scale-105 active:scale-95`}
         referrerPolicy="no-referrer"
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
     );
   };
