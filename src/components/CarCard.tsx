@@ -132,15 +132,7 @@ export const CarCard: React.FC<CarCardProps> = ({
     return Math.round(car.price);
   }, [car.price]);
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customerName || !pickupDate || !pickupTime || !location) return;
-    if (contactMethod === "none") {
-      alert("Please select either WhatsApp or Telegram to send your enquiry.");
-      return;
-    }
-
-    // Format message for WhatsApp or Telegram
+  const targetUrl = useMemo(() => {
     const carDetails = `*Enquiry for: ${car.name}*`;
     const carPhoto = `Photo: ${car.image}`;
     const customerDetails = `Name: ${customerName}`;
@@ -151,15 +143,28 @@ export const CarCard: React.FC<CarCardProps> = ({
     const adminPhone = "855966714442";
     const adminTelegram = "+855966714442";
 
-    const url =
-      contactMethod === "whatsapp"
-        ? `https://wa.me/${adminPhone}?text=${encodeURIComponent(fullText)}`
-        : `https://t.me/${adminTelegram}?text=${encodeURIComponent(fullText)}`;
+    if (contactMethod === "whatsapp") {
+      return `https://wa.me/${adminPhone}?text=${encodeURIComponent(fullText)}`;
+    } else if (contactMethod === "telegram") {
+      return `https://t.me/${adminTelegram}?text=${encodeURIComponent(fullText)}`;
+    }
+    return "#";
+  }, [car, customerName, location, pickupDate, pickupTime, message, contactMethod]);
 
-    setRedirectUrl(url);
+  const isFormComplete = !!(customerName && pickupDate && pickupTime && location && contactMethod !== "none");
 
-    // Try a direct window open first
-    window.open(url, "_blank");
+  const handleBookingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customerName || !pickupDate || !pickupTime || !location) return;
+    if (contactMethod === "none") {
+      alert("Please select either WhatsApp or Telegram to send your enquiry.");
+      return;
+    }
+
+    setRedirectUrl(targetUrl);
+
+    // Try a direct window open first if submitted via Enter key (might be blocked, but fallback is visible link on success screen so it's fine)
+    window.open(targetUrl, "_blank");
 
     setTimeout(() => {
       if (onConfirmBook) {
@@ -168,7 +173,7 @@ export const CarCard: React.FC<CarCardProps> = ({
           pickupDate,
           pickupTime,
           location,
-          contactMethod,
+          contactMethod: contactMethod as "whatsapp" | "telegram",
           message,
           totalCost: totalBookingCost,
         });
@@ -702,14 +707,50 @@ export const CarCard: React.FC<CarCardProps> = ({
                     </div>
                   </div>
 
-                  <button
-                    id={`btn-confirm-reserve-${car.id}`}
-                    type="submit"
-                    className="w-full py-3.5 text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center uppercase tracking-wider mt-2.5"
-                    style={{ backgroundColor: brandPlum }}
-                  >
-                    Send Enquiry Now
-                  </button>
+                  {isFormComplete ? (
+                    <a
+                      id={`btn-confirm-reserve-${car.id}`}
+                      href={targetUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        setRedirectUrl(targetUrl);
+                        setTimeout(() => {
+                          if (onConfirmBook) {
+                            const resultObj = onConfirmBook({
+                              customerName,
+                              pickupDate,
+                              pickupTime,
+                              location,
+                              contactMethod: contactMethod as "whatsapp" | "telegram",
+                              message,
+                              totalCost: totalBookingCost,
+                            });
+                            setConfirmedBooking(resultObj);
+                          }
+                          setIsSuccess(true);
+                        }, 50);
+                      }}
+                      className="w-full py-3.5 block text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center uppercase tracking-wider mt-2.5"
+                      style={{ backgroundColor: brandPlum }}
+                    >
+                      Send Enquiry Now
+                    </a>
+                  ) : (
+                    <button
+                      id={`btn-confirm-reserve-${car.id}`}
+                      type="submit"
+                      className="w-full py-3.5 text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center uppercase tracking-wider mt-2.5 opacity-90"
+                      style={{ backgroundColor: brandPlum }}
+                      onClick={() => {
+                        if (contactMethod === "none") {
+                          alert("Please select either WhatsApp or Telegram to send your enquiry.");
+                        }
+                      }}
+                    >
+                      Send Enquiry Now
+                    </button>
+                  )}
                 </form>
               )}
             </motion.div>
