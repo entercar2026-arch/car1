@@ -3,11 +3,25 @@
 -- Extension for generating UUIDs
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Drop existing tables first to avoid conflicts if re-running
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS cars CASCADE;
+
 -- Enum types for strict data validation (optional but recommended)
+DROP TYPE IF EXISTS car_category CASCADE;
 CREATE TYPE car_category AS ENUM ('Sedan', 'SUV', 'MPV', 'Pickup', 'Truck');
+
+DROP TYPE IF EXISTS car_transmission CASCADE;
 CREATE TYPE car_transmission AS ENUM ('Automatic', 'Manual');
+
+DROP TYPE IF EXISTS car_fuel_type CASCADE;
 CREATE TYPE car_fuel_type AS ENUM ('Electric', 'Gasoline', 'Hybrid', 'Diesel', 'LPG');
+
+DROP TYPE IF EXISTS booking_contact_method CASCADE;
 CREATE TYPE booking_contact_method AS ENUM ('whatsapp', 'telegram');
+
+DROP TYPE IF EXISTS booking_status CASCADE;
 CREATE TYPE booking_status AS ENUM ('Pending', 'Approved', 'Completed', 'Cancelled');
 
 -- Cars Table
