@@ -6,6 +6,8 @@ import { CarCard } from "./components/CarCard";
 import { AdminLogin } from "./components/AdminLogin";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { motion, AnimatePresence } from "motion/react";
+import { db } from "./lib/db";
+import { supabase } from "./lib/supabase";
 import {
   Search,
   MapPin,
@@ -106,6 +108,14 @@ export default function App() {
     }
     return INITIAL_CARS;
   });
+
+  useEffect(() => {
+    if (supabase) {
+      db.cars.getAll().then((data) => {
+        if (data && data.length > 0) setCars(data);
+      }).catch(err => console.error("Failed to fetch initial cars from Supabase", err));
+    }
+  }, []);
 
   // Liked cars state
   const [likedCars, setLikedCars] = useState<string[]>(() => {
@@ -235,24 +245,49 @@ export default function App() {
   }, [likedCars]);
 
   // Handle addition of a new vehicle catalog item
-  const handleAddCar = (newCarFields: Omit<Car, "id">) => {
+  const handleAddCar = async (newCarFields: Omit<Car, "id">) => {
     const freshCar: Car = {
       ...newCarFields,
       id: `car-${Date.now()}`,
     };
     setCars((prev) => [freshCar, ...prev]);
+
+    if (supabase) {
+      try {
+        const dbCar = await db.cars.create(newCarFields);
+        if (dbCar) {
+          setCars((prev) => prev.map(c => c.id === freshCar.id ? dbCar : c));
+        }
+      } catch (err) {
+        console.error("Failed to add car to Supabase", err);
+      }
+    }
   };
 
   // Handle updating an existing vehicle listing
-  const handleUpdateCar = (updatedCar: Car) => {
+  const handleUpdateCar = async (updatedCar: Car) => {
     setCars((prev) =>
       prev.map((car) => (car.id === updatedCar.id ? updatedCar : car)),
     );
+    if (supabase) {
+      try {
+        await db.cars.update(updatedCar.id, updatedCar);
+      } catch (err) {
+        console.error("Failed to update car in Supabase", err);
+      }
+    }
   };
 
   // Handle removing a vehicle catalog item
-  const handleDeleteCar = (carId: string) => {
+  const handleDeleteCar = async (carId: string) => {
     setCars((prev) => prev.filter((car) => car.id !== carId));
+    if (supabase) {
+      try {
+        await db.cars.delete(carId);
+      } catch (err) {
+        console.error("Failed to delete car from Supabase", err);
+      }
+    }
   };
 
   // Handle addition of reviews with moderation pending state
