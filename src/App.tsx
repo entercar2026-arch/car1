@@ -1436,7 +1436,14 @@ export default function App() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
               {/* Step 1 */}
-              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-20px" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
                     01
@@ -1448,10 +1455,17 @@ export default function App() {
                 <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
                   Tell us the car you want or browse our comprehensive car catalog to identify your preference.
                 </p>
-              </div>
+              </motion.div>
 
               {/* Step 2 */}
-              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-20px" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
                     02
@@ -1463,10 +1477,17 @@ export default function App() {
                 <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
                   We work with cooperative car owners to find your preferred car (or similar substitute) and send you the exact available vehicle details and photos.
                 </p>
-              </div>
+              </motion.div>
 
               {/* Step 3 */}
-              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-20px" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
                     03
@@ -1478,10 +1499,17 @@ export default function App() {
                 <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
                   We coordinate with vehicle owners to bring the car straight to your location for a smooth, stress-free handover.
                 </p>
-              </div>
+              </motion.div>
 
               {/* Step 4 */}
-              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-20px" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
                     04
@@ -1493,10 +1521,17 @@ export default function App() {
                 <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
                   Sign the clear lease contract securely on-site with zero complex barriers or dynamic fees.
                 </p>
-              </div>
+              </motion.div>
 
               {/* Step 5 */}
-              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-20px" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
                     05
@@ -1508,7 +1543,7 @@ export default function App() {
                 <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
                   Remain fully supported throughout your drive with continuous agent updates and technical troubleshooting.
                 </p>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -1607,9 +1642,7 @@ export default function App() {
             <div className="md:col-span-2 space-y-4">
               <BrandLogo size="md" variant="dark" />
               <p className="text-xs text-stone-400 max-w-sm leading-relaxed font-sans">
-                Redefining premium vehicle mobilization. Enter car rental
-                connects high-grade dispatcher administration with pristine
-                security frameworks.
+                Since 2021, Enter Car Rental has served as your dedicated agent, bridging the gap between clients and trusted vehicle owners. We leverage deep, long-term owner relationships to secure competitive rates and worry-free driving experiences.
               </p>
             </div>
 
