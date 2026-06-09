@@ -5,7 +5,7 @@ import { BrandLogo } from "./components/BrandLogo";
 import { CarCard } from "./components/CarCard";
 import { AdminLogin } from "./components/AdminLogin";
 import { AdminDashboard } from "./components/AdminDashboard";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useScroll, useSpring } from "motion/react";
 import { db } from "./lib/db";
 import { supabase } from "./lib/supabase";
 import {
@@ -21,6 +21,7 @@ import {
   Menu,
   X,
   Plus,
+  ArrowDown,
   HelpCircle,
   CarFront,
   Users,
@@ -572,6 +573,14 @@ export default function App() {
   // Brand color constant
   const brandPlum = "#4C0027";
 
+  // Scroll Progress
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   // Master router render
   if (viewMode === "login") {
     return (
@@ -605,8 +614,12 @@ export default function App() {
   return (
     <div
       id="customer-application-root"
-      className="min-h-screen bg-[#4C0027] text-stone-900 flex flex-col justify-between"
+      className="min-h-screen bg-[#4C0027] text-stone-900 flex flex-col justify-between relative"
     >
+      <motion.div
+        style={{ scaleX }}
+        className="fixed top-0 left-0 right-0 h-1.5 bg-amber-400 z-[100] origin-left"
+      />
       {/* 1. Responsive & Sticky Navigation Header */}
       <header
         id="main-public-header"
@@ -1381,50 +1394,43 @@ export default function App() {
             </p>
           </div>
 
-          {/* Visual Narrative Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative mb-12">
-            <div className="space-y-5">
-              <h3 className="text-lg font-extrabold text-stone-900 tracking-tight">
-                The Brokerage Story: Trust Built on Relationships
+          {/* Visual Narrative & Philosophy */}
+          <div className="max-w-3xl mx-auto space-y-10 relative mb-16">
+            <div className="space-y-6 text-center bg-white border border-stone-150 rounded-2xl p-8 sm:p-10 shadow-3xs">
+              <div className="inline-flex items-center justify-center p-2 rounded-full bg-[#4C0027]/5 text-[#4C0027] mb-2" style={{ color: brandPlum }}>
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight">
+                Trust Built on Relationships
               </h3>
-              <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">
-                Founded in <strong>2021</strong>, our agency was established to solve a vital market need: providing complete safety and direct, uninflated pricing in the car leasing market. 
-              </p>
-              <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">
-                As your dedicated agent, I work intimately with both our clientele and a trusted network of verified car owners. Over the years, we have nurtured personal connections with car owners who treat their vehicles with utmost care, allowing us to source and verify the absolute best rides at competitive price structures.
-              </p>
-
-              {/* Key Pillars */}
-              <div className="pt-2 space-y-3.5">
-                <div className="flex items-start gap-3">
-                  <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 shrink-0 mt-0.5">
+              <div className="space-y-4 text-stone-600 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+                <p>
+                  Founded in <strong>2021</strong>, our agency was established to solve a vital market need: providing complete safety and direct, uninflated pricing in the car leasing market.
+                </p>
+                <p>
+                  As your dedicated agent, I work intimately with both our clientele and a trusted network of verified car owners. Over the years, we have nurtured personal connections with car owners who treat their vehicles with utmost care, allowing us to source and verify the absolute best rides at competitive price structures.
+                </p>
+                <div className="pt-4 pb-2">
+                  <div className="inline-flex items-center justify-center px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-700 text-xs font-bold gap-2">
                     <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-stone-900 font-bold text-xs mt-0.5">Direct Verification</h4>
-                    <p className="text-stone-500 text-[11px] leading-relaxed">
-                      Every vehicle is personally inspected for safety, cleanliness, and fluid performance before dispatch.
-                    </p>
+                    Direct Verification: All vehicles personally inspected before dispatch
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quote Visual representation without crossed-out stats */}
-            <div className="bg-white border border-stone-150 rounded-2xl p-6 sm:p-8 shadow-3xs relative flex flex-col justify-center h-full min-h-[220px]">
-              <div className="absolute top-4 right-4 text-stone-100">
-                <Sparkles className="w-12 h-12 pointer-events-none" />
+            {/* Agent Philosophy Quote */}
+            <div className="relative max-w-2xl mx-auto">
+              <div className="absolute -top-3 -left-3 text-[#4C0027]/20">
+                <Sparkles className="w-8 h-8 pointer-events-none" />
               </div>
-
-              <div className="relative space-y-4">
-                <div className="bg-stone-50 border border-[#4C0027]/10 rounded-xl p-6 flex flex-col justify-center gap-3">
-                  <div className="text-[10px] text-[#4C0027] font-extrabold uppercase tracking-widest" style={{ color: brandPlum }}>
-                    Agent Philosophy
-                  </div>
-                  <blockquote className="text-stone-700 italic text-xs sm:text-sm leading-relaxed">
-                    "Your journey is our reputation. Leveraging years of trust with vehicle owners is how we win your peace of mind."
-                  </blockquote>
+              <div className="bg-stone-50 border border-[#4C0027]/10 rounded-xl p-6 sm:p-8 text-center shadow-xs relative z-10">
+                <div className="text-[10px] text-[#4C0027] font-extrabold uppercase tracking-widest mb-3" style={{ color: brandPlum }}>
+                  Agent Philosophy
                 </div>
+                <blockquote className="text-stone-800 font-medium italic text-sm sm:text-base leading-relaxed">
+                  "Your journey is our reputation. Leveraging years of trust with vehicle owners is how we win your peace of mind."
+                </blockquote>
               </div>
             </div>
           </div>
@@ -1434,116 +1440,121 @@ export default function App() {
             <h3 className="text-stone-900 font-extrabold text-sm text-center mb-8 uppercase tracking-wider font-sans">
               Our Process Workflow
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-              {/* Step 1 */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-20px" }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0 }}
-                whileHover={{ y: -4, scale: 1.01 }}
-                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
-                    01
-                  </div>
-                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
-                    Select & Specify
-                  </h4>
-                </div>
-                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
-                  Tell us the car you want or browse our comprehensive car catalog to identify your preference.
-                </p>
-              </motion.div>
+            <div className="relative max-w-2xl mx-auto px-4 sm:px-8">
+              {/* Vertical connecting line */}
+              <div className="absolute top-10 bottom-10 left-[43px] sm:left-[59px] w-[2px] bg-stone-200"></div>
 
-              {/* Step 2 */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-20px" }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                whileHover={{ y: -4, scale: 1.01 }}
-                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
-                    02
+              <div className="space-y-0 relative z-10">
+                {/* Step 1 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0 }}
+                  className="relative flex items-start gap-6 sm:gap-8 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-white border-4 border-stone-50 shadow-sm flex items-center justify-center shrink-0 z-10 transition-transform duration-300 group-hover:scale-110 relative mt-1">
+                    <Search className="w-6 h-6 text-[#4C0027]" style={{ color: brandPlum }} />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-stone-900 font-black text-[10px] flex items-center justify-center shadow-sm border-2 border-white">1</div>
                   </div>
-                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
-                    Owner Sourcing
-                  </h4>
-                </div>
-                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
-                  We work with cooperative car owners to find your preferred car (or similar substitute) and send you the exact available vehicle details and photos.
-                </p>
-              </motion.div>
+                  <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
+                    <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
+                      Select & Specify
+                    </h4>
+                    <p className="text-stone-500 text-sm leading-relaxed max-w-md">
+                      Tell us the car you want or browse our comprehensive car catalog to identify your preference.
+                    </p>
+                  </div>
+                </motion.div>
 
-              {/* Step 3 */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-20px" }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                whileHover={{ y: -4, scale: 1.01 }}
-                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
-                    03
+                {/* Step 2 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                  className="relative flex items-start gap-6 sm:gap-8 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-white border-4 border-stone-50 shadow-sm flex items-center justify-center shrink-0 z-10 transition-transform duration-300 group-hover:scale-110 relative mt-1">
+                    <Users className="w-6 h-6 text-[#4C0027]" style={{ color: brandPlum }} />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-stone-900 font-black text-[10px] flex items-center justify-center shadow-sm border-2 border-white">2</div>
                   </div>
-                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
-                    Direct Delivery
-                  </h4>
-                </div>
-                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
-                  We coordinate with vehicle owners to bring the car straight to your location for a smooth, stress-free handover.
-                </p>
-              </motion.div>
+                  <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
+                    <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
+                      Owner Sourcing
+                    </h4>
+                    <p className="text-stone-500 text-sm leading-relaxed max-w-md">
+                      We work with cooperative car owners to find your preferred car (or similar substitute) and send you the exact available vehicle details and photos.
+                    </p>
+                  </div>
+                </motion.div>
 
-              {/* Step 4 */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-20px" }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-                whileHover={{ y: -4, scale: 1.01 }}
-                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
-                    04
+                {/* Step 3 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  className="relative flex items-start gap-6 sm:gap-8 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-white border-4 border-stone-50 shadow-sm flex items-center justify-center shrink-0 z-10 transition-transform duration-300 group-hover:scale-110 relative mt-1">
+                    <MapPin className="w-6 h-6 text-[#4C0027]" style={{ color: brandPlum }} />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-stone-900 font-black text-[10px] flex items-center justify-center shadow-sm border-2 border-white">3</div>
                   </div>
-                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
-                    Agreement Execution
-                  </h4>
-                </div>
-                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
-                  Sign the clear lease contract securely on-site with zero complex barriers or dynamic fees.
-                </p>
-              </motion.div>
+                  <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
+                    <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
+                      Direct Delivery
+                    </h4>
+                    <p className="text-stone-500 text-sm leading-relaxed max-w-md">
+                      We coordinate with vehicle owners to bring the car straight to your location for a smooth, stress-free handover.
+                    </p>
+                  </div>
+                </motion.div>
 
-              {/* Step 5 */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-20px" }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-                whileHover={{ y: -4, scale: 1.01 }}
-                className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col hover:shadow-xs hover:border-[#4C0027]/10 transition-all duration-300"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
-                    05
+                {/* Step 4 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                  className="relative flex items-start gap-6 sm:gap-8 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-white border-4 border-stone-50 shadow-sm flex items-center justify-center shrink-0 z-10 transition-transform duration-300 group-hover:scale-110 relative mt-1">
+                    <FileText className="w-6 h-6 text-[#4C0027]" style={{ color: brandPlum }} />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-stone-900 font-black text-[10px] flex items-center justify-center shadow-sm border-2 border-white">4</div>
                   </div>
-                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
-                    Active Aftercare
-                  </h4>
-                </div>
-                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
-                  Remain fully supported throughout your drive with continuous agent updates and technical troubleshooting.
-                </p>
-              </motion.div>
+                  <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
+                    <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
+                      Agreement Execution
+                    </h4>
+                    <p className="text-stone-500 text-sm leading-relaxed max-w-md">
+                      Sign the clear lease contract securely on-site with zero complex barriers or dynamic fees.
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* Step 5 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+                  className="relative flex items-start gap-6 sm:gap-8 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-white border-4 border-stone-50 shadow-sm flex items-center justify-center shrink-0 z-10 transition-transform duration-300 group-hover:scale-110 relative mt-1">
+                    <ShieldCheck className="w-6 h-6 text-[#4C0027]" style={{ color: brandPlum }} />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 text-stone-900 font-black text-[10px] flex items-center justify-center shadow-sm border-2 border-white">5</div>
+                  </div>
+                  <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
+                    <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
+                      Active Aftercare
+                    </h4>
+                    <p className="text-stone-500 text-sm leading-relaxed max-w-md">
+                      Remain fully supported throughout your drive with continuous agent updates and technical troubleshooting.
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -1554,24 +1565,93 @@ export default function App() {
         {bookingToast !== null && (
           <motion.div
             id="global-toast-alert"
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 p-4 bg-stone-900 text-stone-100 rounded-2xl shadow-2xl border border-stone-800 flex items-center gap-3 max-w-sm"
+            initial={{ opacity: 0, y: 70, scale: 0.85, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: 25, scale: 0.9, filter: "blur(2px)", transition: { duration: 0.2, ease: "easeIn" } }}
+            transition={{ type: "spring", damping: 18, stiffness: 280 }}
+            className="fixed bottom-6 right-6 z-50 p-4 bg-stone-900 border border-stone-800 text-stone-100 rounded-2xl shadow-2xl flex items-center gap-4 max-w-sm overflow-hidden"
           >
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-            <div className="flex-1">
-              <p className="text-xs font-semibold leading-relaxed text-stone-200 font-sans">
-                {bookingToast}
-              </p>
+            {/* Visual accent backdrop shine */}
+            <div className="absolute top-0 left-0 w-24 h-24 bg-[#4C0027]/15 rounded-full blur-xl pointer-events-none" />
+
+            {/* Micro-particle Burst & Animating Icon Container */}
+            <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
+              {/* Pulsing Backlight Halo */}
+              <motion.div
+                initial={{ scale: 0.6, opacity: 0.8 }}
+                animate={{ scale: 1.8, opacity: 0 }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
+                className="absolute inset-0 rounded-full bg-emerald-500/20"
+              />
+              
+              {/* Micro-Particles Confetti Burst on Mount */}
+              {Array.from({ length: 12 }).map((_, i) => {
+                const angle = (i * 360) / 12;
+                const distance = 24 + Math.random() * 24;
+                const radian = (angle * Math.PI) / 180;
+                const targetX = Math.cos(radian) * distance;
+                const targetY = Math.sin(radian) * distance;
+                const particleColors = ["#10B981", "#34D399", "#A7F3D0", "#F43F5E", "#FBBF24"];
+                const color = particleColors[i % particleColors.length];
+                
+                return (
+                  <motion.span
+                    key={i}
+                    className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
+                    style={{
+                      backgroundColor: color,
+                      left: "13px",
+                      top: "13px",
+                    }}
+                    initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
+                    animate={{
+                      x: targetX,
+                      y: targetY,
+                      scale: [0, 1.3, 0],
+                      opacity: [1, 1, 0]
+                    }}
+                    transition={{
+                      duration: 0.9,
+                      ease: "easeOut",
+                      delay: 0.05 + Math.random() * 0.1
+                    }}
+                  />
+                );
+              })}
+
+              {/* Success Checkmark Icon with Spring Entrance */}
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", damping: 11, stiffness: 220, delay: 0.1 }}
+                className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400"
+              >
+                <CheckCircle2 className="w-4.5 h-4.5" />
+              </motion.div>
             </div>
-            <button
+
+            {/* Success Details Text */}
+            <div className="flex-1 min-w-0 pr-2">
+              <motion.p
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 }}
+                className="text-xs font-semibold leading-relaxed text-stone-200 font-sans"
+              >
+                {bookingToast}
+              </motion.p>
+            </div>
+
+            {/* Precise Interaction Dismiss Button */}
+            <motion.button
               id="btn-close-toast"
               onClick={() => setBookingToast(null)}
-              className="text-stone-400 hover:text-white font-black leading-none cursor-pointer text-sm"
+              whileHover={{ rotate: 90, scale: 1.15 }}
+              whileActive={{ scale: 0.9 }}
+              className="text-stone-400 hover:text-white font-black leading-none cursor-pointer text-base shrink-0 p-1 rounded-lg hover:bg-stone-800 transition-colors"
             >
               &times;
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
