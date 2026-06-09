@@ -139,8 +139,10 @@ export const CarCard: React.FC<CarCardProps> = ({
     return Math.round(car.price);
   }, [car.price]);
 
-  const shareText = `Check out this ${car.name}
-Price: $${car.price.toLocaleString()}/month${car.videoUrl ? `\nVideo Link: ${car.videoUrl}` : ''}${car.description ? `\nDetails: ${car.description}` : ''}`;
+  const shareText = `Check out this ${car.name}!
+Price: $${car.price.toLocaleString()} / month
+Description: ${car.description || 'A great car for you.'}
+${car.videoUrl ? `Video Link: ${car.videoUrl}` : ''}`;
 
   const targetUrl = useMemo(() => {
     const carDetails = `*Enquiry for: ${car.name}*`;
