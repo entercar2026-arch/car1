@@ -148,6 +148,9 @@ export default function App() {
     return [];
   });
 
+  // Track if clear favorites confirmation modal is open
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
   // Track session authentication
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(
     () => {
@@ -432,10 +435,15 @@ export default function App() {
   };
 
   const handleClearLikes = () => {
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearLikes = () => {
     setLikedCars([]);
     if (filters.likedOnly) {
       setFilters(prev => ({ ...prev, likedOnly: false }));
     }
+    setShowClearConfirm(false);
   };
 
   const getBrandFromName = (name: string) => {
@@ -1305,6 +1313,62 @@ export default function App() {
               &times;
             </button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 8. Favorites Clear Confirmation Modal */}
+      <AnimatePresence>
+        {showClearConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop slide-in */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowClearConfirm(false)}
+              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+            />
+
+            {/* Dialog Content Card */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
+              className="relative w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 text-center font-sans z-10"
+            >
+              {/* Alert icon with subtle glow */}
+              <div className="mx-auto w-12 h-12 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mb-4 text-rose-500 shadow-3xs">
+                <HelpCircle className="w-6 h-6 animate-pulse" />
+              </div>
+
+              {/* Title & Warning description */}
+              <h3 className="text-stone-900 font-extrabold text-base mb-2 font-sans tracking-tight">
+                Clear Favorites?
+              </h3>
+              <p className="text-xs text-stone-500 leading-relaxed max-w-[270px] mx-auto mb-6 font-sans">
+                Are you sure you want to remove all cars from your liked list? This action cannot be undone.
+              </p>
+
+              {/* Modulated Buttons */}
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-stone-200 text-stone-600 text-xs font-bold font-sans hover:bg-stone-50 transition-all cursor-pointer active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmClearLikes}
+                  className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold font-sans transition-all cursor-pointer shadow-sm active:scale-95"
+                >
+                  Yes, Clear
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
