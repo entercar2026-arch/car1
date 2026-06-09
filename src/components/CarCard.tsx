@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Car, Review, Booking } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -220,15 +221,11 @@ export const CarCard: React.FC<CarCardProps> = ({
     <>
       <motion.div
         id={`car-card-${car.id}`}
-        layout
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
         whileHover={{ y: -8 }}
         transition={{ duration: 0.3 }}
-        className="bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between"
+        className="bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between h-full"
       >
         {/* Visual Header & Image */}
         <div
@@ -425,10 +422,11 @@ export const CarCard: React.FC<CarCardProps> = ({
       </motion.div>
 
       {/* Advanced Booking Reservation Modal */}
-      <AnimatePresence>
-        {isBookingOpen && (
-          <div
-            id={`booking-modal-${car.id}`}
+      {createPortal(
+        <AnimatePresence>
+          {isBookingOpen && (
+            <div
+              id={`booking-modal-${car.id}`}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
           >
             <motion.div
@@ -752,11 +750,14 @@ export const CarCard: React.FC<CarCardProps> = ({
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Elegant Reviews & Specifications Modal Drawer */}
-      <AnimatePresence>
-        {isReviewsOpen && (
+      {createPortal(
+        <AnimatePresence>
+          {isReviewsOpen && (
           <div
             id={`reviews-modal-${car.id}`}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
@@ -942,7 +943,9 @@ export const CarCard: React.FC<CarCardProps> = ({
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 };

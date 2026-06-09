@@ -1401,20 +1401,29 @@ export default function App() {
                 id="cars-grid"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                <AnimatePresence mode="popLayout animate-fade-in">
+                <AnimatePresence mode="popLayout">
                   {filteredCars.map((car) => (
-                    <CarCard
+                    <motion.div
                       key={car.id}
-                      car={car}
-                      onBookSuccess={handleBookingToast}
-                      reviews={reviews}
-                      onAddReview={handleAddReview}
-                      onConfirmBook={(bookingFields) =>
-                        handleConfirmBook(car.id, bookingFields)
-                      }
-                      isLiked={likedCars.includes(car.id)}
-                      onToggleLike={handleToggleLike}
-                    />
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                      transition={{ duration: 0.3 }}
+                      className="h-full"
+                    >
+                      <CarCard
+                        car={car}
+                        onBookSuccess={handleBookingToast}
+                        reviews={reviews}
+                        onAddReview={handleAddReview}
+                        onConfirmBook={(bookingFields) =>
+                          handleConfirmBook(car.id, bookingFields)
+                        }
+                        isLiked={likedCars.includes(car.id)}
+                        onToggleLike={handleToggleLike}
+                      />
+                    </motion.div>
                   ))}
                 </AnimatePresence>
               </div>
@@ -1860,10 +1869,50 @@ export default function App() {
               <ul className="space-y-2.5 text-xs text-stone-400">
                 <li>
                   <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
+                  >
+                    Home
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => scrollToAnchor("catalog-section")}
+                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
+                  >
+                    Car Catalog
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => scrollToAnchor("about-section")}
+                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
+                  >
+                    About Us
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => scrollToAnchor("workflow-section")}
+                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
+                  >
+                    Our Process Workflow
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => scrollToAnchor("faq-section")}
+                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
+                  >
+                    FAQ
+                  </button>
+                </li>
+                <li className="pt-2">
+                  <button
                     onClick={() =>
                       setViewMode(isAdminAuthenticated ? "admin" : "login")
                     }
-                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold font-bold"
+                    className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
                     Administrative Security Portal
                   </button>
