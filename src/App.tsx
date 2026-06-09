@@ -1167,7 +1167,11 @@ export default function App() {
               <button
                 id="filter-liked-cars"
                 onClick={() =>
-                  setFilters((prev) => ({ ...prev, likedOnly: !prev.likedOnly }))
+                  setFilters((prev) => ({
+                    ...prev,
+                    likedOnly: !prev.likedOnly,
+                    ...(!prev.likedOnly ? { category: "All" } : {})
+                  }))
                 }
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
               >
