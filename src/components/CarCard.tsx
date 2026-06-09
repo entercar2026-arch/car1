@@ -379,9 +379,6 @@ export const CarCard: React.FC<CarCardProps> = ({
             className="flex items-center justify-between mt-2 pt-2 gap-2"
           >
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest leading-none">
-                Monthly Fee
-              </span>
               <div className="flex items-baseline gap-0.5 mt-1">
                 <span
                   id={`car-price-${car.id}`}

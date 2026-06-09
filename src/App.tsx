@@ -31,6 +31,7 @@ import {
   Award,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   ShieldCheck,
   Building,
   Camera,
@@ -159,6 +160,26 @@ export default function App() {
     },
   );
 
+  // FAQ State
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Back to Top State
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show when scrolled past roughly the hero section (e.g., 600px)
+      if (window.scrollY > 600) {
+        setShowBackToTop(true);
+      } else {
+        setShowBackToTop(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Current Screen / Node View
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const isAuth = isSessionTokenValid();
@@ -169,7 +190,7 @@ export default function App() {
   const [filters, setFilters] = useState<CatalogFilters>({
     searchTerm: "",
     category: "All",
-    maxPrice: 10000,
+    maxPrice: 5000,
     transmission: "All",
     fuelType: "All",
     brand: "All",
@@ -421,7 +442,7 @@ export default function App() {
     setFilters({
       searchTerm: "",
       category: "All",
-      maxPrice: 10000,
+      maxPrice: 5000,
       transmission: "All",
       fuelType: "All",
       brand: "All",
@@ -673,14 +694,22 @@ export default function App() {
                     searchTerm: e.target.value,
                   }))
                 }
-                onFocus={() => scrollToAnchor("catalog-section")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     scrollToAnchor("catalog-section");
                   }
                 }}
-                className="w-full pl-[38px] pr-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-stone-800 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-2 focus:ring-[#4C0027]/20 transition-all font-sans font-medium placeholder:text-stone-400"
+                className="w-full pl-[38px] pr-10 py-2 bg-stone-50 border border-stone-200 rounded-full text-stone-800 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-2 focus:ring-[#4C0027]/20 transition-all font-sans font-medium placeholder:text-stone-400"
               />
+              {filters.searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </nav>
 
@@ -852,7 +881,7 @@ export default function App() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-white border-t border-stone-200 overflow-hidden font-sans shadow-lg select-none"
+              className="lg:hidden bg-white border-t border-stone-200 overflow-hidden font-sans shadow-lg"
             >
               <div className="px-4 py-5 space-y-4">
                 {/* Mobile Global Search Bar */}
@@ -871,18 +900,23 @@ export default function App() {
                         searchTerm: e.target.value,
                       }))
                     }
-                    onFocus={() => {
-                        scrollToAnchor("catalog-section");
-                        setIsMobileMenuOpen(false);
-                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         scrollToAnchor("catalog-section");
                         setIsMobileMenuOpen(false);
                       }
                     }}
-                    className="w-full pl-[38px] pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
+                    className="w-full pl-[38px] pr-10 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
                   />
+                  {filters.searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
 
                 <button
@@ -994,7 +1028,7 @@ export default function App() {
         </section>
 
         {/* Catalog Anchor Target */}
-        <section id="catalog-section" className="scroll-mt-24 select-none">
+        <section id="catalog-section" className="scroll-mt-24">
           {/* 3. Search parameters panel */}
           <section
             id="search-filters-container"
@@ -1047,8 +1081,17 @@ export default function App() {
                         searchTerm: e.target.value,
                       }))
                     }
-                    className="w-full pl-11 pr-4 py-3.5 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
+                    className="w-full pl-11 pr-10 py-3.5 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
                   />
+                  {filters.searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1069,7 +1112,7 @@ export default function App() {
                   id="filter-slider-price"
                   type="range"
                   min="300"
-                  max="10000"
+                  max="5000"
                   step="100"
                   value={filters.maxPrice}
                   onChange={(e) =>
@@ -1083,7 +1126,7 @@ export default function App() {
                 />
                 <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
                   <span>$300/mo</span>
-                  <span>$10,000/mo</span>
+                  <span>$5,000/mo</span>
                 </div>
               </div>
 
@@ -1300,6 +1343,14 @@ export default function App() {
           </section>
 
           {/* 5. Car catalog grid block */}
+          <div className="flex items-center justify-between mb-4 px-2">
+            <h2 className="text-stone-900 font-extrabold text-lg sm:text-xl tracking-tight">
+              Vehicle Catalog
+            </h2>
+            <div className="text-xs sm:text-sm font-medium text-stone-500 bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-xs">
+              Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> of <span className="font-bold text-stone-800">{cars.length}</span> vehicles
+            </div>
+          </div>
           <div id="collection-grid-view">
             {isFiltering ? (
               <div
@@ -1434,10 +1485,16 @@ export default function App() {
               </div>
             </div>
           </div>
+        </section>
 
+        {/* Our Process Workflow Section */}
+        <section
+          id="workflow-section"
+          className="scroll-mt-24 select-none bg-stone-50 border border-stone-200/60 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-xs animate-fade-in mx-auto max-w-5xl font-sans"
+        >
           {/* Unified 5-Step Work Flow Highlight */}
-          <div className="border-t border-stone-200/60 pt-10">
-            <h3 className="text-stone-900 font-extrabold text-sm text-center mb-8 uppercase tracking-wider font-sans">
+          <div className="pt-2">
+            <h3 className="text-stone-900 font-extrabold text-2xl sm:text-3xl text-center mb-8 tracking-tight font-sans">
               Our Process Workflow
             </h3>
             <div className="relative max-w-2xl mx-auto px-4 sm:px-8">
@@ -1555,6 +1612,76 @@ export default function App() {
                   </div>
                 </motion.div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section
+          id="faq-section"
+          className="scroll-mt-24 select-none bg-stone-50 border border-stone-200/60 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-xs animate-fade-in mx-auto max-w-5xl font-sans"
+        >
+          <div className="pt-2 w-full mx-auto px-0 sm:px-8">
+            <h3 className="text-stone-900 font-extrabold text-2xl sm:text-3xl text-center mb-8 tracking-tight font-sans">
+              Frequently Asked Questions
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              {[
+                {
+                  question: "What is the term and condition to rent a car?",
+                  answer: "The standard term of rental is 6-Month with 1-month deposit and 1-month rent. A photo of passport is required."
+                },
+                {
+                  question: "Can I extend my rental?",
+                  answer: "Yes, rental extensions are certainly possible. You can let us know in 15 days in advance."
+                },
+                {
+                  question: "Can I return the car back earlier?",
+                  answer: "Yes, you can."
+                },
+                {
+                  question: "When do I get my deposit back?",
+                  answer: "You can get back your deposit at the end of contract. After hand over the vehicle back."
+                },
+                {
+                  question: "Who covers the maintenance?",
+                  answer: "Basic maintenance and spare parts replace by its aged is the responsibility of the car owner."
+                }
+              ].map((faq, index) => (
+                <div 
+                  key={index} 
+                  className={`border border-stone-200 rounded-2xl overflow-hidden shadow-xs transition-all duration-300 hover:shadow-sm ${
+                    openFaq === index ? "bg-amber-50/50" : "bg-white"
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    className="w-full flex items-center justify-between p-5 text-left transition duration-300 focus:outline-none"
+                  >
+                    <span className="font-bold text-stone-900 pr-4">{faq.question}</span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-[#4C0027] shrink-0 transition-transform duration-300 ${
+                        openFaq === index ? "rotate-180" : ""
+                      }`}
+                      style={{ color: brandPlum }}
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {openFaq === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <div className="p-5 pt-0 border-t border-stone-100 text-stone-500 text-sm leading-relaxed">
+                          {faq.answer}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -1776,6 +1903,24 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-6 right-6 z-40 p-3.5 bg-white text-stone-900 rounded-full shadow-lg border border-stone-200 transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 cursor-pointer focus:outline-none"
+            aria-label="Back to top"
+          >
+            <ChevronUp className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
