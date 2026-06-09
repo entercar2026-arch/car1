@@ -1271,24 +1271,23 @@ export default function App() {
                 Explore our catalog
               </h2>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider font-mono">
-                  Sort By:
+                  Sort By Price:
                 </span>
-                <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="appearance-none pl-3 pr-8 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-700 text-xs font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans cursor-pointer hover:border-stone-300"
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setSortBy(sortBy === "price-asc" ? "default" : "price-asc")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-asc" ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-black"}`}
                   >
-                    <option value="default">Default</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="alphabetical">Alphabetical (A-Z)</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-stone-400">
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  </div>
+                    Low to High
+                  </button>
+                  <button
+                    onClick={() => setSortBy(sortBy === "price-desc" ? "default" : "price-desc")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-desc" ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-black"}`}
+                  >
+                    High to Low
+                  </button>
                 </div>
               </div>
             </div>
@@ -1344,7 +1343,7 @@ export default function App() {
 
           {/* 5. Car catalog grid block */}
           <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="text-stone-900 font-extrabold text-lg sm:text-xl tracking-tight">
+            <h2 className="text-yellow-400 font-extrabold text-lg sm:text-xl tracking-tight">
               Vehicle Catalog
             </h2>
             <div className="text-xs sm:text-sm font-medium text-stone-500 bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-xs">
@@ -1499,7 +1498,7 @@ export default function App() {
         {/* Our Process Workflow Section */}
         <section
           id="workflow-section"
-          className="scroll-mt-24 select-none bg-stone-50 border border-stone-200/60 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-xs animate-fade-in mx-auto max-w-5xl font-sans"
+          className="scroll-mt-24 select-none bg-yellow-50 border border-yellow-200/60 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-xs animate-fade-in mx-auto max-w-5xl font-sans"
         >
           {/* Unified 5-Step Work Flow Highlight */}
           <div className="pt-2">
@@ -1854,7 +1853,7 @@ export default function App() {
         className="bg-stone-900 text-stone-200 mt-20 border-t border-stone-800"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 select-none">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             <div className="md:col-span-2 space-y-4">
               <BrandLogo size="md" variant="dark" />
               <p className="text-xs text-stone-400 max-w-sm leading-relaxed font-sans">
@@ -1916,6 +1915,32 @@ export default function App() {
                   >
                     Administrative Security Portal
                   </button>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4">
+                Top Brands
+              </h4>
+              <ul className="space-y-2.5 text-xs text-stone-400">
+                <li>
+                  <button onClick={() => { scrollToAnchor("catalog-section"); setFilters(prev => ({ ...prev, brand: 'Toyota' })); }} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Toyota</button>
+                </li>
+                <li>
+                  <button onClick={() => { scrollToAnchor("catalog-section"); setFilters(prev => ({ ...prev, brand: 'Lexus' })); }} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Lexus</button>
+                </li>
+                <li>
+                  <button onClick={() => { scrollToAnchor("catalog-section"); setFilters(prev => ({ ...prev, brand: 'Ford' })); }} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Ford</button>
+                </li>
+                <li>
+                  <button onClick={() => { scrollToAnchor("catalog-section"); setFilters(prev => ({ ...prev, brand: 'MG' })); }} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">MG</button>
+                </li>
+                <li>
+                  <button onClick={() => { scrollToAnchor("catalog-section"); setFilters(prev => ({ ...prev, brand: 'Nissan' })); }} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Nissan</button>
+                </li>
+                <li>
+                  <button onClick={() => { scrollToAnchor("catalog-section"); setFilters(prev => ({ ...prev, brand: 'Mazda' })); }} className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold">Mazda</button>
                 </li>
               </ul>
             </div>
