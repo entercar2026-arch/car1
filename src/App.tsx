@@ -428,7 +428,11 @@ export default function App() {
   const handleToggleLike = (carId: string) => {
     setLikedCars((prev) => {
       if (prev.includes(carId)) {
-        return prev.filter((id) => id !== carId);
+        const newLikes = prev.filter((id) => id !== carId);
+        if (newLikes.length === 0 && filters.likedOnly) {
+          setFilters(f => ({ ...f, likedOnly: false, category: "All" }));
+        }
+        return newLikes;
       }
       return [...prev, carId];
     });
@@ -441,7 +445,7 @@ export default function App() {
   const confirmClearLikes = () => {
     setLikedCars([]);
     if (filters.likedOnly) {
-      setFilters(prev => ({ ...prev, likedOnly: false }));
+      setFilters(prev => ({ ...prev, likedOnly: false, category: "All" }));
     }
     setShowClearConfirm(false);
   };
@@ -652,7 +656,11 @@ export default function App() {
             <div className="flex items-center relative gap-0.5 mr-2">
               <button
                 onClick={() => {
-                  setFilters((prev) => ({ ...prev, likedOnly: true, category: "All" }));
+                  if (likedCars.length > 0) {
+                    setFilters((prev) => ({ ...prev, likedOnly: true, category: "All" }));
+                  } else {
+                    setFilters((prev) => ({ ...prev, likedOnly: false, category: "All" }));
+                  }
                   scrollToAnchor("category-filter-container");
                 }}
                 className={`p-2 lg:p-2.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
@@ -756,7 +764,11 @@ export default function App() {
                 <div id="mobile-header-fav-wrapper" className="relative flex items-center gap-0.5">
                   <button
                     onClick={() => {
-                      setFilters((prev) => ({ ...prev, likedOnly: true, category: "All" }));
+                      if (likedCars.length > 0) {
+                        setFilters((prev) => ({ ...prev, likedOnly: true, category: "All" }));
+                      } else {
+                        setFilters((prev) => ({ ...prev, likedOnly: false, category: "All" }));
+                      }
                       setIsMobileMenuOpen(false);
                       scrollToAnchor("category-filter-container");
                     }}
@@ -1174,13 +1186,17 @@ export default function App() {
               {/* Liked Filter Button */}
               <button
                 id="filter-liked-cars"
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    likedOnly: !prev.likedOnly,
-                    ...(!prev.likedOnly ? { category: "All" } : {})
-                  }))
-                }
+                onClick={() => {
+                  if (likedCars.length === 0) {
+                    setFilters((prev) => ({ ...prev, likedOnly: false, category: "All" }));
+                  } else {
+                    setFilters((prev) => ({
+                      ...prev,
+                      likedOnly: !prev.likedOnly,
+                      ...(!prev.likedOnly ? { category: "All" } : {})
+                    }));
+                  }
+                }}
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
               >
                 <span>Liked</span>
