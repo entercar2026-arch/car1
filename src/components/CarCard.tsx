@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Car, Review, Booking } from "../types";
 import { motion, AnimatePresence } from "motion/react";
+import { BrandIcon } from "./BrandIcon";
 import {
   Users,
   Fuel,
@@ -326,8 +327,9 @@ export const CarCard: React.FC<CarCardProps> = ({
             <div className="flex justify-between items-center mb-1 w-full gap-2 flex-wrap">
               <h3
                 id={`car-title-${car.id}`}
-                className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-[#4C0027] leading-snug"
+                className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-2"
               >
+                <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
                 {car.name}
               </h3>
             </div>
@@ -600,7 +602,8 @@ export const CarCard: React.FC<CarCardProps> = ({
                       />
                     )}
                     <div>
-                      <h4 className="font-extrabold text-stone-900 text-lg sm:text-xl leading-tight">
+                      <h4 className="font-extrabold text-stone-900 text-lg sm:text-xl leading-tight flex items-center gap-2">
+                        <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
                         {car.name}
                       </h4>
                       <p className="text-sm sm:text-base text-stone-600 font-mono font-bold mt-0.5 drop-shadow-sm">
@@ -781,7 +784,8 @@ export const CarCard: React.FC<CarCardProps> = ({
               <div className="border-b border-stone-200 pb-4 mb-4 select-none">
                 <div className="flex items-center gap-3">
                   <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                  <h3 className="font-sans font-black text-stone-900 text-xl tracking-tight">
+                  <h3 className="font-sans font-black text-stone-900 text-xl tracking-tight flex items-center gap-2">
+                    <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
                     {car.name} Experience Reviews
                   </h3>
                 </div>
