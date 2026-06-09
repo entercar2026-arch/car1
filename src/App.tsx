@@ -586,7 +586,7 @@ export default function App() {
         id="main-public-header"
         className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-xs"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-auto py-2.5 lg:py-0 lg:h-20 flex items-center justify-between">
           <div
             className="flex items-center gap-2 cursor-pointer select-none"
             onClick={() => scrollToAnchor("home-panel")}
@@ -638,10 +638,10 @@ export default function App() {
             </div>
           </nav>
 
-          {/* Right Action buttons and hamburger logic */}
-          <div className="flex items-center gap-3">
+          {/* Desktop Right Actions Container (visible only on lg screens & up) */}
+          <div className="hidden lg:flex items-center gap-3">
             {/* Favorites Icon */}
-            <div className="hidden lg:flex items-center relative gap-0.5 mr-2">
+            <div className="flex items-center relative gap-0.5 mr-2">
               <button
                 onClick={() => {
                   setFilters((prev) => ({ ...prev, likedOnly: true }));
@@ -668,7 +668,7 @@ export default function App() {
               )}
             </div>
 
-            {/* Quick Station info with Telegram & WhatsApp (Visible on both Mobile + Desktop) */}
+            {/* Quick Station info with Telegram & WhatsApp */}
             <div className="flex items-center select-none animate-fade-in pr-1">
               <div className="flex flex-row flex-nowrap items-center gap-1.5 sm:gap-4">
                 <a
@@ -704,46 +704,87 @@ export default function App() {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Mobile Favorites Icon */}
-            <div className="flex lg:hidden items-center relative gap-0.5 ml-1">
-              <button
-                onClick={() => {
-                  setFilters((prev) => ({ ...prev, likedOnly: true }));
-                  setIsMobileMenuOpen(false);
-                  scrollToAnchor("category-filter-container");
-                }}
-                className={`p-1.5 sm:p-2 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
-                title="Favorite Cars"
+          {/* Mobile Right Actions Container (Stacked into 2 rows, visible only on mobile/tablet) */}
+          <div className="flex lg:hidden items-center gap-2">
+            {/* Elegant 2-Row Stack */}
+            <div className="flex flex-col items-end justify-center py-1 select-none">
+              {/* Row 1: Phone Button */}
+              <a
+                href="tel:0966714442"
+                className="text-xs sm:text-sm font-bold text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1 font-mono hover:scale-[1.02] transition-transform"
+                style={{ color: brandPlum }}
               >
-                <Heart className={`w-4 h-4 ${filters.likedOnly ? "fill-current" : ""}`} />
-              </button>
-              {likedCars.length > 0 && (
-                <span className="absolute -top-1.5 -right-0.5 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10">
-                  {likedCars.length}
-                </span>
-              )}
-              {likedCars.length > 0 && (
+                <PhoneCall className="w-3 h-3 text-[#4C0027]" style={{ color: brandPlum }} />
+                <span>096 671 4442</span>
+              </a>
+
+              {/* Row 2: Social Buttons & Favorites Icon */}
+              <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5">
+                {/* Telegram */}
+                <a
+                  href="https://t.me/+855966714442"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Telegram"
+                  className="p-1 sm:p-1.5 bg-sky-50 text-sky-600 hover:bg-sky-100 hover:scale-105 active:scale-95 rounded-full transition-all border border-sky-100/60 flex items-center justify-center cursor-pointer shadow-3xs"
+                >
+                  <Send className="w-3 h-3 -rotate-12 -translate-x-0.25" />
+                </a>
+
+                {/* WhatsApp */}
+                <a
+                  href="https://wa.me/855966714442"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="WhatsApp"
+                  className="p-1 sm:p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:scale-105 active:scale-95 rounded-full transition-all border border-emerald-100/60 flex items-center justify-center cursor-pointer shadow-3xs"
+                >
+                  <MessageCircle className="w-3 h-3" />
+                </a>
+
+                {/* Favorites button with heart + clear */}
+                <div id="mobile-header-fav-wrapper" className="relative flex items-center gap-0.5">
                   <button
-                    onClick={handleClearLikes}
-                    className="ml-1 text-stone-400 hover:text-rose-600 p-1.5 rounded-full hover:bg-rose-50 transition-colors"
-                    title="Clear favorites"
+                    onClick={() => {
+                      setFilters((prev) => ({ ...prev, likedOnly: true }));
+                      setIsMobileMenuOpen(false);
+                      scrollToAnchor("category-filter-container");
+                    }}
+                    className={`p-1 sm:p-1.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-xs scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
+                    title="Favorite Cars"
                   >
-                    <X className="w-4 h-4" />
+                    <Heart className={`w-3 h-3 ${filters.likedOnly ? "fill-current" : ""}`} />
                   </button>
-              )}
+                  {likedCars.length > 0 && (
+                    <span className="absolute -top-1 -right-0.5 bg-rose-500 text-white text-[8px] font-semibold px-1 rounded-full shadow-xs z-10 scale-90">
+                      {likedCars.length}
+                    </span>
+                  )}
+                  {likedCars.length > 0 && (
+                    <button
+                      onClick={handleClearLikes}
+                      className="ml-0.5 text-stone-400 hover:text-rose-600 p-0.5 rounded-full hover:bg-rose-50 transition-colors"
+                      title="Clear favorites"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Mobile Hamburger toggle */}
             <button
               id="mobile-menu-toggle"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-stone-750 hover:bg-stone-55 rounded-xl transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 text-stone-700 hover:bg-stone-50 rounded-xl transition-all cursor-pointer flex items-center justify-center border border-stone-100 ml-0.5 sm:ml-1"
             >
               {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
+                <X className="w-4.5 h-4.5" />
               ) : (
-                <Menu className="w-5 h-5" />
+                <Menu className="w-4.5 h-4.5" />
               )}
             </button>
           </div>
