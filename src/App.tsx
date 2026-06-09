@@ -645,7 +645,7 @@ export default function App() {
               <button
                 onClick={() => {
                   setFilters((prev) => ({ ...prev, likedOnly: true }));
-                  scrollToAnchor("catalog-section");
+                  scrollToAnchor("category-filter-container");
                 }}
                 className={`p-2 lg:p-2.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
                 title="Favorite Cars"
@@ -711,7 +711,7 @@ export default function App() {
                 onClick={() => {
                   setFilters((prev) => ({ ...prev, likedOnly: true }));
                   setIsMobileMenuOpen(false);
-                  scrollToAnchor("catalog-section");
+                  scrollToAnchor("category-filter-container");
                 }}
                 className={`p-1.5 sm:p-2 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
                 title="Favorite Cars"
