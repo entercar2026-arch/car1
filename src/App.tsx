@@ -36,6 +36,7 @@ import {
   FileText,
   Send,
   MessageCircle,
+  Heart,
 } from "lucide-react";
 
 const SECURE_TOKEN_KEY = "enter_admin_session_token";
@@ -430,6 +431,13 @@ export default function App() {
     });
   };
 
+  const handleClearLikes = () => {
+    setLikedCars([]);
+    if (filters.likedOnly) {
+      setFilters(prev => ({ ...prev, likedOnly: false }));
+    }
+  };
+
   const getBrandFromName = (name: string) => {
     const multiWordBrands = [
       "Range Rover", "Land Rover", "Aston Martin", "Alfa Romeo", "Ssang Yong", 
@@ -632,6 +640,36 @@ export default function App() {
 
           {/* Right Action buttons and hamburger logic */}
           <div className="flex items-center gap-3">
+            {/* Favorites Icon */}
+            <div className="hidden lg:flex items-center relative gap-0.5 mr-2">
+              <button
+                onClick={() => {
+                  setFilters((prev) => ({ ...prev, likedOnly: !prev.likedOnly }));
+                  if (!filters.likedOnly) {
+                     scrollToAnchor("catalog-section");
+                  }
+                }}
+                className={`p-2 lg:p-2.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
+                title="Favorite Cars"
+              >
+                <Heart className={`w-4 h-4 lg:w-4.5 lg:h-4.5 ${filters.likedOnly ? "fill-current" : ""}`} />
+              </button>
+              {likedCars.length > 0 && (
+                <span className="absolute -top-1.5 -right-0.5 lg:-top-1.5 lg:right-4 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                  {likedCars.length}
+                </span>
+              )}
+              {likedCars.length > 0 && (
+                  <button
+                    onClick={handleClearLikes}
+                    className="ml-1 text-stone-400 hover:text-rose-600 p-1 rounded-full hover:bg-rose-50 transition-colors"
+                    title="Clear favorites"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+              )}
+            </div>
+
             {/* Quick Station info with Telegram & WhatsApp (Visible on both Mobile + Desktop) */}
             <div className="flex items-center select-none animate-fade-in pr-1">
               <div className="flex flex-row flex-nowrap items-center gap-1.5 sm:gap-4">
@@ -667,6 +705,37 @@ export default function App() {
                   </a>
                 </div>
               </div>
+            </div>
+
+            {/* Mobile Favorites Icon */}
+            <div className="flex lg:hidden items-center relative gap-0.5 ml-1">
+              <button
+                onClick={() => {
+                  setFilters((prev) => ({ ...prev, likedOnly: !prev.likedOnly }));
+                  setIsMobileMenuOpen(false);
+                  if (!filters.likedOnly) {
+                     scrollToAnchor("catalog-section");
+                  }
+                }}
+                className={`p-1.5 sm:p-2 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
+                title="Favorite Cars"
+              >
+                <Heart className={`w-4 h-4 ${filters.likedOnly ? "fill-current" : ""}`} />
+              </button>
+              {likedCars.length > 0 && (
+                <span className="absolute -top-1.5 -right-0.5 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10">
+                  {likedCars.length}
+                </span>
+              )}
+              {likedCars.length > 0 && (
+                  <button
+                    onClick={handleClearLikes}
+                    className="ml-1 text-stone-400 hover:text-rose-600 p-1.5 rounded-full hover:bg-rose-50 transition-colors"
+                    title="Clear favorites"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+              )}
             </div>
 
             {/* Mobile Hamburger toggle */}
