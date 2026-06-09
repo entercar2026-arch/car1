@@ -644,10 +644,8 @@ export default function App() {
             <div className="hidden lg:flex items-center relative gap-0.5 mr-2">
               <button
                 onClick={() => {
-                  setFilters((prev) => ({ ...prev, likedOnly: !prev.likedOnly }));
-                  if (!filters.likedOnly) {
-                     scrollToAnchor("catalog-section");
-                  }
+                  setFilters((prev) => ({ ...prev, likedOnly: true }));
+                  scrollToAnchor("catalog-section");
                 }}
                 className={`p-2 lg:p-2.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
                 title="Favorite Cars"
@@ -711,11 +709,9 @@ export default function App() {
             <div className="flex lg:hidden items-center relative gap-0.5 ml-1">
               <button
                 onClick={() => {
-                  setFilters((prev) => ({ ...prev, likedOnly: !prev.likedOnly }));
+                  setFilters((prev) => ({ ...prev, likedOnly: true }));
                   setIsMobileMenuOpen(false);
-                  if (!filters.likedOnly) {
-                     scrollToAnchor("catalog-section");
-                  }
+                  scrollToAnchor("catalog-section");
                 }}
                 className={`p-1.5 sm:p-2 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
                 title="Favorite Cars"
@@ -1026,6 +1022,7 @@ export default function App() {
                         setFilters((prev) => ({
                           ...prev,
                           category: e.target.value as any,
+                          likedOnly: false,
                         }))
                       }
                       className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
@@ -1150,7 +1147,7 @@ export default function App() {
                     key={cat}
                     id={`filter-cat-tab-${cat}`}
                     onClick={() =>
-                      setFilters((prev) => ({ ...prev, category: cat }))
+                      setFilters((prev) => ({ ...prev, category: cat, likedOnly: false }))
                     }
                     className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-black"}`}
                   >
