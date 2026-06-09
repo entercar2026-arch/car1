@@ -10,7 +10,8 @@ export const INITIAL_CARS: Car[] = [
     transmission: 'Automatic',
     seats: 4,
     fuelType: 'Gasoline',
-    description: 'The ultimate sports driving experience. Timeless style meets peerless precision and pure mechanical thrill.'
+    description: 'The ultimate sports driving experience. Timeless style meets peerless precision and pure mechanical thrill.',
+    videoUrl: 'https://youtube.com/watch?v=dQw4w9WgXcQ'
   },
   {
     id: 'car-2',

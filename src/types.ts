@@ -9,6 +9,7 @@ export interface Car {
   fuelType: "Electric" | "Gasoline" | "Hybrid" | "Diesel" | "LPG";
   description?: string;
   isAvailable?: boolean;
+  videoUrl?: string;
 }
 
 export type ViewMode = "customer" | "admin" | "login";
