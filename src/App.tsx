@@ -636,6 +636,13 @@ export default function App() {
             >
               Car Catalog
             </button>
+            <button
+              id="nav-link-about"
+              onClick={() => scrollToAnchor("about-section")}
+              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+            >
+              About Us
+            </button>
 
             {/* Desktop Global Search Bar */}
             <div className="relative w-36 focus-within:w-72 xl:focus-within:w-80 ml-4 group transition-all duration-300 ease-in-out">
@@ -884,6 +891,16 @@ export default function App() {
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
                   Car Catalog
+                </button>
+                <button
+                  id="mobile-link-about"
+                  onClick={() => {
+                    scrollToAnchor("about-section");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                >
+                  About Us
                 </button>
               </div>
             </motion.div>
@@ -1338,6 +1355,161 @@ export default function App() {
                 </AnimatePresence>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* About Us Section */}
+        <section
+          id="about-section"
+          className="scroll-mt-24 mt-16 select-none bg-stone-50 border border-stone-200/60 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden shadow-xs animate-fade-in mx-auto max-w-5xl font-sans"
+        >
+          {/* Ambient background accent decoration */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[#4C0027]/2 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-[#4C0027]/2 rounded-full blur-xl pointer-events-none" />
+
+          <div className="relative text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#4C0027]/5 rounded-full text-[10px] font-black uppercase text-[#4C0027] tracking-widest mb-4">
+              <Award className="w-3.5 h-3.5" style={{ color: brandPlum }} />
+              <span>Established 2021</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight mb-4">
+              Providing Seamless Connections Between Discerning Clients & Trusted Car Owners
+            </h2>
+            <div className="w-12 h-1 bg-[#4C0027] mx-auto rounded-full mb-4" style={{ backgroundColor: brandPlum }} />
+            <p className="text-stone-600 text-sm leading-relaxed max-w-2xl mx-auto">
+              For several years, Enter Car Rental has served as your elite concierge brokerage, curating custom relationships between clients and our network of private vehicle owners.
+            </p>
+          </div>
+
+          {/* Visual Narrative Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative mb-12">
+            <div className="space-y-5">
+              <h3 className="text-lg font-extrabold text-stone-900 tracking-tight">
+                The Brokerage Story: Trust Built on Relationships
+              </h3>
+              <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">
+                Founded in <strong>2021</strong>, our agency was established to solve a vital market need: providing complete safety and direct, uninflated pricing in the car leasing market. 
+              </p>
+              <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">
+                As your dedicated agent, I work intimately with both our clientele and a trusted network of verified car owners. Over the years, we have nurtured personal connections with car owners who treat their vehicles with utmost care, allowing us to source and verify the absolute best rides at competitive price structures.
+              </p>
+
+              {/* Key Pillars */}
+              <div className="pt-2 space-y-3.5">
+                <div className="flex items-start gap-3">
+                  <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-600 shrink-0 mt-0.5">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-stone-900 font-bold text-xs mt-0.5">Direct Verification</h4>
+                    <p className="text-stone-500 text-[11px] leading-relaxed">
+                      Every vehicle is personally inspected for safety, cleanliness, and fluid performance before dispatch.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quote Visual representation without crossed-out stats */}
+            <div className="bg-white border border-stone-150 rounded-2xl p-6 sm:p-8 shadow-3xs relative flex flex-col justify-center h-full min-h-[220px]">
+              <div className="absolute top-4 right-4 text-stone-100">
+                <Sparkles className="w-12 h-12 pointer-events-none" />
+              </div>
+
+              <div className="relative space-y-4">
+                <div className="bg-stone-50 border border-[#4C0027]/10 rounded-xl p-6 flex flex-col justify-center gap-3">
+                  <div className="text-[10px] text-[#4C0027] font-extrabold uppercase tracking-widest" style={{ color: brandPlum }}>
+                    Agent Philosophy
+                  </div>
+                  <blockquote className="text-stone-700 italic text-xs sm:text-sm leading-relaxed">
+                    "Your journey is our reputation. Leveraging years of trust with vehicle owners is how we win your peace of mind."
+                  </blockquote>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Unified 5-Step Work Flow Highlight */}
+          <div className="border-t border-stone-200/60 pt-10">
+            <h3 className="text-stone-900 font-extrabold text-sm text-center mb-8 uppercase tracking-wider font-sans">
+              Our Process Workflow
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+              {/* Step 1 */}
+              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
+                    01
+                  </div>
+                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
+                    Select & Specify
+                  </h4>
+                </div>
+                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
+                  Tell us the car you want or browse our comprehensive car catalog to identify your preference.
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
+                    02
+                  </div>
+                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
+                    Owner Sourcing
+                  </h4>
+                </div>
+                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
+                  We work with cooperative car owners to find your preferred car (or similar substitute) and send you the exact available vehicle details and photos.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
+                    03
+                  </div>
+                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
+                    Direct Delivery
+                  </h4>
+                </div>
+                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
+                  We coordinate with vehicle owners to bring the car straight to your location for a smooth, stress-free handover.
+                </p>
+              </div>
+
+              {/* Step 4 */}
+              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
+                    04
+                  </div>
+                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
+                    Agreement Execution
+                  </h4>
+                </div>
+                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
+                  Sign the clear lease contract securely on-site with zero complex barriers or dynamic fees.
+                </p>
+              </div>
+
+              {/* Step 5 */}
+              <div className="space-y-3 bg-white border border-stone-100 p-5 rounded-2xl shadow-2xs flex flex-col">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#4C0027]/5 text-[#4C0027] font-black flex items-center justify-center text-xs shrink-0" style={{ color: brandPlum }}>
+                    05
+                  </div>
+                  <h4 className="text-stone-900 font-bold text-xs sm:text-sm tracking-tight leading-snug text-left">
+                    Active Aftercare
+                  </h4>
+                </div>
+                <p className="text-stone-500 text-[11px] leading-relaxed font-normal text-left">
+                  Remain fully supported throughout your drive with continuous agent updates and technical troubleshooting.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       </main>
