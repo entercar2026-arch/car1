@@ -638,14 +638,14 @@ export default function App() {
             </button>
 
             {/* Desktop Global Search Bar */}
-            <div className="relative w-64 xl:w-80 ml-4 group">
+            <div className="relative w-36 focus-within:w-72 xl:focus-within:w-80 ml-4 group transition-all duration-300 ease-in-out">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                 <Search className="h-4 w-4 text-stone-400 group-focus-within:text-[#4C0027] transition-colors" />
               </div>
               <input
                 id="global-input-search-desktop"
                 type="text"
-                placeholder="Search models, brands..."
+                placeholder="Find car..."
                 value={filters.searchTerm}
                 onChange={(e) =>
                   setFilters((prev) => ({
@@ -843,7 +843,7 @@ export default function App() {
                   <input
                     id="global-input-search-mobile"
                     type="text"
-                    placeholder="Search models, brands..."
+                    placeholder="Find car..."
                     value={filters.searchTerm}
                     onChange={(e) =>
                       setFilters((prev) => ({
@@ -977,7 +977,7 @@ export default function App() {
                     className="w-5 h-5 text-[#4C0027]"
                     style={{ color: brandPlum }}
                   />
-                  Find your favorite car
+                  Find your car
                 </h2>
                 <p className="text-xs text-stone-500 mt-1 leading-normal">
                   Refine our roster of high-end sedans, SUVs, and pristine
