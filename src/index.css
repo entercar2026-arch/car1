@@ -35,3 +35,36 @@ input[type="range"] {
 ::-webkit-scrollbar-thumb:hover {
   background: #A8A29E;
 }
+
+/* Professional loading shimmer animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #f5f5f4 25%,
+    #e7e5e4 50%,
+    #f5f5f4 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+.shimmer-dark {
+  background: linear-gradient(
+    90deg,
+    #e7e5e4 25%,
+    #d6d3d1 50%,
+    #e7e5e4 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+

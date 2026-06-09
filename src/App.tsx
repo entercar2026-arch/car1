@@ -175,6 +175,9 @@ export default function App() {
     likedOnly: false,
   });
 
+  // Sorting state
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "alphabetical">("default");
+
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -496,7 +499,7 @@ export default function App() {
   }, [filters]);
 
   const filteredCars = useMemo(() => {
-    return cars.filter((car) => {
+    const results = cars.filter((car) => {
       const matchSearch =
         car.name.toLowerCase().includes(activeFilters.searchTerm.toLowerCase()) ||
         (car.description &&
@@ -529,7 +532,18 @@ export default function App() {
         matchLiked
       );
     });
-  }, [cars, activeFilters, likedCars]);
+
+    if (sortBy === "price-asc") {
+      return [...results].sort((a, b) => a.price - b.price);
+    }
+    if (sortBy === "price-desc") {
+      return [...results].sort((a, b) => b.price - a.price);
+    }
+    if (sortBy === "alphabetical") {
+      return [...results].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return results;
+  }, [cars, activeFilters, likedCars, sortBy]);
 
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
@@ -1175,13 +1189,36 @@ export default function App() {
             id="category-filter-container"
             className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8"
           >
-            <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2 mb-4">
-              <CarFront
-                className="w-5 h-5 text-[#4C0027]"
-                style={{ color: brandPlum }}
-              />
-              Explore our catalog
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2">
+                <CarFront
+                  className="w-5 h-5 text-[#4C0027]"
+                  style={{ color: brandPlum }}
+                />
+                Explore our catalog
+              </h2>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] sm:text-xs font-bold text-stone-400 uppercase tracking-wider font-mono">
+                  Sort By:
+                </span>
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="appearance-none pl-3 pr-8 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-700 text-xs font-bold focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans cursor-pointer hover:border-stone-300"
+                  >
+                    <option value="default">Default</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="alphabetical">Alphabetical (A-Z)</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-stone-400">
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {/* Liked Filter Button */}
               <button
@@ -1239,19 +1276,19 @@ export default function App() {
                 id="cars-grid-loading"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-3xl p-3 border border-stone-100 shadow-sm animate-pulse flex flex-col justify-between" style={{ minHeight: '380px' }}>
-                    <div className="w-full h-40 sm:h-52 bg-stone-100 rounded-2xl mb-4" />
+                 {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-3xl p-3 border border-stone-100 shadow-sm flex flex-col justify-between" style={{ minHeight: '380px' }}>
+                    <div className="w-full h-40 sm:h-52 shimmer rounded-2xl mb-4" />
                     <div className="px-3">
-                      <div className="w-3/4 h-6 bg-stone-200 rounded-lg mb-2" />
+                      <div className="w-3/4 h-6 shimmer-dark rounded-lg mb-2" />
                       <div className="flex gap-2 mb-4">
-                        <div className="w-1/3 h-8 bg-stone-100 rounded-xl" />
-                        <div className="w-1/3 h-8 bg-stone-100 rounded-xl" />
-                        <div className="w-1/3 h-8 bg-stone-100 rounded-xl" />
+                        <div className="w-1/3 h-8 shimmer rounded-xl" />
+                        <div className="w-1/3 h-8 shimmer rounded-xl" />
+                        <div className="w-1/3 h-8 shimmer rounded-xl" />
                       </div>
                       <div className="flex justify-between items-end mt-4">
-                        <div className="w-20 h-8 bg-stone-200 rounded-md" />
-                        <div className="w-24 h-10 bg-stone-200 rounded-xl" />
+                        <div className="w-20 h-8 shimmer-dark rounded-md" />
+                        <div className="w-24 h-10 shimmer-dark rounded-xl" />
                       </div>
                     </div>
                   </div>
