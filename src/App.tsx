@@ -644,7 +644,7 @@ export default function App() {
             <div className="flex items-center relative gap-0.5 mr-2">
               <button
                 onClick={() => {
-                  setFilters((prev) => ({ ...prev, likedOnly: true }));
+                  setFilters((prev) => ({ ...prev, likedOnly: true, category: "All" }));
                   scrollToAnchor("category-filter-container");
                 }}
                 className={`p-2 lg:p-2.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
@@ -748,7 +748,7 @@ export default function App() {
                 <div id="mobile-header-fav-wrapper" className="relative flex items-center gap-0.5">
                   <button
                     onClick={() => {
-                      setFilters((prev) => ({ ...prev, likedOnly: true }));
+                      setFilters((prev) => ({ ...prev, likedOnly: true, category: "All" }));
                       setIsMobileMenuOpen(false);
                       scrollToAnchor("category-filter-container");
                     }}
