@@ -187,6 +187,7 @@ export default function App() {
   });
 
   // Filter criteria state
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<CatalogFilters>({
     searchTerm: "",
     category: "All",
@@ -1034,102 +1035,115 @@ export default function App() {
             id="search-filters-container"
             className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-4"
           >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2">
-                  <SlidersHorizontal
-                    className="w-5 h-5 text-[#4C0027]"
-                    style={{ color: brandPlum }}
-                  />
-                  Find your car
-                </h2>
-                <p className="text-xs text-stone-500 mt-1 leading-normal">
-                  Refine our roster of high-end sedans, SUVs, and pristine
-                  high-performance electric categories.
-                </p>
+            <div className="flex flex-col gap-4 select-none">
+              <div className="flex items-center justify-between">
+                <div 
+                  className="flex items-center justify-between pl-1 cursor-pointer group shrink-0"
+                  onClick={() => setIsFiltersOpen(prev => !prev)}
+                >
+                  <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2 group-hover:text-[#4C0027] transition-colors whitespace-nowrap">
+                    <SlidersHorizontal
+                      className="w-5 h-5 text-[#4C0027]"
+                      style={{ color: brandPlum }}
+                    />
+                    Find your car
+                    {isFiltersOpen ? <ChevronUp className="w-5 h-5 text-stone-400" /> : <ChevronDown className="w-5 h-5 text-stone-400" />}
+                  </h2>
+                </div>
+                
+                <button
+                  id="btn-reset-filters"
+                  onClick={(e) => { e.stopPropagation(); handleResetFilters(); }}
+                  className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg border border-stone-200 text-[11px] sm:text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-800 transition-all cursor-pointer bg-white whitespace-nowrap shrink-0"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Reset Filters</span>
+                </button>
               </div>
 
-              {/* Clear filters button */}
-              <button
-                id="btn-reset-filters"
-                onClick={handleResetFilters}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-800 transition-all cursor-pointer bg-white"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset Filters</span>
-              </button>
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 w-full">
+                {/* Search Box - Now in header */}
+                <div className="w-full flex flex-col justify-center" onClick={(e) => e.stopPropagation()}>
+                  <label className="text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono pl-1">
+                    Search Model / Keywords
+                  </label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-stone-400">
+                      <Search className="h-4 w-4" />
+                    </span>
+                    <input
+                      id="filter-input-search"
+                      type="text"
+                      placeholder="e.g. Porsche, Tesla, SUV..."
+                      value={filters.searchTerm}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          searchTerm: e.target.value,
+                        }))
+                      }
+                      className="w-full pl-11 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400 shadow-sm"
+                    />
+                    {filters.searchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              {/* Row 1: Search & Price */}
-              <div className="col-span-1 lg:col-span-7">
-                <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                  Search Model / Keywords
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-stone-400">
-                    <Search className="h-4 w-4" />
-                  </span>
+                {/* Max Monthly Fee Slider - Now in header */}
+                <div className="w-full flex flex-col justify-center bg-stone-50 rounded-xl px-5 py-3 border border-stone-100 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase tracking-wider font-mono">
+                      Max Monthly Fee
+                    </label>
+                    <span
+                      id="price-slider-display"
+                      className="text-[11px] font-mono font-bold text-[#4C0027] bg-white px-2.5 py-1 rounded-md border border-stone-200 shadow-sm"
+                      style={{ color: brandPlum }}
+                    >
+                      up to ${filters.maxPrice}/month
+                    </span>
+                  </div>
                   <input
-                    id="filter-input-search"
-                    type="text"
-                    placeholder="e.g. Porsche, Tesla, SUV..."
-                    value={filters.searchTerm}
+                    id="filter-slider-price"
+                    type="range"
+                    min="300"
+                    max="5000"
+                    step="100"
+                    value={filters.maxPrice}
                     onChange={(e) =>
                       setFilters((prev) => ({
                         ...prev,
-                        searchTerm: e.target.value,
+                        maxPrice: Number(e.target.value),
                       }))
                     }
-                    className="w-full pl-11 pr-10 py-3.5 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
+                    className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#4C0027]"
+                    style={{ accentColor: brandPlum }}
                   />
-                  {filters.searchTerm && (
-                    <button
-                      type="button"
-                      onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  )}
+                  <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
+                    <span>$300/mo</span>
+                    <span>$5,000/mo</span>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="col-span-1 lg:col-span-5 flex flex-col justify-center bg-stone-50 rounded-xl px-5 py-4 border border-stone-100">
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider font-mono">
-                    Max Monthly Fee
-                  </label>
-                  <span
-                    id="price-slider-display"
-                    className="text-xs font-mono font-bold text-[#4C0027] bg-white px-2.5 py-1 rounded-md border border-stone-200 shadow-sm"
-                    style={{ color: brandPlum }}
-                  >
-                    up to ${filters.maxPrice}/month
-                  </span>
-                </div>
-                <input
-                  id="filter-slider-price"
-                  type="range"
-                  min="300"
-                  max="5000"
-                  step="100"
-                  value={filters.maxPrice}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      maxPrice: Number(e.target.value),
-                    }))
-                  }
-                  className="w-full accent-[#4C0027] cursor-pointer"
-                  style={{ accentColor: brandPlum }}
-                />
-                <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
-                  <span>$300/mo</span>
-                  <span>$5,000/mo</span>
-                </div>
-              </div>
-
+            <AnimatePresence initial={false}>
+              {isFiltersOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                  animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 gap-4">
               {/* Row 2: Dropdowns */}
               <div className="col-span-1 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
@@ -1254,7 +1268,10 @@ export default function App() {
                   </div>
                 </div>
               </div>
-            </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </section>
 
           {/* 4. Horizontal Category Tab Selector Bar */}
@@ -1322,10 +1339,7 @@ export default function App() {
           </section>
 
           {/* 5. Car catalog grid block */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 px-2">
-            <h2 className="text-yellow-400 font-extrabold text-lg sm:text-xl tracking-tight">
-              Vehicle Catalog
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-start gap-4 mb-4 px-2">
             <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider font-mono text-white/70 hidden sm:inline-block">
