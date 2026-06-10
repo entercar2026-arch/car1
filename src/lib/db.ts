@@ -15,18 +15,22 @@ const dbToCar = (dbCar: any): Car => ({
   videoUrl: dbCar.video_url || dbCar.videoUrl || "",
 });
 
-const carToDb = (car: Omit<Car, 'id'>) => ({
-  name: car.name,
-  category: car.category,
-  price: car.price,
-  image: car.image,
-  transmission: car.transmission,
-  seats: car.seats,
-  fuel_type: car.fuelType,
-  description: car.description,
-  video_url: car.videoUrl,
-  year_model: 2024,
-});
+const carToDb = (car: Omit<Car, 'id'>) => {
+  const payload: any = {
+    name: car.name,
+    category: car.category,
+    price: car.price,
+    image: car.image,
+    transmission: car.transmission,
+    seats: car.seats,
+    fuel_type: car.fuelType,
+    description: car.description,
+    year_model: 2024,
+  };
+  // Temporarily omit video_url to prevent sync errors until column is added in Supabase
+  // if (car.videoUrl) payload.video_url = car.videoUrl;
+  return payload;
+};
 
 export const db = {
   cars: {
@@ -54,7 +58,7 @@ export const db = {
       if (car.seats) payload.seats = car.seats;
       if (car.fuelType) payload.fuel_type = car.fuelType;
       if (car.description !== undefined) payload.description = car.description;
-      if (car.videoUrl !== undefined) payload.video_url = car.videoUrl;
+      // if (car.videoUrl !== undefined) payload.video_url = car.videoUrl; // Excluded until schema is updated
 
       const { data, error } = await supabase.from('cars').update(payload).eq('id', id).select().single();
       if (error) throw error;

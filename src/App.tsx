@@ -1047,7 +1047,10 @@ export default function App() {
                       style={{ color: brandPlum }}
                     />
                     Find your car
-                    {isFiltersOpen ? <ChevronUp className="w-5 h-5 text-stone-400" /> : <ChevronDown className="w-5 h-5 text-stone-400" />}
+                    <span className="flex items-center gap-1 text-sm font-semibold text-stone-500 ml-2 group-hover:text-stone-700 transition-colors">
+                      Advance search
+                      {isFiltersOpen ? <ChevronUp className="w-4 h-4 text-stone-400" /> : <ChevronDown className="w-4 h-4 text-stone-400" />}
+                    </span>
                   </h2>
                 </div>
                 
@@ -1104,8 +1107,7 @@ export default function App() {
                     </label>
                     <span
                       id="price-slider-display"
-                      className="text-[11px] font-mono font-bold text-[#4C0027] bg-white px-2.5 py-1 rounded-md border border-stone-200 shadow-sm"
-                      style={{ color: brandPlum }}
+                      className="text-[11px] font-mono font-bold text-red-600 bg-white px-2.5 py-1 rounded-md border border-stone-200 shadow-sm"
                     >
                       up to ${filters.maxPrice}/month
                     </span>

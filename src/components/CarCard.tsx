@@ -447,7 +447,7 @@ Description: ${formattedDesc}`;
               <div className="flex items-baseline gap-0.5 mt-1">
                 <span
                   id={`car-price-${car.id}`}
-                  className="text-2xl font-black text-stone-900"
+                  className="text-2xl font-black text-red-600"
                 >
                   ${car.price.toLocaleString()}
                 </span>
