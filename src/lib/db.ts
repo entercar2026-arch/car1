@@ -12,6 +12,7 @@ const dbToCar = (dbCar: any): Car => ({
   seats: dbCar.seats,
   fuelType: dbCar.fuel_type,
   description: dbCar.description,
+  videoUrl: dbCar.video_url || dbCar.videoUrl || "",
 });
 
 const carToDb = (car: Omit<Car, 'id'>) => ({
@@ -23,6 +24,7 @@ const carToDb = (car: Omit<Car, 'id'>) => ({
   seats: car.seats,
   fuel_type: car.fuelType,
   description: car.description,
+  video_url: car.videoUrl,
   year_model: 2024,
 });
 
@@ -52,6 +54,7 @@ export const db = {
       if (car.seats) payload.seats = car.seats;
       if (car.fuelType) payload.fuel_type = car.fuelType;
       if (car.description !== undefined) payload.description = car.description;
+      if (car.videoUrl !== undefined) payload.video_url = car.videoUrl;
 
       const { data, error } = await supabase.from('cars').update(payload).eq('id', id).select().single();
       if (error) throw error;

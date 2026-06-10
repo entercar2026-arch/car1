@@ -85,6 +85,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formSeats, setFormSeats] = useState(5);
   const [formFuel, setFormFuel] = useState<Car["fuelType"]>("Gasoline");
   const [formDescription, setFormDescription] = useState("");
+  const [formVideoUrl, setFormVideoUrl] = useState("");
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -117,6 +118,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormSeats(5);
     setFormFuel("Gasoline");
     setFormDescription("");
+    setFormVideoUrl("");
     setIsFormOpen(true);
   };
 
@@ -131,6 +133,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormSeats(car.seats);
     setFormFuel(car.fuelType);
     setFormDescription(car.description || "");
+    setFormVideoUrl(car.videoUrl || "");
     setIsFormOpen(true);
   };
 
@@ -163,6 +166,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         seats: Number(formSeats),
         fuelType: formFuel,
         description: formDescription,
+        videoUrl: formVideoUrl,
       });
     } else {
       onAddCar({
@@ -174,6 +178,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         seats: Number(formSeats),
         fuelType: formFuel,
         description: formDescription,
+        videoUrl: formVideoUrl,
       });
     }
     setIsFormOpen(false);
@@ -953,6 +958,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
+                    </div>
+                  </div>
+
+                  {/* Video URL Field */}
+                  <div className="sm:col-span-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
+                      Car Video URL (Optional)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-450 text-stone-400/80">
+                        <Link2 className="h-4 w-4 text-stone-400" />
+                      </span>
+                      <input
+                        id="input-car-video"
+                        type="text"
+                        value={formVideoUrl}
+                        onChange={(e) => setFormVideoUrl(e.target.value)}
+                        placeholder="e.g. https://files.catbox.moe/2zvvj8.mp4 or YouTube link"
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                      />
                     </div>
                   </div>
 
