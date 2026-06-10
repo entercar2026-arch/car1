@@ -143,6 +143,9 @@ export const CarCard: React.FC<CarCardProps> = ({
     if (car.name?.toLowerCase().includes("prius")) {
       return car.videoUrl || "https://files.catbox.moe/2zvvj8.mp4";
     }
+    if (car.name?.toLowerCase().includes("lexus")) {
+      return car.videoUrl || "https://files.catbox.moe/icbp1v.mp4";
+    }
     return car.videoUrl || "";
   }, [car.name, car.videoUrl]);
 
@@ -152,6 +155,22 @@ export const CarCard: React.FC<CarCardProps> = ({
 Price: $${car.price.toLocaleString()} / month
 Description: ${car.description || 'A great car for you.'}
 ${videoLink ? `Video Link: ${videoLink}` : ''}`;
+  }, [car.name, car.price, car.description, effectiveVideoUrl]);
+
+  const telegramShareLink = useMemo(() => {
+    const videoLink = effectiveVideoUrl;
+    const cleanDescription = (car.description || "A great car for you.").trim();
+    const formattedDesc = cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
+
+    const cleanText = `Check out this ${car.name}!
+Price: $${car.price.toLocaleString()} / month
+Description: ${formattedDesc}`;
+
+    if (videoLink) {
+      return `https://t.me/share/url?url=${encodeURIComponent(videoLink)}&text=${encodeURIComponent(cleanText)}`;
+    } else {
+      return `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(cleanText)}`;
+    }
   }, [car.name, car.price, car.description, effectiveVideoUrl]);
 
   const targetUrl = useMemo(() => {
@@ -430,7 +449,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
               </div>
               <div className="flex items-center gap-2.5 mt-1.5">
                 <span className="text-[8px] text-stone-400 font-bold uppercase tracking-widest leading-none">Share:</span>
-                <a href={`https://t.me/share/url?url=${encodeURIComponent(effectiveVideoUrl || window.location.href)}&text=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#0088cc] transition-colors"><svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
+                <a href={telegramShareLink} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#0088cc] transition-colors"><svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
                 <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(effectiveVideoUrl || window.location.href)}&quote=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#1877F2] transition-colors"><svg viewBox="0 0 24 24" className="w-3 h-3 fill-current"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12c0-6.627-5.373-12-12-12S0 5.373 0 12c0 6.162 4.604 11.233 10.643 11.95z" fillRule="evenodd"/></svg></a>
                 <a href={`https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${effectiveVideoUrl || window.location.href}`)}`} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#25D366] transition-colors"><svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M11.42 21.815a10.024 10.024 0 0 1-5.11-1.402l-.367-.217-3.8.995 1.015-3.7-.24-.38a9.986 9.986 0 0 1-1.535-5.356c0-5.523 4.54-10.038 10.039-10.038 2.68 0 5.192 1.036 7.085 2.92 1.892 1.884 2.932 4.382 2.932 7.042C21.439 17.2 16.924 21.8 11.42 21.8v.015zm0-18.368c-4.57 0-8.315 3.738-8.319 8.35-.002 1.488.384 2.946 1.121 4.225l.135.234-.595 2.169 2.227-.584.251.15c1.248.742 2.673 1.135 4.148 1.136 4.607 0 8.322-3.725 8.327-8.318.002-2.232-.862-4.327-2.433-5.908A8.258 8.258 0 0 0 11.42 3.447v-.001zm4.654 11.758c-.255-.128-1.507-.745-1.74-.83-.233-.086-.403-.128-.573.127-.171.255-.658.831-.806 1.002-.15.17-.298.192-.553.064-.255-.128-1.077-.397-2.052-1.266-.758-.676-1.269-1.51-1.42-1.765-.15-.255-.015-.392.112-.52.114-.114.255-.297.382-.447.128-.15.17-.255.255-.425.085-.17.043-.319-.021-.447-.064-.128-.574-1.383-.787-1.894-.207-.497-.418-.43-.574-.438-.15-.008-.32-.008-.49-.008-.17 0-.447.064-.68.32-.234.255-.893.872-.893 2.128s.915 2.468 1.042 2.638c.128.171 1.796 2.744 4.348 3.844.607.262 1.08.418 1.448.535.608.194 1.162.166 1.597.1.488-.074 1.507-.617 1.72-1.213.213-.596.213-1.106.15-1.213-.064-.106-.235-.17-.49-.297h-.002z"/></svg></a>
               </div>
