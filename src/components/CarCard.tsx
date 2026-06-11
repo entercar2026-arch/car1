@@ -190,14 +190,8 @@ export const CarCard: React.FC<CarCardProps> = ({
     if (car.image.includes("upload/") && car.image.match(/\.(mp4|webm|ogg)$/i)) {
       return getOptimizedImageUrl(car.image.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
     }
-    if (car.name?.toLowerCase().includes("prius")) {
-      return "https://images.unsplash.com/photo-1594070319944-7c0c6fe66785?auto=format&fit=crop&q=80&w=600";
-    }
-    if (car.name?.toLowerCase().includes("lexus")) {
-      return "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=600";
-    }
     return undefined;
-  }, [car.image, car.name, windowWidth]);
+  }, [car.image, windowWidth]);
 
   const youtubeThumbnail = useMemo(() => {
     const getYoutubeId = (url?: string): string | null => {
@@ -260,7 +254,7 @@ export const CarCard: React.FC<CarCardProps> = ({
     };
   }, [hasVideo, videoPoster, youtubeThumbnail, optimizedVideoSource]);
   
-  const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || getFallbackCarThumbnail(car.name, car.category);
+  const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || car.image;
 
   const hasRealPoster = useMemo(() => {
     return !!(car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster);
@@ -610,7 +604,7 @@ Description: ${formattedDesc}`;
                       id={`car-photo-${car.id}`}
                       ref={videoRef as any}
                       src={optimizedVideoSource}
-                      poster={finalVideoPoster}
+                      poster={hasRealPoster ? finalVideoPoster : undefined}
                       preload="auto"
                       loop
                       muted
