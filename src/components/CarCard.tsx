@@ -220,12 +220,24 @@ export const CarCard: React.FC<CarCardProps> = ({
     video.crossOrigin = "anonymous";
     video.muted = true;
     video.playsInline = true;
+    video.style.display = "none";
+    document.body.appendChild(video);
     
-    const handleLoadedData = () => {
-      video.currentTime = 0.5;
+    const cleanup = () => {
+      isMounted = false;
+      video.removeAttribute("src");
+      video.load();
+      if (document.body.contains(video)) {
+        document.body.removeChild(video);
+      }
     };
     
-    const handleSeeked = () => {
+    video.addEventListener("loadeddata", () => {
+      if (!isMounted) return;
+      video.currentTime = 0.5;
+    });
+    
+    video.addEventListener("seeked", () => {
       if (!isMounted) return;
       try {
         const canvas = document.createElement("canvas");
@@ -240,20 +252,17 @@ export const CarCard: React.FC<CarCardProps> = ({
       } catch (err) {
         console.warn("Could not generate video thumbnail due to CORS");
       }
-    };
+      cleanup();
+    });
     
-    video.addEventListener("loadeddata", handleLoadedData);
-    video.addEventListener("seeked", handleSeeked);
+    const sourceToUse = optimizedVideoSource;
+    let videoUrlForCapture = sourceToUse;
+    if (videoUrlForCapture && !videoUrlForCapture.startsWith("data:") && !videoUrlForCapture.includes("drive.google.com")) {
+        videoUrlForCapture += (videoUrlForCapture.includes("?") ? "&" : "?") + "cors_bypass=" + Date.now();
+    }
+    video.src = videoUrlForCapture;
     
-    video.src = optimizedVideoSource;
-    video.load();
-    
-    return () => {
-      isMounted = false;
-      video.removeEventListener("loadeddata", handleLoadedData);
-      video.removeEventListener("seeked", handleSeeked);
-      video.src = "";
-    };
+    return cleanup;
   }, [hasVideo, videoPoster, youtubeThumbnail, optimizedVideoSource]);
   
   const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || car.image;
@@ -611,7 +620,6 @@ Description: ${formattedDesc}`;
                       id={`car-photo-${car.id}`}
                       ref={videoRef as any}
                       src={optimizedVideoSource}
-                      crossOrigin="anonymous"
                       poster={hasRealPoster ? finalVideoPoster : undefined}
                       preload="auto"
                       loop
@@ -662,7 +670,6 @@ Description: ${formattedDesc}`;
                     <motion.video
                       id={`car-photo-${car.id}`}
                       src={optimizedVideoSource ? (optimizedVideoSource.includes("#") ? optimizedVideoSource : `${optimizedVideoSource}#t=0.1`) : ""}
-                      crossOrigin="anonymous"
                       preload="metadata"
                       muted
                       playsInline

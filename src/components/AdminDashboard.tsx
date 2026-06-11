@@ -87,6 +87,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formDescription, setFormDescription] = useState("");
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
+  const [captureError, setCaptureError] = useState("");
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1018,9 +1019,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                                         const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
                                         setFormThumbnail(dataUrl);
+                                        setCaptureError("");
                                       }
                                     } catch (err) {
-                                      alert("Notice: This external video does not support direct static JPEG frame capturing due to cross-origin security (CORS) rules.\n\nBut do not worry - the actual application natively renders the video frame if no custom thumbnail is uploaded!");
+                                      setCaptureError("This external video server blocked frame capture (CORS header missing). The app will cleanly fallback to native video loading instead.");
                                     }
                                   }
                                 }}
@@ -1046,9 +1048,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                                           const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
                                           setFormThumbnail(dataUrl);
+                                          setCaptureError("");
                                         }
                                       } catch (err) {
-                                        // Silently fail on cross-origin
+                                        setCaptureError("This external video server blocked frame capture (CORS header missing). The app will cleanly fallback to native video loading instead.");
                                       }
                                       video.removeEventListener("seeked", autoCapture);
                                     };
@@ -1095,6 +1098,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </div>
                           </div>
                         </div>
+
+                        {captureError && (
+                          <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-xl text-[10px] leading-tight flex items-start gap-2 mt-1">
+                            <FileWarning className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span>
+                              <strong>Capture failed:</strong> {captureError}
+                            </span>
+                          </div>
+                        )}
 
                         <p className="text-[8px] text-stone-400 leading-tight">
                           * <strong>Note on CORS limits:</strong> Browser security prohibits capturing frames from videos hosted on cross-origin domains that lack CORS headers. For perfect results, upload video files directly as a local media file.
