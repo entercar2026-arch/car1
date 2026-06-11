@@ -70,6 +70,20 @@ export const CarCard: React.FC<CarCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   const [imageError, setImageError] = useState(false);
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const optimizedVideoSource = useMemo(() => {
+    let src = car.image;
+    if (isMobile) {
+      if (src.includes("upload/")) {
+        // Cloudinary-style downscale
+        src = src.replace("upload/", "upload/q_auto,w_400,c_scale/");
+      } else {
+        // Generic query param downscale fallback
+        src += src.includes("?") ? "&quality=low&w=400" : "?quality=low&w=400";
+      }
+    }
+    return src;
+  }, [car.image, isMobile]);
   const isGoogleDrive = car.image.includes("drive.google.com/uc");
   const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
 
@@ -325,7 +339,8 @@ Description: ${formattedDesc}`;
           {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
             <motion.video
               id={`car-photo-${car.id}`}
-              src={car.image}
+              src={optimizedVideoSource}
+              preload="none"
               autoPlay
               loop
               muted
@@ -642,7 +657,8 @@ Description: ${formattedDesc}`;
                   <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
                     {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
                       <video
-                        src={car.image}
+                        src={optimizedVideoSource}
+                        preload="none"
                         autoPlay
                         loop
                         muted
