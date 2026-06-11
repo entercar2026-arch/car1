@@ -507,6 +507,7 @@ export default function App() {
   // Filter computation logic
   const [isFiltering, setIsFiltering] = useState(false);
   const [activeFilters, setActiveFilters] = useState<CatalogFilters>(filters);
+  const [visibleCount, setVisibleCount] = useState(6);
   const filterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -514,12 +515,17 @@ export default function App() {
     if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
     filterTimeoutRef.current = setTimeout(() => {
       setActiveFilters(filters);
+      setVisibleCount(6);
       setIsFiltering(false);
     }, 300);
     return () => {
       if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
     };
   }, [filters]);
+
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [sortBy]);
 
   const filteredCars = useMemo(() => {
     const results = cars.filter((car) => {
@@ -1418,7 +1424,7 @@ export default function App() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               >
                 <AnimatePresence mode="popLayout">
-                  {filteredCars.map((car) => (
+                  {filteredCars.slice(0, visibleCount).map((car) => (
                     <motion.div
                       key={car.id}
                       layout
@@ -1442,6 +1448,17 @@ export default function App() {
                     </motion.div>
                   ))}
                 </AnimatePresence>
+              </div>
+            )}
+            
+            {visibleCount < filteredCars.length && !isFiltering && (
+              <div className="mt-12 flex justify-center">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 6)}
+                  className="px-8 py-3 bg-white border border-stone-200 text-stone-700 font-bold text-sm rounded-xl shadow-sm hover:shadow-md hover:border-stone-300 transition-all cursor-pointer"
+                >
+                  Load More Vehicles ({filteredCars.length - visibleCount} remaining)
+                </button>
               </div>
             )}
           </div>
