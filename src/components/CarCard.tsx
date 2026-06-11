@@ -87,7 +87,7 @@ const getFallbackCarThumbnail = (carName: string, category: string): string => {
   return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
 };
 
-interface CarCardProps {
+export interface CarCardProps {
   car: Car;
   isAdminMode?: boolean;
   onEdit?: (car: Car) => void;
@@ -111,6 +111,7 @@ interface CarCardProps {
   }) => Booking;
   isLiked?: boolean;
   onToggleLike?: (carId: string) => void;
+  onFilterSelect?: (filterType: "category" | "transmission" | "fuelType" | "seats", value: string | number) => void;
 }
 
 export const CarCard: React.FC<CarCardProps> = ({
@@ -124,6 +125,7 @@ export const CarCard: React.FC<CarCardProps> = ({
   onConfirmBook,
   isLiked = false,
   onToggleLike,
+  onFilterSelect,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -766,28 +768,28 @@ Description: ${formattedDesc}`;
                   id={`car-specs-${car.id}`}
                   className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1"
                 >
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
                     <Car className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.category}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('seats', car.seats); }}>
                     <Users className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold">
                       {car.seats} Seats
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('transmission', car.transmission); }}>
                     <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.transmission}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1">
+                  <div className="flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('fuelType', car.fuelType); }}>
                     <Fuel className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.fuelType}

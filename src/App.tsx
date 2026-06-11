@@ -194,6 +194,7 @@ export default function App() {
     maxPrice: 5000,
     transmission: "All",
     fuelType: "All",
+    seats: "All",
     brand: "All",
     likedOnly: false,
   });
@@ -446,6 +447,7 @@ export default function App() {
       maxPrice: 5000,
       transmission: "All",
       fuelType: "All",
+      seats: "All",
       brand: "All",
       likedOnly: false,
     });
@@ -543,6 +545,8 @@ export default function App() {
         car.transmission === activeFilters.transmission;
       const matchFuel =
         activeFilters.fuelType === "All" || car.fuelType === activeFilters.fuelType;
+      const matchSeats =
+        activeFilters.seats === "All" || String(car.seats) === String(activeFilters.seats);
 
       const carBrand = getBrandFromName(car.name);
       const matchBrand =
@@ -557,6 +561,7 @@ export default function App() {
         matchPrice &&
         matchTrans &&
         matchFuel &&
+        matchSeats &&
         matchBrand &&
         matchLiked
       );
@@ -1282,6 +1287,33 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
+                <div>
+                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
+                    Seats
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={filters.seats}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          seats: e.target.value as any,
+                        }))
+                      }
+                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                    >
+                      {["All", "2", "4", "5", "7", "8", "9", "10", "12", "15"].map((count) => (
+                        <option value={count} key={count}>
+                          {count === "All" ? "All" : `${count} Seats`}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                  </div>
+                </div>
               </div>
                   </div>
                 </motion.div>
@@ -1449,6 +1481,10 @@ export default function App() {
                           }
                           isLiked={likedCars.includes(car.id)}
                           onToggleLike={handleToggleLike}
+                          onFilterSelect={(filterType, value) => {
+                            setFilters(prev => ({ ...prev, [filterType]: value }));
+                            scrollToAnchor("category-filter-container");
+                          }}
                         />
                       </motion.div>
                     ))}

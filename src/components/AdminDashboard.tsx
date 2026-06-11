@@ -413,10 +413,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               <span>{car.transmission}</span>
                               <span>•</span>
                               <span>{car.fuelType}</span>
-                              <span>•</span>
-                              <span className="text-amber-700 font-bold">
-                                {car.yearModel || "2024"}
-                              </span>
+                              {car.yearModel && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-amber-700 font-bold">
+                                    {car.yearModel}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </td>
                           <td className="p-4 text-right pr-6">

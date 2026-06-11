@@ -21,6 +21,7 @@ export interface CatalogFilters {
   maxPrice: number;
   transmission: string;
   fuelType: string;
+  seats: string | number;
   brand: string;
   likedOnly?: boolean;
 }
