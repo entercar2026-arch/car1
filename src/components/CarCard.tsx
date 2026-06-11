@@ -96,6 +96,17 @@ export const CarCard: React.FC<CarCardProps> = ({
   onToggleLike,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (isHovered) {
+      videoRef.current.play().catch(() => {});
+    } else {
+      videoRef.current.pause();
+    }
+  }, [isHovered]);
+
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
 
   useEffect(() => {
@@ -127,6 +138,55 @@ export const CarCard: React.FC<CarCardProps> = ({
     }
     return undefined;
   }, [car.image, windowWidth]);
+
+  const [generatedPoster, setGeneratedPoster] = useState<string | undefined>();
+  
+  useEffect(() => {
+    if (videoPoster) return;
+    if (!(car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video"))) return;
+    
+    let isMounted = true;
+    const video = document.createElement("video");
+    video.crossOrigin = "anonymous";
+    video.muted = true;
+    video.playsInline = true;
+    
+    const handleLoadedData = () => {
+      video.currentTime = 0.5;
+    };
+    
+    const handleSeeked = () => {
+      if (!isMounted) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 360;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          setGeneratedPoster(dataUrl);
+        }
+      } catch (err) {
+        console.warn("Could not generate video thumbnail due to CORS");
+      }
+    };
+    
+    video.addEventListener("loadeddata", handleLoadedData);
+    video.addEventListener("seeked", handleSeeked);
+    
+    video.src = optimizedVideoSource;
+    video.load();
+    
+    return () => {
+      isMounted = false;
+      video.removeEventListener("loadeddata", handleLoadedData);
+      video.removeEventListener("seeked", handleSeeked);
+      video.src = "";
+    };
+  }, [car.image, videoPoster, optimizedVideoSource]);
+  
+  const finalVideoPoster = videoPoster || generatedPoster;
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -380,10 +440,10 @@ Description: ${formattedDesc}`;
           {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
             <motion.video
               id={`car-photo-${car.id}`}
+              ref={videoRef as any}
               src={optimizedVideoSource}
-              poster={videoPoster}
+              poster={finalVideoPoster}
               preload="none"
-              autoPlay
               loop
               muted
               playsInline
@@ -701,7 +761,7 @@ Description: ${formattedDesc}`;
                     {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
                       <video
                         src={getOptimizedImageUrl(car.image, windowWidth, 'thumbnail')}
-                        poster={videoPoster ? getOptimizedImageUrl(car.image.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'thumbnail') : undefined}
+                        poster={finalVideoPoster || undefined}
                         preload="none"
                         autoPlay
                         loop
