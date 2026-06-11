@@ -69,6 +69,35 @@ export const CarCard: React.FC<CarCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  // States for lazy loading and conditional playing of videos
+  const [videoActive, setVideoActive] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  // Toggle video on mobile via interaction, on desktop via hover
+  const handleToggleVideoMobile = () => {
+    if (isMobile && car.videoUrl) {
+      setVideoActive(!videoActive);
+    }
+  };
+
+  useEffect(() => {
+    let timeoutId: any;
+    if (!isMobile) {
+      if (isHovered && car.videoUrl) {
+        timeoutId = setTimeout(() => {
+          setVideoActive(true);
+        }, 150);
+      } else {
+        setVideoActive(false);
+        setVideoLoaded(false);
+      }
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isHovered, isMobile, car.videoUrl]);
+
   const [imageError, setImageError] = useState(false);
   const isGoogleDrive = car.image.includes("drive.google.com/uc");
   const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
@@ -310,7 +339,72 @@ Description: ${formattedDesc}`;
           </div>
 
           {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
-          {imageError && isGoogleDrive && driveId ? (
+          {car.videoUrl ? (
+            <div 
+              className="relative w-full h-full overflow-hidden bg-stone-100"
+              onClick={handleToggleVideoMobile}
+            >
+              {/* Static high-quality fallback image for instantaneous loading on grid mount */}
+              <motion.img
+                id={`car-photo-fallback-${car.id}`}
+                src={car.image}
+                alt={car.name}
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                }}
+                initial={{ scale: 0.94, rotate: -2, y: 15 }}
+                whileInView={{
+                  scale: isHovered && !videoActive ? 1.15 : 1.01,
+                  x: isHovered && !videoActive ? 8 : 0,
+                  y: isHovered && !videoActive ? -4 : 0,
+                  rotate: isHovered && !videoActive ? -0.8 : 0,
+                }}
+                viewport={{ once: false, amount: 0.15 }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
+                className="w-full h-full object-cover select-none"
+              />
+
+              {/* Heavy video element lazy-loaded and streamed ONLY on demand/hover */}
+              {videoActive && (
+                <motion.video
+                  id={`car-photo-${car.id}`}
+                  src={car.videoUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  onCanPlay={() => setVideoLoaded(true)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: videoLoaded ? 1 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 w-full h-full object-cover select-none z-10"
+                />
+              )}
+
+              {/* Play / Preview available indicator banner - only shown if we haven't started playing video */}
+              {!videoActive && (
+                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-900/80 backdrop-blur-md border border-white/20 select-none cursor-pointer hover:bg-stone-800 transition-colors">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                    {isMobile ? "Tap to play video" : "Hover to play video"}
+                  </span>
+                </div>
+              )}
+
+              {/* Shimmer loading spinner while buffering */}
+              {videoActive && !videoLoaded && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900/35 backdrop-blur-xs z-15 pointer-events-none">
+                  <div className="w-7 h-7 rounded-full border-2 border-stone-300 border-t-white animate-spin mb-1.5" />
+                  <span className="text-[9px] font-mono font-medium text-stone-100 uppercase tracking-widest text-shadow-sm animate-pulse">
+                    Streaming...
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : imageError && isGoogleDrive && driveId ? (
             <motion.iframe
               id={`car-photo-${car.id}`}
               src={`https://drive.google.com/file/d/${driveId}/preview`}
