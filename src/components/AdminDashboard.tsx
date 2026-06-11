@@ -28,60 +28,6 @@ import {
   FileWarning,
 } from "lucide-react";
 
-const getStaticFallbackImage = (carName: string, category: string): string => {
-  const name = carName.toLowerCase();
-  
-  if (name.includes("prius")) {
-    if (name.includes("2004") || name.includes("2005") || name.includes("2006")) {
-      return "https://images.unsplash.com/photo-1594070319944-7c0cbebb6f58?auto=format&fit=crop&q=80&w=200";
-    }
-    if (name.includes("2007") || name.includes("2008") || name.includes("2009")) {
-      return "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=200";
-    }
-    return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=200";
-  }
-  
-  if (name.includes("lexus").valueOf() && name.includes("ct").valueOf()) {
-    return "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=200";
-  }
-  
-  if (name.includes("lexus")) {
-    return "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=200";
-  }
-  
-  if (name.includes("starex")) {
-    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=200";
-  }
-  
-  if (name.includes("actyon")) {
-    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=200";
-  }
-  
-  if (name.includes("hilux")) {
-    return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=200";
-  }
-  
-  if (name.includes("ranger") || name.includes("ford")) {
-    return "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=200";
-  }
-
-  // Fallbacks by category
-  if (category === "Sedan") {
-    return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
-  }
-  if (category === "SUV") {
-    return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=200";
-  }
-  if (category === "Pickup") {
-    return "https://images.unsplash.com/photo-1533512930330-4ac257c86793?auto=format&fit=crop&q=80&w=200";
-  }
-  if (category === "MPV") {
-    return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=200";
-  }
-
-  return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
-};
-
 interface AdminDashboardProps {
   cars: Car[];
   onAddCar: (car: Omit<Car, "id">) => void;
@@ -446,15 +392,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="hover:bg-stone-50/40 transition-colors"
                         >
                           <td className="p-4 pl-6 text-center">
-                            {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
-                              <img
-                                id={`admin-thumb-${car.id}`}
-                                src={getStaticFallbackImage(car.name, car.category)}
-                                alt={car.name}
-                                referrerPolicy="no-referrer"
-                                className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
-                              />
-                            ) : (
                               <img
                                 id={`admin-thumb-${car.id}`}
                                 src={car.image}
@@ -466,7 +403,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 referrerPolicy="no-referrer"
                                 className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
                               />
-                            )}
                           </td>
                           <td className="p-4">
                             <span
@@ -978,14 +914,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="sm:col-span-2">
                     <div className="flex justify-between items-center mb-1">
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Car Image or Video URL
+                        Car Thumbnail / Image URL
                       </label>
                       <label className="text-[10px] font-bold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded cursor-pointer hover:bg-[#4C0027]/20 transition-colors flex items-center gap-1">
                         <Upload className="w-3 h-3" />
                         Upload
                         <input
                           type="file"
-                          accept="image/*,video/*"
+                          accept="image/*"
                           className="hidden"
                           onChange={handleImageUpload}
                         />
@@ -1010,26 +946,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
-                    </div>
-                  </div>
-
-                  {/* Video URL Field */}
-                  <div className="sm:col-span-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                      Car Video URL (Optional)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-450 text-stone-400/80">
-                        <Link2 className="h-4 w-4 text-stone-400" />
-                      </span>
-                      <input
-                        id="input-car-video"
-                        type="text"
-                        value={formVideoUrl}
-                        onChange={(e) => setFormVideoUrl(e.target.value)}
-                        placeholder="e.g. https://files.catbox.moe/2zvvj8.mp4 or YouTube link"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
-                      />
                     </div>
                   </div>
 

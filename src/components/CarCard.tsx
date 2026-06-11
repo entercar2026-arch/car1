@@ -69,80 +69,6 @@ export const CarCard: React.FC<CarCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // States for lazy loading and de-congesting heavy videos
-  const [videoActive, setVideoActive] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-
-  useEffect(() => {
-    let timeoutId: any;
-    if (isHovered) {
-      // Small debounce delay before loading video to prevent load on scroll-past
-      timeoutId = setTimeout(() => {
-        setVideoActive(true);
-      }, 150);
-    } else {
-      setVideoActive(false);
-      setVideoLoaded(false);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [isHovered]);
-
-  const getStaticFallbackImage = (carName: string, category: string): string => {
-    const name = carName.toLowerCase();
-    
-    if (name.includes("prius")) {
-      if (name.includes("2004") || name.includes("2005") || name.includes("2006")) {
-        return "https://images.unsplash.com/photo-1594070319944-7c0cbebb6f58?auto=format&fit=crop&q=80&w=600";
-      }
-      if (name.includes("2007") || name.includes("2008") || name.includes("2009")) {
-        return "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=600";
-      }
-      return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=600";
-    }
-    
-    if (name.includes("lexus ct")) {
-      return "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=600";
-    }
-    
-    if (name.includes("lexus rx") || name.includes("lexus")) {
-      return "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=600";
-    }
-    
-    if (name.includes("starex")) {
-      return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
-    }
-    
-    if (name.includes("actyon")) {
-      return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
-    }
-    
-    if (name.includes("hilux")) {
-      return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=600";
-    }
-    
-    if (name.includes("ranger") || name.includes("ford")) {
-      return "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=600";
-    }
-
-    // Default categorized beautiful Unsplash placeholders
-    if (category === "Sedan") {
-      return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-    }
-    if (category === "SUV") {
-      return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=600";
-    }
-    if (category === "Pickup") {
-      return "https://images.unsplash.com/photo-1533512930330-4ac257c86793?auto=format&fit=crop&q=80&w=600";
-    }
-    if (category === "MPV") {
-      return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=600";
-    }
-
-    return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-  };
-
   const [imageError, setImageError] = useState(false);
   const isGoogleDrive = car.image.includes("drive.google.com/uc");
   const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
@@ -213,26 +139,14 @@ export const CarCard: React.FC<CarCardProps> = ({
     return Math.round(car.price);
   }, [car.price]);
 
-  const effectiveVideoUrl = useMemo(() => {
-    if (car.name?.toLowerCase().includes("prius")) {
-      return car.videoUrl || "https://files.catbox.moe/2zvvj8.mp4";
-    }
-    if (car.name?.toLowerCase().includes("lexus")) {
-      return car.videoUrl || "https://files.catbox.moe/icbp1v.mp4";
-    }
-    return car.videoUrl || "";
-  }, [car.name, car.videoUrl]);
-
   const shareText = useMemo(() => {
-    const videoLink = effectiveVideoUrl;
     return `Check out this ${car.name}!
 Price: $${car.price.toLocaleString()} / month
-Description: ${car.description || 'A great car for you.'}
-${videoLink ? `Video Link: ${videoLink}` : ''}`;
-  }, [car.name, car.price, car.description, effectiveVideoUrl]);
+Description: ${car.description || 'A great car for you.'}`;
+  }, [car.name, car.price, car.description]);
 
   const telegramShareLink = useMemo(() => {
-    const shareUrl = effectiveVideoUrl || car.image || window.location.href;
+    const shareUrl = car.image || window.location.href;
     const cleanDescription = (car.description || "A great car for you.").trim();
     const formattedDesc = cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
 
@@ -241,10 +155,10 @@ Price: $${car.price.toLocaleString()} / month
 Description: ${formattedDesc}`;
 
     return `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(cleanText)}`;
-  }, [car.name, car.price, car.description, car.image, effectiveVideoUrl]);
+  }, [car.name, car.price, car.description, car.image]);
 
   const whatsAppShareLink = useMemo(() => {
-    const shareUrl = effectiveVideoUrl || car.image || window.location.href;
+    const shareUrl = car.image || window.location.href;
     const cleanDescription = (car.description || "A great car for you.").trim();
     const formattedDesc = cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
 
@@ -253,7 +167,7 @@ Price: $${car.price.toLocaleString()} / month
 Description: ${formattedDesc}`;
 
     return `https://wa.me/?text=${encodeURIComponent(`${shareUrl}\n\n${cleanText}`)}`;
-  }, [car.name, car.price, car.description, car.image, effectiveVideoUrl]);
+  }, [car.name, car.price, car.description, car.image]);
 
   const targetUrl = useMemo(() => {
     const carDetails = `*Enquiry for: ${car.name}*`;
@@ -396,64 +310,7 @@ Description: ${formattedDesc}`;
           </div>
 
           {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
-          {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
-            <div className="relative w-full h-full overflow-hidden bg-stone-100">
-              {/* Static high-quality fallback image for instantaneous loading on grid mount */}
-              <motion.img
-                id={`car-photo-fallback-${car.id}`}
-                src={getStaticFallbackImage(car.name, car.category)}
-                alt={car.name}
-                initial={{ scale: 0.94, rotate: -2, y: 15 }}
-                whileInView={{
-                  scale: isHovered ? 1.15 : 1.01,
-                  x: isHovered ? 8 : 0,
-                  y: isHovered ? -4 : 0,
-                  rotate: isHovered ? -0.8 : 0,
-                }}
-                viewport={{ once: false, amount: 0.15 }}
-                transition={{ duration: 0.55, ease: "easeOut" }}
-                className="w-full h-full object-cover select-none"
-              />
-
-              {/* Heavy video element lazy-loaded and streamed ONLY on demand/hover */}
-              {videoActive && (
-                <motion.video
-                  id={`car-photo-${car.id}`}
-                  src={car.image}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  onCanPlay={() => setVideoLoaded(true)}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: videoLoaded ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0 w-full h-full object-cover select-none z-10"
-                />
-              )}
-
-              {/* Play / Preview available indicator banner - only shown if we haven't started playing video */}
-              {!videoActive && (
-                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-900/65 backdrop-blur-xs border border-white/15 select-none pointer-events-none">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[9px] font-mono font-extrabold text-white uppercase tracking-wider">
-                    Hover to play video
-                  </span>
-                </div>
-              )}
-
-              {/* Shimmer loading spinner while hovering but the video bytes are still buffering */}
-              {videoActive && !videoLoaded && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900/35 backdrop-blur-xs z-15">
-                  <div className="w-7 h-7 rounded-full border-2 border-stone-300 border-t-white animate-spin mb-1.5" />
-                  <span className="text-[9px] font-mono font-medium text-stone-100 uppercase tracking-widest text-shadow-sm animate-pulse">
-                    Streaming...
-                  </span>
-                </div>
-              )}
-            </div>
-          ) : imageError && isGoogleDrive && driveId ? (
+          {imageError && isGoogleDrive && driveId ? (
             <motion.iframe
               id={`car-photo-${car.id}`}
               src={`https://drive.google.com/file/d/${driveId}/preview`}
@@ -752,16 +609,7 @@ Description: ${formattedDesc}`;
               ) : (
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
-                    {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
-                      <video
-                        src={car.image}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
-                      />
-                    ) : imageError && isGoogleDrive && driveId ? (
+                    {imageError && isGoogleDrive && driveId ? (
                       <iframe
                         src={`https://drive.google.com/file/d/${driveId}/preview`}
                         className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
