@@ -542,12 +542,6 @@ Description: ${formattedDesc}`;
               id={`car-image-container-${car.id}`}
               className="relative h-48 bg-stone-50 overflow-hidden"
             >
-              <span
-                id={`car-category-${car.id}`}
-                className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${getCategoryColor(car.category)}`}
-              >
-                {car.category}
-              </span>
               <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
                 {hasVideo && (
                   <button
@@ -748,6 +742,14 @@ Description: ${formattedDesc}`;
                   <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
                     This is a sample car photo/video. Please click Enquire to request the actual available car photos/videos.
                   </p>
+                  <div className="mt-3">
+                    <span
+                      id={`car-category-${car.id}`}
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${getCategoryColor(car.category)}`}
+                    >
+                      {car.category}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Highlights Info Grid (Technical) */}
