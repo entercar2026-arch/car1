@@ -633,7 +633,7 @@ Description: ${formattedDesc}`;
                       }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.3 }}
-                      className="w-full h-full object-contain bg-stone-900 select-none cursor-pointer"
+                      className="w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsPlaying(false);
