@@ -28,6 +28,8 @@ import {
   Heart,
   Share2,
   Play,
+  Cpu,
+  Gauge,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -56,6 +58,30 @@ const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 
   }
   
   return url;
+};
+
+const getFallbackCarThumbnail = (carName: string, category: string): string => {
+  const name = carName.toLowerCase();
+  if (name.includes("porsche") || name.includes("911")) {
+    return "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("tesla") || name.includes("model s") || name.includes("plaid")) {
+    return "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("lexus") || name.includes("rx")) {
+    return "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("prius") || name.includes("toyota")) {
+    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("ford") || name.includes("mustang")) {
+    return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=600";
+  }
+  // Generic fallback by category
+  if (category.toLowerCase() === "suv") {
+    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
+  }
+  return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
 };
 
 interface CarCardProps {
@@ -188,7 +214,7 @@ export const CarCard: React.FC<CarCardProps> = ({
     };
   }, [car.image, videoPoster, optimizedVideoSource]);
   
-  const finalVideoPoster = videoPoster || generatedPoster;
+  const finalVideoPoster = videoPoster || generatedPoster || getFallbackCarThumbnail(car.name, car.category);
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -368,6 +394,76 @@ Description: ${formattedDesc}`;
     }, 2800);
   };
 
+  const specsDetails = useMemo(() => {
+    const name = car.name.toLowerCase();
+    if (name.includes("porsche") || name.includes("911")) {
+      return {
+        engine: "3.0L Twin-Turbo H6",
+        power: "450 HP",
+        accel: "3.2s",
+        topSpeed: "308 km/h",
+        driveType: "Rear-Wheel Drive",
+        efficiency: "9.6 L/100km",
+        co2: "220 g/km"
+      };
+    }
+    if (name.includes("tesla") || name.includes("model s") || name.includes("plaid")) {
+      return {
+        engine: "Tri-Motor Electric",
+        power: "1020 HP",
+        accel: "2.1s",
+        topSpeed: "322 km/h",
+        driveType: "All-Wheel Drive",
+        efficiency: "18.7 kWh/100",
+        co2: "Zero Co2"
+      };
+    }
+    if (name.includes("lexus") || name.includes("rx")) {
+      return {
+        engine: "2.5L Hybrid 4-Cyl",
+        power: "246 HP",
+        accel: "7.1s",
+        topSpeed: "200 km/h",
+        driveType: "All-Wheel Drive",
+        efficiency: "6.7 L/100km",
+        co2: "151 g/km"
+      };
+    }
+    if (name.includes("prius") || name.includes("toyota")) {
+      return {
+        engine: "2.0L Hybrid 4-Cyl",
+        power: "194 HP",
+        accel: "7.2s",
+        topSpeed: "180 km/h",
+        driveType: "Front-Wheel Drive",
+        efficiency: "4.1 L/100km",
+        co2: "94 g/km"
+      };
+    }
+    if (name.includes("mustang") || name.includes("ford")) {
+      return {
+        engine: "5.0L Ti-VCT V8",
+        power: "480 HP",
+        accel: "4.3s",
+        topSpeed: "250 km/h",
+        driveType: "Rear-Wheel Drive",
+        efficiency: "12.4 L/100km",
+        co2: "284 g/km"
+      };
+    }
+    // Default based on category
+    const isSUV = car.category === "SUV";
+    return {
+      engine: isSUV ? "2.0L Turbocharged I4" : "1.8L Clean Hybrid I4",
+      power: isSUV ? "250 HP" : "160 HP",
+      accel: isSUV ? "6.8s" : "8.4s",
+      topSpeed: "210 km/h",
+      driveType: isSUV ? "All-Wheel Drive" : "Front-Wheel Drive",
+      efficiency: isSUV ? "7.8 L/100km" : "4.8 L/100km",
+      co2: isSUV ? "180 g/km" : "110 g/km"
+    };
+  }, [car.name, car.category]);
+
   const handleCloseBookingModal = () => {
     setIsBookingOpen(false);
     setIsSuccess(false);
@@ -381,256 +477,440 @@ Description: ${formattedDesc}`;
   return (
     <>
       <motion.div
-        id={`car-card-${car.id}`}
+        id={`car-card-perspective-wrapper-${car.id}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         whileHover={{ y: -8 }}
         transition={{ duration: 0.3 }}
-        className="bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between h-full"
+        className="relative w-full h-[530px]"
+        style={{ perspective: 1200 }}
       >
-        {/* Visual Header & Image */}
-        <div
-          id={`car-image-container-${car.id}`}
-          className="relative h-48 bg-stone-50 overflow-hidden"
+        <motion.div
+          id={`car-card-inner-${car.id}`}
+          animate={{ rotateY: isHovered ? 180 : 0 }}
+          transition={{ duration: 0.65, ease: [0.23, 1, 0.32, 1] }}
+          style={{ transformStyle: "preserve-3d" }}
+          className="relative w-full h-full"
         >
-          <span
-            id={`car-category-${car.id}`}
-            className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${getCategoryColor(car.category)}`}
+          {/* FRONT FACE of the card */}
+          <div
+            style={{ 
+              backfaceVisibility: "hidden", 
+              WebkitBackfaceVisibility: "hidden" 
+            }}
+            className="w-full h-full bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between absolute inset-0"
           >
-            {car.category}
-          </span>
-          <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (navigator.share) {
-                  navigator.share({
-                    title: `Check out this ${car.name}`,
-                    text: shareText,
-                    url: effectiveVideoUrl || car.image || window.location.href,
-                  }).catch(console.error);
-                } else {
-                  navigator.clipboard.writeText(`${shareText}\n\n${effectiveVideoUrl || car.image || window.location.href}`);
-                  // Since we are in an iframe, alert might not work perfectly, but it's okay.
-                  // It provides a fallback.
-                  alert("Link & details copied to clipboard!");
-                }
-              }}
-              className="p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-stone-100 transition-colors border border-stone-100 cursor-pointer"
-              title="Share"
+            {/* Visual Header & Image */}
+            <div
+              id={`car-image-container-${car.id}`}
+              className="relative h-48 bg-stone-50 overflow-hidden"
             >
-              <Share2 className="w-4 h-4 text-stone-500 hover:text-stone-700 transition-colors" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleLike && onToggleLike(car.id);
-              }}
-              className="p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-rose-50 transition-colors border border-stone-100 cursor-pointer"
-            >
-              <Heart
-                className={`w-4 h-4 transition-colors ${
-                  isLiked
-                    ? "fill-rose-500 text-rose-500"
-                    : "text-stone-500 hover:text-rose-500"
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
-          {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
-            <>
-              <motion.video
-                id={`car-photo-${car.id}`}
-                ref={videoRef as any}
-                src={optimizedVideoSource}
-                poster={finalVideoPoster}
-                preload="none"
-                loop
-                muted
-                playsInline
-                initial={{ scale: 0.94, rotate: -2, y: 15 }}
-                whileInView={{
-                  scale: isHovered ? 1.15 : 1.01,
-                  x: isHovered ? 8 : 0,
-                  y: isHovered ? -4 : 0,
-                  rotate: isHovered ? -0.8 : 0,
-                }}
-                viewport={{ once: false, amount: 0.15 }}
-                transition={{ duration: 0.55, ease: "easeOut" }}
-                className="w-full h-full object-cover select-none cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsPlaying(prev => !prev);
-                }}
-              />
-              {!isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+              <span
+                id={`car-category-${car.id}`}
+                className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${getCategoryColor(car.category)}`}
+              >
+                {car.category}
+              </span>
+              <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+                {(car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video")) && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsPlaying(true);
+                      setIsPlaying(prev => !prev);
                     }}
-                    className="w-14 h-14 bg-black/40 backdrop-blur-[2px] rounded-full flex items-center justify-center shadow-lg border border-white/20 pointer-events-auto hover:bg-black/60 transition-all hover:scale-105"
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors cursor-pointer ${
+                      isPlaying 
+                        ? "bg-[#4C0027] text-white border-[#4C0027] hover:bg-stone-900 hover:border-stone-900" 
+                        : "bg-white/80 text-stone-600 border-stone-100 hover:text-black hover:bg-stone-100"
+                    }`}
+                    title={isPlaying ? "Pause Video" : "Play Video"}
                   >
-                    <Play className="w-6 h-6 text-white ml-1 fill-white" />
+                    {isPlaying ? (
+                      <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
+                    ) : (
+                      <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (navigator.share) {
+                      navigator.share({
+                        title: `Check out this ${car.name}`,
+                        text: shareText,
+                        url: effectiveVideoUrl || car.image || window.location.href,
+                      }).catch(console.error);
+                    } else {
+                      navigator.clipboard.writeText(`${shareText}\n\n${effectiveVideoUrl || car.image || window.location.href}`);
+                      // Since we are in an iframe, alert might not work perfectly, but it's okay.
+                      // It provides a fallback.
+                      alert("Link & details copied to clipboard!");
+                    }
+                  }}
+                  className="p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-stone-100 transition-colors border border-stone-100 cursor-pointer"
+                  title="Share"
+                >
+                  <Share2 className="w-4 h-4 text-stone-500 hover:text-stone-700 transition-colors" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleLike && onToggleLike(car.id);
+                  }}
+                  className="p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-rose-50 transition-colors border border-stone-100 cursor-pointer"
+                >
+                  <Heart
+                    className={`w-4 h-4 transition-colors ${
+                      isLiked
+                        ? "fill-rose-500 text-rose-500"
+                        : "text-stone-500 hover:text-rose-500"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
+              {(car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video")) ? (
+                <>
+                  {isPlaying ? (
+                    <motion.video
+                      id={`car-photo-${car.id}`}
+                      ref={videoRef as any}
+                      src={optimizedVideoSource}
+                      poster={finalVideoPoster}
+                      preload="auto"
+                      loop
+                      muted
+                      playsInline
+                      autoPlay
+                      initial={{ scale: 0.94, rotate: -2, y: 15 }}
+                      whileInView={{
+                        scale: isHovered ? 1.15 : 1.01,
+                        x: isHovered ? 8 : 0,
+                        y: isHovered ? -4 : 0,
+                        rotate: isHovered ? -0.8 : 0,
+                      }}
+                      viewport={{ once: false, amount: 0.15 }}
+                      transition={{ duration: 0.55, ease: "easeOut" }}
+                      className="w-full h-full object-cover select-none cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(false);
+                      }}
+                    />
+                  ) : (
+                    <motion.img
+                      id={`car-photo-${car.id}`}
+                      src={finalVideoPoster}
+                      alt={car.name}
+                      loading="lazy"
+                      decoding="async"
+                      initial={{ scale: 0.94, y: 15 }}
+                      animate={{
+                        scale: isHovered ? 1.15 : 1.01,
+                        x: isHovered ? 8 : 0,
+                        y: isHovered ? -4 : 0,
+                        rotate: isHovered ? -0.8 : 0,
+                      }}
+                      transition={{ duration: 0.55, ease: "easeOut" }}
+                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer animate-fade-in"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(true);
+                      }}
+                    />
+                  )}
+                </>
+              ) : imageError && isGoogleDrive && driveId ? (
+                <motion.iframe
+                  id={`car-photo-${car.id}`}
+                  src={`https://drive.google.com/file/d/${driveId}/preview`}
+                  className="w-full h-full object-cover select-none"
+                  allow="autoplay"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: false }}
+                  title={car.name}
+                  style={{ border: "none" }}
+                />
+              ) : (
+                <motion.img
+                  id={`car-photo-${car.id}`}
+                  src={getOptimizedImageUrl(car.image, windowWidth, 'cover')}
+                  alt={car.name}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => {
+                    if (isGoogleDrive) {
+                      setImageError(true);
+                    } else {
+                      (e.target as HTMLImageElement).src =
+                        "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                    }
+                  }}
+                  initial={{ scale: 0.94, y: 15 }}
+                  animate={{
+                    scale: isHovered ? 1.15 : 1.01,
+                    x: isHovered ? 8 : 0,
+                    y: isHovered ? -4 : 0,
+                    rotate: isHovered ? -0.8 : 0,
+                  }}
+                  transition={{ duration: 0.55, ease: "easeOut" }}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover select-none bg-stone-100"
+                />
+              )}
+
+              {/* Beautiful linear cover shadow */}
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
+            </div>
+
+            {/* Narrative & Info */}
+            <div
+              id={`car-body-${car.id}`}
+              className="p-5 flex-1 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex justify-between items-center mb-1 w-full gap-2 flex-wrap">
+                  <h3
+                    id={`car-title-${car.id}`}
+                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-2"
+                  >
+                    <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
+                    {car.name}
+                  </h3>
+                </div>
+                <div className="mb-4">
+                  {car.description && (
+                    <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
+                      {car.description}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
+                    This is a sample car photo/video. Please click Enquire to request the actual available car photos/videos.
+                  </p>
+                </div>
+
+                {/* Highlights Info Grid (Technical) */}
+                <div
+                  id={`car-specs-${car.id}`}
+                  className="grid grid-cols-3 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1"
+                >
+                  <div className="flex flex-col items-center justify-center p-1">
+                    <Users className="w-4 h-4 text-stone-700 mb-1" />
+                    <span className="text-[10px] font-mono text-stone-900 font-extrabold">
+                      {car.seats} Seats
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-1 border-x border-stone-200">
+                    <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
+                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                      {car.transmission}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-1">
+                    <Fuel className="w-4 h-4 text-stone-700 mb-1" />
+                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                      {car.fuelType}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking or Editing CTA Foot */}
+              <div
+                id={`car-footer-${car.id}`}
+                className="flex items-center justify-between mt-2 pt-2 gap-2"
+              >
+                <div className="flex flex-col">
+                  <div className="flex items-baseline gap-0.5 mt-1">
+                    <span
+                      id={`car-price-${car.id}`}
+                      className="text-2xl font-black text-red-600"
+                    >
+                      ${car.price.toLocaleString()}
+                    </span>
+                    <span className="text-stone-400 text-xs font-semibold">
+                      /month
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5 mt-1.5">
+                    <span className="text-[8px] text-stone-400 font-bold uppercase tracking-widest leading-none">Share:</span>
+                    <a href={telegramShareLink} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#0088cc] transition-colors"><svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
+                    <a href={whatsAppShareLink} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#25D366] transition-colors"><svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M11.42 21.815a10.024 10.024 0 0 1-5.11-1.402l-.367-.217-3.8.995 1.015-3.7-.24-.38a9.986 9.986 0 0 1-1.535-5.356c0-5.523 4.54-10.038 10.039-10.038 2.68 0 5.192 1.036 7.085 2.92 1.892 1.884 2.932 4.382 2.932 7.042C21.439 17.2 16.924 21.8 11.42 21.8v.015zm0-18.368c-4.57 0-8.315 3.738-8.319 8.35-.002 1.488.384 2.946 1.121 4.225l.135.234-.595 2.169 2.227-.584.251.15c1.248.742 2.673 1.135 4.148 1.136 4.607 0 8.322-3.725 8.327-8.318.002-2.232-.862-4.327-2.433-5.908A8.258 8.258 0 0 0 11.42 3.447v-.001zm4.654 11.758c-.255-.128-1.507-.745-1.74-.83-.233-.086-.403-.128-.573.127-.171.255-.658.831-.806 1.002-.15.17-.298.192-.553.064-.255-.128-1.077-.397-2.052-1.266-.758-.676-1.269-1.51-1.42-1.765-.15-.255-.015-.392.112-.52.114-.114.255-.297.382-.447.128-.15.17-.255.255-.425.085-.17.043-.319-.021-.447-.064-.128-.574-1.383-.787-1.894-.207-.497-.418-.43-.574-.438-.15-.008-.32-.008-.49-.008-.17 0-.447.064-.68.32-.234.255-.893.872-.893 2.128s.915 2.468 1.042 2.638c.128.171 1.796 2.744 4.348 3.844.607.262 1.08.418 1.448.535.608.194 1.162.166 1.597.1.488-.074 1.507-.617 1.72-1.213.213-.596.213-1.106.15-1.213-.064-.106-.235-.17-.49-.297h-.002z"/></svg></a>
+                  </div>
+                </div>
+
+                {isAdminMode ? (
+                  <div className="flex gap-1.5">
+                    <button
+                      id={`car-btn-edit-${car.id}`}
+                      onClick={() => onEdit && onEdit(car)}
+                      className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      id={`car-btn-delete-${car.id}`}
+                      onClick={() => onDelete && onDelete(car.id)}
+                      className="px-3 py-2 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all border border-rose-100 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    id={`car-btn-rent-${car.id}`}
+                    onClick={() => setIsBookingOpen(true)}
+                    className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
+                    style={{ backgroundColor: brandPlum }}
+                  >
+                    Enquire
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* BACK FACE (Vehicle Specifications Panel) */}
+          <div
+            style={{ 
+              backfaceVisibility: "hidden", 
+              WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(180deg)"
+            }}
+            className="w-full h-full bg-[#1C1917] rounded-3xl overflow-hidden border border-stone-800 shadow-2xl p-5 flex flex-col justify-between absolute inset-0 select-none text-stone-100"
+          >
+            {/* Header */}
+            <div className="flex justify-between items-start pb-3.5 border-b border-stone-800">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] font-mono font-black text-rose-500 uppercase tracking-widest flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 animate-pulse text-rose-400" />
+                  Vehicle Specs
+                </span>
+                <h4 className="font-sans font-black text-white text-base tracking-tight flex items-center gap-2">
+                  <BrandIcon brand={car.name} className="w-4 h-4 fill-current text-stone-300 shrink-0" />
+                  {car.name}
+                </h4>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getCategoryColor(car.category)}`}>
+                {car.category}
+              </span>
+            </div>
+
+            {/* Spec Attributes Grid */}
+            <div className="flex-1 py-4 flex flex-col justify-center gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
+                  <Cpu className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Engine Assembly</p>
+                    <p className="text-xs font-black text-white mt-0.5 truncate">{specsDetails.engine}</p>
+                    <p className="text-[10px] font-bold text-rose-400 font-mono mt-0.5">{specsDetails.power}</p>
+                  </div>
+                </div>
+
+                <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
+                  <Gauge className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Velocity Hub</p>
+                    <p className="text-xs font-black text-white mt-0.5">0-100: <span className="text-amber-400 font-extrabold">{specsDetails.accel}</span></p>
+                    <p className="text-[10px] font-bold text-stone-400 font-mono mt-0.5">Max {specsDetails.topSpeed}</p>
+                  </div>
+                </div>
+
+                <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
+                  <Settings2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Transmission</p>
+                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.transmission}</p>
+                    <p className="text-[10px] font-bold text-stone-400 font-mono mt-0.5">{specsDetails.driveType}</p>
+                  </div>
+                </div>
+
+                <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
+                  <Fuel className="w-4 h-4 text-sky-400 mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Fuel System</p>
+                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.fuelType}</p>
+                    <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5 truncate">{specsDetails.efficiency}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Passenger row */}
+              <div className="bg-stone-900/40 px-3 py-2 rounded-xl border border-stone-800/60 flex items-center justify-between text-xs">
+                <span className="text-stone-400 flex items-center gap-1.5 text-[9px] uppercase font-bold tracking-widest font-mono">
+                  <Users className="w-3.5 h-3.5 text-teal-400" />
+                  Cabin Capacity
+                </span>
+                <span className="font-sans font-black text-stone-200">
+                  {car.seats} Premium Seats
+                </span>
+              </div>
+
+              {/* CO2 dynamic row */}
+              <div className="bg-stone-900/40 px-3 py-2 rounded-xl border border-stone-800/60 flex items-center justify-between text-xs">
+                <span className="text-stone-400 flex items-center gap-1.5 text-[9px] uppercase font-bold tracking-widest font-mono">
+                  <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
+                  Sustainability
+                </span>
+                <span className="font-mono font-extrabold text-rose-300">
+                  {specsDetails.co2}
+                </span>
+              </div>
+            </div>
+
+            {/* Backside Footer / CTA */}
+            <div className="border-t border-stone-800 pt-3 flex items-center justify-between gap-1">
+              <div className="flex flex-col">
+                <span className="text-[8px] text-stone-500 uppercase font-mono font-bold tracking-widest">
+                  RATE PLAN
+                </span>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-lg font-black text-rose-500">
+                    ${car.price.toLocaleString()}
+                  </span>
+                  <span className="text-stone-500 text-[10px] font-semibold">
+                    /mo
+                  </span>
+                </div>
+              </div>
+
+              {isAdminMode ? (
+                <div className="flex gap-1.5">
+                  <button
+                    id={`car-back-btn-edit-${car.id}`}
+                    onClick={(e) => { e.stopPropagation(); onEdit && onEdit(car); }}
+                    className="px-3 py-1.5 text-[10px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition-all cursor-pointer border border-stone-700"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    id={`car-back-btn-delete-${car.id}`}
+                    onClick={(e) => { e.stopPropagation(); onDelete && onDelete(car.id); }}
+                    className="px-3 py-1.5 text-[10px] font-bold bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 rounded-lg transition-all border border-rose-900/30 cursor-pointer"
+                  >
+                    Delete
                   </button>
                 </div>
+              ) : (
+                <button
+                  id={`car-back-btn-rent-${car.id}`}
+                  onClick={(e) => { e.stopPropagation(); setIsBookingOpen(true); }}
+                  className="flex items-center gap-1 px-4 py-2 text-[10px] font-bold bg-rose-600 text-white rounded-lg shadow-sm hover:bg-rose-500 transition-all cursor-pointer"
+                >
+                  Book Service
+                  <ArrowRight className="w-3 h-3" />
+                </button>
               )}
-            </>
-          ) : imageError && isGoogleDrive && driveId ? (
-            <motion.iframe
-              id={`car-photo-${car.id}`}
-              src={`https://drive.google.com/file/d/${driveId}/preview`}
-              className="w-full h-full object-cover select-none"
-              allow="autoplay"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: false }}
-              title={car.name}
-              style={{ border: "none" }}
-            />
-          ) : (
-            <motion.img
-              id={`car-photo-${car.id}`}
-              src={getOptimizedImageUrl(car.image, windowWidth, 'cover')}
-              alt={car.name}
-              loading="lazy"
-              decoding="async"
-              onError={(e) => {
-                if (isGoogleDrive) {
-                  setImageError(true);
-                } else {
-                  (e.target as HTMLImageElement).src =
-                    "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-                }
-              }}
-              initial={{ scale: 0.94, y: 15 }}
-              animate={{
-                scale: isHovered ? 1.15 : 1.01,
-                x: isHovered ? 8 : 0,
-                y: isHovered ? -4 : 0,
-                rotate: isHovered ? -0.8 : 0,
-              }}
-              transition={{ duration: 0.55, ease: "easeOut" }}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover select-none bg-stone-100"
-            />
-          )}
-
-          {/* Beautiful linear cover shadow */}
-          <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
-        </div>
-
-        {/* Narrative & Info */}
-        <div
-          id={`car-body-${car.id}`}
-          className="p-5 flex-1 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex justify-between items-center mb-1 w-full gap-2 flex-wrap">
-              <h3
-                id={`car-title-${car.id}`}
-                className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-2"
-              >
-                <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
-                {car.name}
-              </h3>
-            </div>
-            <div className="mb-4">
-              {car.description && (
-                <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
-                  {car.description}
-                </p>
-              )}
-              <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
-                This is a sample car photo/video. Please click Enquire to request the actual available car photos/videos.
-              </p>
-            </div>
-
-            {/* Highlights Info Grid (Technical) */}
-            <div
-              id={`car-specs-${car.id}`}
-              className="grid grid-cols-3 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1"
-            >
-              <div className="flex flex-col items-center justify-center p-1">
-                <Users className="w-4 h-4 text-stone-700 mb-1" />
-                <span className="text-[10px] font-mono text-stone-900 font-extrabold">
-                  {car.seats} Seats
-                </span>
-              </div>
-
-              <div className="flex flex-col items-center justify-center p-1 border-x border-stone-200">
-                <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
-                <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
-                  {car.transmission}
-                </span>
-              </div>
-
-              <div className="flex flex-col items-center justify-center p-1">
-                <Fuel className="w-4 h-4 text-stone-700 mb-1" />
-                <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
-                  {car.fuelType}
-                </span>
-              </div>
             </div>
           </div>
-
-          {/* Booking or Editing CTA Foot */}
-          <div
-            id={`car-footer-${car.id}`}
-            className="flex items-center justify-between mt-2 pt-2 gap-2"
-          >
-            <div className="flex flex-col">
-              <div className="flex items-baseline gap-0.5 mt-1">
-                <span
-                  id={`car-price-${car.id}`}
-                  className="text-2xl font-black text-red-600"
-                >
-                  ${car.price.toLocaleString()}
-                </span>
-                <span className="text-stone-400 text-xs font-semibold">
-                  /month
-                </span>
-              </div>
-              <div className="flex items-center gap-2.5 mt-1.5">
-                <span className="text-[8px] text-stone-400 font-bold uppercase tracking-widest leading-none">Share:</span>
-                <a href={telegramShareLink} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#0088cc] transition-colors"><svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
-                <a href={whatsAppShareLink} target="_blank" rel="noreferrer" className="text-stone-400 hover:text-[#25D366] transition-colors"><svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current"><path d="M11.42 21.815a10.024 10.024 0 0 1-5.11-1.402l-.367-.217-3.8.995 1.015-3.7-.24-.38a9.986 9.986 0 0 1-1.535-5.356c0-5.523 4.54-10.038 10.039-10.038 2.68 0 5.192 1.036 7.085 2.92 1.892 1.884 2.932 4.382 2.932 7.042C21.439 17.2 16.924 21.8 11.42 21.8v.015zm0-18.368c-4.57 0-8.315 3.738-8.319 8.35-.002 1.488.384 2.946 1.121 4.225l.135.234-.595 2.169 2.227-.584.251.15c1.248.742 2.673 1.135 4.148 1.136 4.607 0 8.322-3.725 8.327-8.318.002-2.232-.862-4.327-2.433-5.908A8.258 8.258 0 0 0 11.42 3.447v-.001zm4.654 11.758c-.255-.128-1.507-.745-1.74-.83-.233-.086-.403-.128-.573.127-.171.255-.658.831-.806 1.002-.15.17-.298.192-.553.064-.255-.128-1.077-.397-2.052-1.266-.758-.676-1.269-1.51-1.42-1.765-.15-.255-.015-.392.112-.52.114-.114.255-.297.382-.447.128-.15.17-.255.255-.425.085-.17.043-.319-.021-.447-.064-.128-.574-1.383-.787-1.894-.207-.497-.418-.43-.574-.438-.15-.008-.32-.008-.49-.008-.17 0-.447.064-.68.32-.234.255-.893.872-.893 2.128s.915 2.468 1.042 2.638c.128.171 1.796 2.744 4.348 3.844.607.262 1.08.418 1.448.535.608.194 1.162.166 1.597.1.488-.074 1.507-.617 1.72-1.213.213-.596.213-1.106.15-1.213-.064-.106-.235-.17-.49-.297h-.002z"/></svg></a>
-              </div>
-            </div>
-
-            {isAdminMode ? (
-              <div className="flex gap-1.5">
-                <button
-                  id={`car-btn-edit-${car.id}`}
-                  onClick={() => onEdit && onEdit(car)}
-                  className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer"
-                >
-                  Edit
-                </button>
-                <button
-                  id={`car-btn-delete-${car.id}`}
-                  onClick={() => onDelete && onDelete(car.id)}
-                  className="px-3 py-2 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all border border-rose-100 cursor-pointer"
-                >
-                  Delete
-                </button>
-              </div>
-            ) : (
-              <button
-                id={`car-btn-rent-${car.id}`}
-                onClick={() => setIsBookingOpen(true)}
-                className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
-                style={{ backgroundColor: brandPlum }}
-              >
-                Enquire
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Advanced Booking Reservation Modal */}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
-import { VirtuosoGrid } from "react-virtuoso";
 import { Car, ViewMode, CatalogFilters, Booking, Review } from "./types";
 import { INITIAL_CARS } from "./data";
 import { BrandLogo } from "./components/BrandLogo";
@@ -509,18 +508,24 @@ export default function App() {
   const [isFiltering, setIsFiltering] = useState(false);
   const [activeFilters, setActiveFilters] = useState<CatalogFilters>(filters);
   const filterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setIsFiltering(true);
     if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
     filterTimeoutRef.current = setTimeout(() => {
       setActiveFilters(filters);
+      setCurrentPage(1);
       setIsFiltering(false);
     }, 300);
     return () => {
       if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
     };
   }, [filters]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortBy]);
 
   const filteredCars = useMemo(() => {
     const results = cars.filter((car) => {
@@ -568,6 +573,13 @@ export default function App() {
     }
     return results;
   }, [cars, activeFilters, likedCars, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCars.length / 6));
+
+  const paginatedCars = useMemo(() => {
+    const startIndex = (currentPage - 1) * 6;
+    return filteredCars.slice(startIndex, startIndex + 6);
+  }, [filteredCars, currentPage]);
 
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
@@ -1414,35 +1426,107 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <VirtuosoGrid
-                useWindowScroll
-                data={filteredCars}
-                listClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                itemClassName="h-full"
-                itemContent={(index, car) => (
-                  <motion.div
-                    key={car.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                    transition={{ duration: 0.3 }}
-                    className="h-full pt-2 pb-2"
-                  >
-                    <CarCard
-                      car={car}
-                      onBookSuccess={handleBookingToast}
-                      reviews={reviews}
-                      onAddReview={handleAddReview}
-                      onConfirmBook={(bookingFields) =>
-                        handleConfirmBook(car.id, bookingFields)
-                      }
-                      isLiked={likedCars.includes(car.id)}
-                      onToggleLike={handleToggleLike}
-                    />
-                  </motion.div>
+              <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <AnimatePresence mode="popLayout">
+                    {paginatedCars.map((car) => (
+                      <motion.div
+                        key={car.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+                        transition={{ duration: 0.3 }}
+                        className="h-full pt-2 pb-2"
+                      >
+                        <CarCard
+                          car={car}
+                          onBookSuccess={handleBookingToast}
+                          reviews={reviews}
+                          onAddReview={handleAddReview}
+                          onConfirmBook={(bookingFields) =>
+                            handleConfirmBook(car.id, bookingFields)
+                          }
+                          isLiked={likedCars.includes(car.id)}
+                          onToggleLike={handleToggleLike}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div id="cars-pagination" className="flex items-center justify-center gap-2 mt-12 pt-6 border-t border-stone-100">
+                    <button
+                      id="btn-pagination-prev"
+                      disabled={currentPage === 1}
+                      onClick={() => {
+                        setCurrentPage((p) => Math.max(1, p - 1));
+                        const element = document.getElementById("collection-grid-view");
+                        if (element) {
+                          element.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                      }}
+                      className="px-4 py-2 text-xs font-bold rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs flex items-center gap-1"
+                    >
+                      ← Previous
+                    </button>
+                    <div className="flex gap-1 items-center">
+                      {Array.from({ length: totalPages }).map((_, i) => {
+                        const pageNum = i + 1;
+                        const shouldShow =
+                          totalPages <= 7 ||
+                          pageNum === 1 ||
+                          pageNum === totalPages ||
+                          Math.abs(currentPage - pageNum) <= 1;
+
+                        if (!shouldShow) {
+                          if (pageNum === 2 || pageNum === totalPages - 1) {
+                            return <span key={pageNum} className="text-stone-400 text-xs px-1 select-none">...</span>;
+                          }
+                          return null;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            id={`btn-pagination-page-${pageNum}`}
+                            onClick={() => {
+                              setCurrentPage(pageNum);
+                              const element = document.getElementById("collection-grid-view");
+                              if (element) {
+                                element.scrollIntoView({ behavior: "smooth", block: "start" });
+                              }
+                            }}
+                            className={`w-9 h-9 flex items-center justify-center text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                              currentPage === pageNum
+                                ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm font-extrabold"
+                                : "bg-white text-stone-600 border-stone-200 hover:bg-stone-50"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      id="btn-pagination-next"
+                      disabled={currentPage === totalPages}
+                      onClick={() => {
+                        setCurrentPage((p) => Math.min(totalPages, p + 1));
+                        const element = document.getElementById("collection-grid-view");
+                        if (element) {
+                          element.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }
+                      }}
+                      className="px-4 py-2 text-xs font-bold rounded-xl border border-stone-200 bg-white text-[#4C0027] hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs flex items-center gap-1 bg-white hover:text-[#4C0027]"
+                    >
+                      Next →
+                    </button>
+                  </div>
                 )}
-              />
+              </div>
             )}
           </div>
         </section>
