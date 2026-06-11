@@ -526,9 +526,7 @@ Description: ${formattedDesc}`;
       >
         <motion.div
           id={`car-card-inner-${car.id}`}
-          animate={{ rotateY: isHovered ? 180 : 0 }}
           transition={{ duration: 0.65, ease: [0.23, 1, 0.32, 1] }}
-          style={{ transformStyle: "preserve-3d" }}
           className="relative w-full h-full"
         >
           {/* FRONT FACE of the card */}
