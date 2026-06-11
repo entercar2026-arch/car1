@@ -371,8 +371,10 @@ Description: ${formattedDesc}`;
           ) : (
             <motion.img
               id={`car-photo-${car.id}`}
-              src={car.image}
+              src={car.image.includes("unsplash.com") && !car.image.includes("w=") ? `${car.image}&w=600&q=70` : optimizedVideoSource}
               alt={car.name}
+              loading="lazy"
+              decoding="async"
               onError={(e) => {
                 if (isGoogleDrive) {
                   setImageError(true);
@@ -381,17 +383,16 @@ Description: ${formattedDesc}`;
                     "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
                 }
               }}
-              initial={{ scale: 0.94, rotate: -2, y: 15 }}
-              whileInView={{
+              initial={{ scale: 0.94, y: 15 }}
+              animate={{
                 scale: isHovered ? 1.15 : 1.01,
                 x: isHovered ? 8 : 0,
                 y: isHovered ? -4 : 0,
                 rotate: isHovered ? -0.8 : 0,
               }}
-              viewport={{ once: false, amount: 0.15 }}
               transition={{ duration: 0.55, ease: "easeOut" }}
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover select-none"
+              className="w-full h-full object-cover select-none bg-stone-100"
             />
           )}
 
@@ -674,14 +675,16 @@ Description: ${formattedDesc}`;
                       />
                     ) : (
                       <img
-                        src={car.image}
+                        src={car.image.includes("unsplash.com") && !car.image.includes("w=") ? `${car.image}&w=200&q=70` : optimizedVideoSource}
                         alt={car.name}
+                        loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           if (isGoogleDrive) {
                             setImageError(true);
                           } else {
                             (e.target as HTMLImageElement).src =
-                              "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                              "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
                           }
                         }}
                         referrerPolicy="no-referrer"
