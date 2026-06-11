@@ -261,6 +261,10 @@ export const CarCard: React.FC<CarCardProps> = ({
   
   const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || getFallbackCarThumbnail(car.name, car.category);
 
+  const hasRealPoster = useMemo(() => {
+    return !!(car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster);
+  }, [car.thumbnail, videoPoster, youtubeThumbnail, generatedPoster]);
+
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [pickupDate, setPickupDate] = useState(() => {
@@ -634,13 +638,34 @@ Description: ${formattedDesc}`;
                         setIsPlaying(false);
                       }}
                     />
-                  ) : (
+                  ) : hasRealPoster ? (
                     <motion.img
                       id={`car-photo-${car.id}`}
                       src={finalVideoPoster}
                       alt={car.name}
                       loading="lazy"
                       decoding="async"
+                      initial={{ scale: 0.94, y: 15 }}
+                      animate={{
+                        scale: isHovered ? 1.15 : 1.01,
+                        x: isHovered ? 8 : 0,
+                        y: isHovered ? -4 : 0,
+                        rotate: isHovered ? -0.8 : 0,
+                      }}
+                      transition={{ duration: 0.55, ease: "easeOut" }}
+                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer animate-fade-in"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(true);
+                      }}
+                    />
+                  ) : (
+                    <motion.video
+                      id={`car-photo-${car.id}`}
+                      src={optimizedVideoSource ? (optimizedVideoSource.includes("#") ? optimizedVideoSource : `${optimizedVideoSource}#t=0.1`) : ""}
+                      preload="metadata"
+                      muted
+                      playsInline
                       initial={{ scale: 0.94, y: 15 }}
                       animate={{
                         scale: isHovered ? 1.15 : 1.01,
