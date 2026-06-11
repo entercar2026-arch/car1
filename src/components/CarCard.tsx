@@ -154,9 +154,34 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   const [imageError, setImageError] = useState(false);
   const isMobile = windowWidth <= 768;
+
+  const effectiveVideoUrl = useMemo(() => {
+    if (car.name?.toLowerCase().includes("prius")) {
+      return car.videoUrl || "https://files.catbox.moe/2zvvj8.mp4";
+    }
+    if (car.name?.toLowerCase().includes("lexus")) {
+      return car.videoUrl || "https://files.catbox.moe/icbp1v.mp4";
+    }
+    return car.videoUrl || "";
+  }, [car.name, car.videoUrl]);
+
+  const isVideoMedia = (url?: string) => {
+    if (!url) return false;
+    return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
+  };
+
+  const hasVideo = useMemo(() => {
+    return isVideoMedia(car.image) || isVideoMedia(effectiveVideoUrl);
+  }, [car.image, effectiveVideoUrl]);
+
+  const videoSource = useMemo(() => {
+    return isVideoMedia(car.image) ? car.image : effectiveVideoUrl;
+  }, [car.image, effectiveVideoUrl]);
+
   const optimizedVideoSource = useMemo(() => {
-    return getOptimizedImageUrl(car.image, windowWidth, 'cover');
-  }, [car.image, windowWidth]);
+    return getOptimizedImageUrl(videoSource, windowWidth, 'cover');
+  }, [videoSource, windowWidth]);
+
   const isGoogleDrive = car.image.includes("drive.google.com/uc");
   const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
 
@@ -164,14 +189,34 @@ export const CarCard: React.FC<CarCardProps> = ({
     if (car.image.includes("upload/") && car.image.match(/\.(mp4|webm|ogg)$/i)) {
       return getOptimizedImageUrl(car.image.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
     }
+    if (car.name?.toLowerCase().includes("prius")) {
+      return "https://images.unsplash.com/photo-1594070319944-7c0c6fe66785?auto=format&fit=crop&q=80&w=600";
+    }
+    if (car.name?.toLowerCase().includes("lexus")) {
+      return "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=600";
+    }
     return undefined;
-  }, [car.image, windowWidth]);
+  }, [car.image, car.name, windowWidth]);
+
+  const youtubeThumbnail = useMemo(() => {
+    const getYoutubeId = (url?: string): string | null => {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    };
+    const ytId = getYoutubeId(car.image) || getYoutubeId(car.videoUrl);
+    if (ytId) {
+      return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+    }
+    return undefined;
+  }, [car.image, car.videoUrl]);
 
   const [generatedPoster, setGeneratedPoster] = useState<string | undefined>();
   
   useEffect(() => {
-    if (videoPoster) return;
-    if (!(car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video"))) return;
+    if (videoPoster || youtubeThumbnail) return;
+    if (!hasVideo) return;
     
     let isMounted = true;
     const video = document.createElement("video");
@@ -212,9 +257,9 @@ export const CarCard: React.FC<CarCardProps> = ({
       video.removeEventListener("seeked", handleSeeked);
       video.src = "";
     };
-  }, [car.image, videoPoster, optimizedVideoSource]);
+  }, [hasVideo, videoPoster, youtubeThumbnail, optimizedVideoSource]);
   
-  const finalVideoPoster = car.thumbnail || videoPoster || generatedPoster || getFallbackCarThumbnail(car.name, car.category);
+  const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || getFallbackCarThumbnail(car.name, car.category);
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -281,16 +326,6 @@ export const CarCard: React.FC<CarCardProps> = ({
   const totalBookingCost = useMemo(() => {
     return Math.round(car.price);
   }, [car.price]);
-
-  const effectiveVideoUrl = useMemo(() => {
-    if (car.name?.toLowerCase().includes("prius")) {
-      return car.videoUrl || "https://files.catbox.moe/2zvvj8.mp4";
-    }
-    if (car.name?.toLowerCase().includes("lexus")) {
-      return car.videoUrl || "https://files.catbox.moe/icbp1v.mp4";
-    }
-    return car.videoUrl || "";
-  }, [car.name, car.videoUrl]);
 
   const shareText = useMemo(() => {
     const videoLink = effectiveVideoUrl;
@@ -512,7 +547,7 @@ Description: ${formattedDesc}`;
                 {car.category}
               </span>
               <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-                {(car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video")) && (
+                {hasVideo && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -571,7 +606,7 @@ Description: ${formattedDesc}`;
               </div>
 
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
-              {(car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video")) ? (
+              {hasVideo ? (
                 <>
                   {isPlaying ? (
                     <motion.video
