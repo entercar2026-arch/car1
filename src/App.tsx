@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
+import { VirtuosoGrid } from "react-virtuoso";
 import { Car, ViewMode, CatalogFilters, Booking, Review } from "./types";
 import { INITIAL_CARS } from "./data";
 import { BrandLogo } from "./components/BrandLogo";
@@ -507,7 +508,6 @@ export default function App() {
   // Filter computation logic
   const [isFiltering, setIsFiltering] = useState(false);
   const [activeFilters, setActiveFilters] = useState<CatalogFilters>(filters);
-  const [visibleCount, setVisibleCount] = useState(6);
   const filterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -515,17 +515,12 @@ export default function App() {
     if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
     filterTimeoutRef.current = setTimeout(() => {
       setActiveFilters(filters);
-      setVisibleCount(6);
       setIsFiltering(false);
     }, 300);
     return () => {
       if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
     };
   }, [filters]);
-
-  useEffect(() => {
-    setVisibleCount(6);
-  }, [sortBy]);
 
   const filteredCars = useMemo(() => {
     const results = cars.filter((car) => {
@@ -1419,47 +1414,35 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <div
-                id="cars-grid"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-              >
-                <AnimatePresence mode="popLayout">
-                  {filteredCars.slice(0, visibleCount).map((car) => (
-                    <motion.div
-                      key={car.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                      transition={{ duration: 0.3 }}
-                      className="h-full"
-                    >
-                      <CarCard
-                        car={car}
-                        onBookSuccess={handleBookingToast}
-                        reviews={reviews}
-                        onAddReview={handleAddReview}
-                        onConfirmBook={(bookingFields) =>
-                          handleConfirmBook(car.id, bookingFields)
-                        }
-                        isLiked={likedCars.includes(car.id)}
-                        onToggleLike={handleToggleLike}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-            
-            {visibleCount < filteredCars.length && !isFiltering && (
-              <div className="mt-12 flex justify-center">
-                <button
-                  onClick={() => setVisibleCount((prev) => prev + 6)}
-                  className="px-8 py-3 bg-white border border-stone-200 text-stone-700 font-bold text-sm rounded-xl shadow-sm hover:shadow-md hover:border-stone-300 transition-all cursor-pointer"
-                >
-                  Load More Vehicles ({filteredCars.length - visibleCount} remaining)
-                </button>
-              </div>
+              <VirtuosoGrid
+                useWindowScroll
+                data={filteredCars}
+                listClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                itemClassName="h-full"
+                itemContent={(index, car) => (
+                  <motion.div
+                    key={car.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                    transition={{ duration: 0.3 }}
+                    className="h-full pt-2 pb-2"
+                  >
+                    <CarCard
+                      car={car}
+                      onBookSuccess={handleBookingToast}
+                      reviews={reviews}
+                      onAddReview={handleAddReview}
+                      onConfirmBook={(bookingFields) =>
+                        handleConfirmBook(car.id, bookingFields)
+                      }
+                      isLiked={likedCars.includes(car.id)}
+                      onToggleLike={handleToggleLike}
+                    />
+                  </motion.div>
+                )}
+              />
             )}
           </div>
         </section>
