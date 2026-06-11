@@ -941,13 +941,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
                   </div>
 
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="input-car-thumbnail"
+                      className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1"
+                    >
+                      Custom Thumbnail URL (Optional)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <Link2 className="h-4 w-4 text-stone-400" />
+                      </span>
+                      <input
+                        id="input-car-thumbnail"
+                        type="text"
+                        value={formThumbnail}
+                        onChange={(e) => setFormThumbnail(e.target.value)}
+                        placeholder="Paste a direct image URL to use as thumbnail if video capture fails"
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                      />
+                    </div>
+                  </div>
+
                   {/* Video Thumbnail Studio */}
                   {(() => {
                     const isVideoMedia = (url: string) => 
                       !!(url.match(/\.(mp4|webm|ogg|avi|mov|mkv)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
                     
-                    const videoSource = isVideoMedia(formImage) ? formImage : (isVideoMedia(formVideoUrl) ? formVideoUrl : "");
-                    
+                    let videoSource = isVideoMedia(formImage) ? formImage : (isVideoMedia(formVideoUrl) ? formVideoUrl : "");
+                    if (videoSource && !videoSource.startsWith("data:") && !videoSource.includes("drive.google.com")) {
+                        videoSource += (videoSource.includes("?") ? "&" : "?") + "cors_bypass=" + Date.now();
+                    }
                     if (!videoSource) return null;
                     
                     return (

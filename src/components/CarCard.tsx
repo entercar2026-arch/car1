@@ -611,6 +611,7 @@ Description: ${formattedDesc}`;
                       id={`car-photo-${car.id}`}
                       ref={videoRef as any}
                       src={optimizedVideoSource}
+                      crossOrigin="anonymous"
                       poster={hasRealPoster ? finalVideoPoster : undefined}
                       preload="auto"
                       loop
@@ -661,6 +662,7 @@ Description: ${formattedDesc}`;
                     <motion.video
                       id={`car-photo-${car.id}`}
                       src={optimizedVideoSource ? (optimizedVideoSource.includes("#") ? optimizedVideoSource : `${optimizedVideoSource}#t=0.1`) : ""}
+                      crossOrigin="anonymous"
                       preload="metadata"
                       muted
                       playsInline
