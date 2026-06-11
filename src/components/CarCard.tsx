@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Car, Review, Booking } from "../types";
 import { motion, AnimatePresence } from "motion/react";
@@ -27,8 +27,6 @@ import {
   X,
   Heart,
   Share2,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 
 interface CarCardProps {
@@ -70,45 +68,6 @@ export const CarCard: React.FC<CarCardProps> = ({
   onToggleLike,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-
-  // States for lazy loading and conditional playing of videos
-  const [videoActive, setVideoActive] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
-  // Toggle video on mobile via interaction, on desktop via hover
-  const handleToggleVideoMobile = () => {
-    if (isMobile && car.videoUrl) {
-      if (videoActive) {
-        setIsMuted(true);
-      }
-      setVideoActive(!videoActive);
-    }
-  };
-
-  const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMuted(!isMuted);
-  };
-
-  useEffect(() => {
-    let timeoutId: any;
-    if (!isMobile) {
-      if (isHovered && car.videoUrl) {
-        timeoutId = setTimeout(() => {
-          setVideoActive(true);
-        }, 150);
-      } else {
-        setVideoActive(false);
-        setVideoLoaded(false);
-        setIsMuted(true);
-      }
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [isHovered, isMobile, car.videoUrl]);
 
   const [imageError, setImageError] = useState(false);
   const isGoogleDrive = car.image.includes("drive.google.com/uc");
@@ -180,14 +139,26 @@ export const CarCard: React.FC<CarCardProps> = ({
     return Math.round(car.price);
   }, [car.price]);
 
+  const effectiveVideoUrl = useMemo(() => {
+    if (car.name?.toLowerCase().includes("prius")) {
+      return car.videoUrl || "https://files.catbox.moe/2zvvj8.mp4";
+    }
+    if (car.name?.toLowerCase().includes("lexus")) {
+      return car.videoUrl || "https://files.catbox.moe/icbp1v.mp4";
+    }
+    return car.videoUrl || "";
+  }, [car.name, car.videoUrl]);
+
   const shareText = useMemo(() => {
+    const videoLink = effectiveVideoUrl;
     return `Check out this ${car.name}!
 Price: $${car.price.toLocaleString()} / month
-Description: ${car.description || 'A great car for you.'}`;
-  }, [car.name, car.price, car.description]);
+Description: ${car.description || 'A great car for you.'}
+${videoLink ? `Video Link: ${videoLink}` : ''}`;
+  }, [car.name, car.price, car.description, effectiveVideoUrl]);
 
   const telegramShareLink = useMemo(() => {
-    const shareUrl = car.image || window.location.href;
+    const shareUrl = effectiveVideoUrl || car.image || window.location.href;
     const cleanDescription = (car.description || "A great car for you.").trim();
     const formattedDesc = cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
 
@@ -196,10 +167,10 @@ Price: $${car.price.toLocaleString()} / month
 Description: ${formattedDesc}`;
 
     return `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(cleanText)}`;
-  }, [car.name, car.price, car.description, car.image]);
+  }, [car.name, car.price, car.description, car.image, effectiveVideoUrl]);
 
   const whatsAppShareLink = useMemo(() => {
-    const shareUrl = car.image || window.location.href;
+    const shareUrl = effectiveVideoUrl || car.image || window.location.href;
     const cleanDescription = (car.description || "A great car for you.").trim();
     const formattedDesc = cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
 
@@ -208,7 +179,7 @@ Price: $${car.price.toLocaleString()} / month
 Description: ${formattedDesc}`;
 
     return `https://wa.me/?text=${encodeURIComponent(`${shareUrl}\n\n${cleanText}`)}`;
-  }, [car.name, car.price, car.description, car.image]);
+  }, [car.name, car.price, car.description, car.image, effectiveVideoUrl]);
 
   const targetUrl = useMemo(() => {
     const carDetails = `*Enquiry for: ${car.name}*`;
@@ -351,108 +322,25 @@ Description: ${formattedDesc}`;
           </div>
 
           {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
-          {car.videoUrl ? (
-            <div 
-              className="relative w-full h-full overflow-hidden bg-stone-100"
-              onClick={handleToggleVideoMobile}
-            >
-              {/* Static high-quality fallback image for instantaneous loading on grid mount */}
-              <motion.img
-                id={`car-photo-fallback-${car.id}`}
-                src={car.image}
-                alt={car.name}
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-                }}
-                initial={{ scale: 0.94, rotate: -2, y: 15 }}
-                whileInView={{
-                  scale: isHovered && !videoActive ? 1.15 : 1.01,
-                  x: isHovered && !videoActive ? 8 : 0,
-                  y: isHovered && !videoActive ? -4 : 0,
-                  rotate: isHovered && !videoActive ? -0.8 : 0,
-                }}
-                viewport={{ once: false, amount: 0.15 }}
-                transition={{ duration: 0.55, ease: "easeOut" }}
-                className="w-full h-full object-cover select-none"
-              />
-
-              {/* Heavy video element lazy-loaded and streamed ONLY on demand/hover */}
-              {videoActive && (
-                <motion.video
-                  id={`car-photo-${car.id}`}
-                  src={car.videoUrl}
-                  autoPlay
-                  loop
-                  muted={isMuted}
-                  playsInline
-                  preload="auto"
-                  onCanPlay={() => setVideoLoaded(true)}
-                  onPlaying={() => setVideoLoaded(true)}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: videoLoaded ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0 w-full h-full object-cover select-none z-10"
-                />
-              )}
-
-              {/* Quick Actions (Sound & Like) */}
-              <AnimatePresence>
-                {videoActive && videoLoaded && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute bottom-3 right-3 z-30 flex items-center gap-2"
-                  >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleLike && onToggleLike(car.id);
-                      }}
-                      className="flex items-center justify-center p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-black/60 transition-colors shadow-xl"
-                      title={isLiked ? "Unlike video" : "Like video"}
-                      aria-label="Like video"
-                    >
-                      <Heart
-                        className={`w-4 h-4 transition-colors ${
-                          isLiked ? "fill-rose-500 text-rose-500" : ""
-                        }`}
-                      />
-                    </button>
-                    <button
-                      onClick={handleToggleMute}
-                      className="flex items-center justify-center p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-black/60 transition-colors shadow-xl"
-                      title={isMuted ? "Unmute video" : "Mute video"}
-                      aria-label={isMuted ? "Unmute video" : "Mute video"}
-                    >
-                      {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Play / Preview available indicator banner - only shown if we haven't started playing video */}
-              {!videoActive && (
-                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-900/80 backdrop-blur-md border border-white/20 select-none cursor-pointer hover:bg-stone-800 transition-colors">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">
-                    {isMobile ? "Tap to play video" : "Hover to play video"}
-                  </span>
-                </div>
-              )}
-
-              {/* Shimmer loading spinner while buffering */}
-              {videoActive && !videoLoaded && (
-                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-900/80 backdrop-blur-md border border-white/20 select-none pointer-events-none">
-                  <div className="w-3 h-3 rounded-full border-[1.5px] border-stone-400 border-t-emerald-400 animate-spin" />
-                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">
-                    Loading
-                  </span>
-                </div>
-              )}
-            </div>
+          {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
+            <motion.video
+              id={`car-photo-${car.id}`}
+              src={car.image}
+              autoPlay
+              loop
+              muted
+              playsInline
+              initial={{ scale: 0.94, rotate: -2, y: 15 }}
+              whileInView={{
+                scale: isHovered ? 1.15 : 1.01,
+                x: isHovered ? 8 : 0,
+                y: isHovered ? -4 : 0,
+                rotate: isHovered ? -0.8 : 0,
+              }}
+              viewport={{ once: false, amount: 0.15 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+              className="w-full h-full object-cover select-none"
+            />
           ) : imageError && isGoogleDrive && driveId ? (
             <motion.iframe
               id={`car-photo-${car.id}`}
@@ -752,7 +640,16 @@ Description: ${formattedDesc}`;
               ) : (
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
-                    {imageError && isGoogleDrive && driveId ? (
+                    {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
+                      <video
+                        src={car.image}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
+                      />
+                    ) : imageError && isGoogleDrive && driveId ? (
                       <iframe
                         src={`https://drive.google.com/file/d/${driveId}/preview`}
                         className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"

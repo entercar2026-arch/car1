@@ -2,40 +2,33 @@ import { supabase } from './supabase';
 import { Car, Booking, Review } from '../types';
 
 // Utility to convert DB snake_case to JS camelCase
-const dbToCar = (dbCar: any): Car => {
-  const imageVal = dbCar.image || "";
-  const parts = imageVal.split('|');
-  const image = parts[0];
-  const videoUrl = parts.length > 1 ? parts[1] : (dbCar.video_url || dbCar.videoUrl || "");
-
-  return {
-    id: dbCar.id,
-    name: dbCar.name,
-    category: dbCar.category,
-    price: Number(dbCar.price),
-    image: image,
-    transmission: dbCar.transmission,
-    seats: dbCar.seats,
-    fuelType: dbCar.fuel_type,
-    description: dbCar.description,
-    videoUrl: videoUrl,
-  };
-};
+const dbToCar = (dbCar: any): Car => ({
+  id: dbCar.id,
+  name: dbCar.name,
+  category: dbCar.category,
+  price: Number(dbCar.price),
+  image: dbCar.image,
+  transmission: dbCar.transmission,
+  seats: dbCar.seats,
+  fuelType: dbCar.fuel_type,
+  description: dbCar.description,
+  videoUrl: dbCar.video_url || dbCar.videoUrl || "",
+});
 
 const carToDb = (car: Omit<Car, 'id'>) => {
-  const imagePayload = (car.videoUrl && car.videoUrl.trim() !== '') ? `${car.image}|${car.videoUrl}` : car.image;
-  
   const payload: any = {
     name: car.name,
     category: car.category,
     price: car.price,
-    image: imagePayload,
+    image: car.image,
     transmission: car.transmission,
     seats: car.seats,
     fuel_type: car.fuelType,
     description: car.description,
     year_model: 2024,
   };
+  // Temporarily omit video_url to prevent sync errors until column is added in Supabase
+  // if (car.videoUrl) payload.video_url = car.videoUrl;
   return payload;
 };
 
@@ -57,28 +50,15 @@ export const db = {
       if (!supabase) return null;
       
       const payload: any = {};
-      
-      // We need to fetch existing to safely combine image|videoUrl if only one is updated
-      const { data: existing } = await supabase.from('cars').select('image').eq('id', id).single();
-      const existingImageVal = existing?.image || "";
-      const parts = existingImageVal.split('|');
-      const currentImage = parts[0];
-      const currentVideo = parts.length > 1 ? parts[1] : "";
-
-      const newImage = car.image !== undefined ? car.image : currentImage;
-      const newVideo = car.videoUrl !== undefined ? car.videoUrl : currentVideo;
-
-      if (car.image !== undefined || car.videoUrl !== undefined) {
-        payload.image = (newVideo && newVideo.trim() !== '') ? `${newImage}|${newVideo}` : newImage;
-      }
-
       if (car.name) payload.name = car.name;
       if (car.category) payload.category = car.category;
       if (car.price) payload.price = car.price;
+      if (car.image) payload.image = car.image;
       if (car.transmission) payload.transmission = car.transmission;
       if (car.seats) payload.seats = car.seats;
       if (car.fuelType) payload.fuel_type = car.fuelType;
       if (car.description !== undefined) payload.description = car.description;
+      // if (car.videoUrl !== undefined) payload.video_url = car.videoUrl; // Excluded until schema is updated
 
       const { data, error } = await supabase.from('cars').update(payload).eq('id', id).select().single();
       if (error) throw error;
