@@ -50,7 +50,8 @@ const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 
   }
   
   if (url.includes('upload/')) {
-    return url.replace('upload/', `upload/q_auto,w_${targetWidth},c_scale/`);
+    // f_auto will serve webp/avif for images, and wepm/mp4 for videos automatically based on browser
+    return url.replace('upload/', `upload/f_auto,q_auto,w_${targetWidth},c_scale/`);
   }
   
   return url;
@@ -119,6 +120,13 @@ export const CarCard: React.FC<CarCardProps> = ({
   }, [car.image, windowWidth]);
   const isGoogleDrive = car.image.includes("drive.google.com/uc");
   const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
+
+  const videoPoster = useMemo(() => {
+    if (car.image.includes("upload/") && car.image.match(/\.(mp4|webm|ogg)$/i)) {
+      return getOptimizedImageUrl(car.image.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
+    }
+    return undefined;
+  }, [car.image, windowWidth]);
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -373,6 +381,7 @@ Description: ${formattedDesc}`;
             <motion.video
               id={`car-photo-${car.id}`}
               src={optimizedVideoSource}
+              poster={videoPoster}
               preload="none"
               autoPlay
               loop
@@ -691,7 +700,8 @@ Description: ${formattedDesc}`;
                   <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
                     {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
                       <video
-                        src={optimizedVideoSource}
+                        src={getOptimizedImageUrl(car.image, windowWidth, 'thumbnail')}
+                        poster={videoPoster ? getOptimizedImageUrl(car.image.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'thumbnail') : undefined}
                         preload="none"
                         autoPlay
                         loop
