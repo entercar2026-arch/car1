@@ -28,6 +28,60 @@ import {
   FileWarning,
 } from "lucide-react";
 
+const getStaticFallbackImage = (carName: string, category: string): string => {
+  const name = carName.toLowerCase();
+  
+  if (name.includes("prius")) {
+    if (name.includes("2004") || name.includes("2005") || name.includes("2006")) {
+      return "https://images.unsplash.com/photo-1594070319944-7c0cbebb6f58?auto=format&fit=crop&q=80&w=200";
+    }
+    if (name.includes("2007") || name.includes("2008") || name.includes("2009")) {
+      return "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=200";
+    }
+    return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=200";
+  }
+  
+  if (name.includes("lexus").valueOf() && name.includes("ct").valueOf()) {
+    return "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=200";
+  }
+  
+  if (name.includes("lexus")) {
+    return "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=200";
+  }
+  
+  if (name.includes("starex")) {
+    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=200";
+  }
+  
+  if (name.includes("actyon")) {
+    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=200";
+  }
+  
+  if (name.includes("hilux")) {
+    return "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=200";
+  }
+  
+  if (name.includes("ranger") || name.includes("ford")) {
+    return "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=200";
+  }
+
+  // Fallbacks by category
+  if (category === "Sedan") {
+    return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
+  }
+  if (category === "SUV") {
+    return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=200";
+  }
+  if (category === "Pickup") {
+    return "https://images.unsplash.com/photo-1533512930330-4ac257c86793?auto=format&fit=crop&q=80&w=200";
+  }
+  if (category === "MPV") {
+    return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=200";
+  }
+
+  return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
+};
+
 interface AdminDashboardProps {
   cars: Car[];
   onAddCar: (car: Omit<Car, "id">) => void;
@@ -393,13 +447,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         >
                           <td className="p-4 pl-6 text-center">
                             {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
-                              <video
+                              <img
                                 id={`admin-thumb-${car.id}`}
-                                src={car.image}
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
+                                src={getStaticFallbackImage(car.name, car.category)}
+                                alt={car.name}
+                                referrerPolicy="no-referrer"
                                 className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
                               />
                             ) : (
