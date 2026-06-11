@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Car, Review, Booking } from "../types";
 import { motion, AnimatePresence } from "motion/react";
@@ -28,6 +28,33 @@ import {
   Heart,
   Share2,
 } from "lucide-react";
+
+const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
+  if (!url) return url;
+  
+  // Decide target width based on viewport and usage type
+  let targetWidth = 800;
+  if (type === 'thumbnail') {
+    targetWidth = windowWidth <= 768 ? 200 : 300;
+  } else {
+    // main cover
+    targetWidth = windowWidth <= 640 ? 400 : windowWidth <= 1024 ? 600 : 800;
+  }
+
+  if (url.includes('unsplash.com')) {
+    if (url.includes('w=')) {
+      return url.replace(/w=\d+/, `w=${targetWidth}`).replace(/q=\d+/, 'q=70');
+    }
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}w=${targetWidth}&q=70&auto=format&fit=crop`;
+  }
+  
+  if (url.includes('upload/')) {
+    return url.replace('upload/', `upload/q_auto,w_${targetWidth},c_scale/`);
+  }
+  
+  return url;
+};
 
 interface CarCardProps {
   car: Car;
@@ -68,22 +95,28 @@ export const CarCard: React.FC<CarCardProps> = ({
   onToggleLike,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setWindowWidth(window.innerWidth);
+      }, 150);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   const [imageError, setImageError] = useState(false);
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const isMobile = windowWidth <= 768;
   const optimizedVideoSource = useMemo(() => {
-    let src = car.image;
-    if (isMobile) {
-      if (src.includes("upload/")) {
-        // Cloudinary-style downscale
-        src = src.replace("upload/", "upload/q_auto,w_400,c_scale/");
-      } else {
-        // Generic query param downscale fallback
-        src += src.includes("?") ? "&quality=low&w=400" : "?quality=low&w=400";
-      }
-    }
-    return src;
-  }, [car.image, isMobile]);
+    return getOptimizedImageUrl(car.image, windowWidth, 'cover');
+  }, [car.image, windowWidth]);
   const isGoogleDrive = car.image.includes("drive.google.com/uc");
   const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
 
@@ -371,7 +404,7 @@ Description: ${formattedDesc}`;
           ) : (
             <motion.img
               id={`car-photo-${car.id}`}
-              src={car.image.includes("unsplash.com") && !car.image.includes("w=") ? `${car.image}&w=600&q=70` : optimizedVideoSource}
+              src={getOptimizedImageUrl(car.image, windowWidth, 'cover')}
               alt={car.name}
               loading="lazy"
               decoding="async"
@@ -675,7 +708,7 @@ Description: ${formattedDesc}`;
                       />
                     ) : (
                       <img
-                        src={car.image.includes("unsplash.com") && !car.image.includes("w=") ? `${car.image}&w=200&q=70` : optimizedVideoSource}
+                        src={getOptimizedImageUrl(car.image, windowWidth, 'thumbnail')}
                         alt={car.name}
                         loading="lazy"
                         decoding="async"
