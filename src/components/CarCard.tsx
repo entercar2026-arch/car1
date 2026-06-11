@@ -214,7 +214,7 @@ export const CarCard: React.FC<CarCardProps> = ({
     };
   }, [car.image, videoPoster, optimizedVideoSource]);
   
-  const finalVideoPoster = videoPoster || generatedPoster || getFallbackCarThumbnail(car.name, car.category);
+  const finalVideoPoster = car.thumbnail || videoPoster || generatedPoster || getFallbackCarThumbnail(car.name, car.category);
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);

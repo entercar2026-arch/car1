@@ -10,6 +10,7 @@ export interface Car {
   description?: string;
   isAvailable?: boolean;
   videoUrl?: string;
+  thumbnail?: string;
 }
 
 export type ViewMode = "customer" | "admin" | "login";
