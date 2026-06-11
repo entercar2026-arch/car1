@@ -27,6 +27,7 @@ import {
   X,
   Heart,
   Share2,
+  Play,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -96,16 +97,17 @@ export const CarCard: React.FC<CarCardProps> = ({
   onToggleLike,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!videoRef.current) return;
-    if (isHovered) {
-      videoRef.current.play().catch(() => {});
+    if (isPlaying) {
+      videoRef.current.play().catch(() => setIsPlaying(false));
     } else {
       videoRef.current.pause();
     }
-  }, [isHovered]);
+  }, [isPlaying]);
 
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
 
@@ -438,26 +440,45 @@ Description: ${formattedDesc}`;
 
           {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
           {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
-            <motion.video
-              id={`car-photo-${car.id}`}
-              ref={videoRef as any}
-              src={optimizedVideoSource}
-              poster={finalVideoPoster}
-              preload="none"
-              loop
-              muted
-              playsInline
-              initial={{ scale: 0.94, rotate: -2, y: 15 }}
-              whileInView={{
-                scale: isHovered ? 1.15 : 1.01,
-                x: isHovered ? 8 : 0,
-                y: isHovered ? -4 : 0,
-                rotate: isHovered ? -0.8 : 0,
-              }}
-              viewport={{ once: false, amount: 0.15 }}
-              transition={{ duration: 0.55, ease: "easeOut" }}
-              className="w-full h-full object-cover select-none"
-            />
+            <>
+              <motion.video
+                id={`car-photo-${car.id}`}
+                ref={videoRef as any}
+                src={optimizedVideoSource}
+                poster={finalVideoPoster}
+                preload="none"
+                loop
+                muted
+                playsInline
+                initial={{ scale: 0.94, rotate: -2, y: 15 }}
+                whileInView={{
+                  scale: isHovered ? 1.15 : 1.01,
+                  x: isHovered ? 8 : 0,
+                  y: isHovered ? -4 : 0,
+                  rotate: isHovered ? -0.8 : 0,
+                }}
+                viewport={{ once: false, amount: 0.15 }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
+                className="w-full h-full object-cover select-none cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPlaying(prev => !prev);
+                }}
+              />
+              {!isPlaying && (
+                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPlaying(true);
+                    }}
+                    className="w-14 h-14 bg-black/40 backdrop-blur-[2px] rounded-full flex items-center justify-center shadow-lg border border-white/20 pointer-events-auto hover:bg-black/60 transition-all hover:scale-105"
+                  >
+                    <Play className="w-6 h-6 text-white ml-1 fill-white" />
+                  </button>
+                </div>
+              )}
+            </>
           ) : imageError && isGoogleDrive && driveId ? (
             <motion.iframe
               id={`car-photo-${car.id}`}
@@ -758,42 +779,16 @@ Description: ${formattedDesc}`;
               ) : (
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
-                    {car.image.match(/\.(mp4|webm|ogg)(\?.*)?$/i) || car.image.includes("video") ? (
-                      <video
-                        src={getOptimizedImageUrl(car.image, windowWidth, 'thumbnail')}
-                        poster={finalVideoPoster || undefined}
-                        preload="none"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
-                      />
-                    ) : imageError && isGoogleDrive && driveId ? (
-                      <iframe
-                        src={`https://drive.google.com/file/d/${driveId}/preview`}
-                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
-                        allow="autoplay"
-                        style={{ border: "none" }}
-                      />
-                    ) : (
-                      <img
-                        src={getOptimizedImageUrl(car.image, windowWidth, 'thumbnail')}
-                        alt={car.name}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          if (isGoogleDrive) {
-                            setImageError(true);
-                          } else {
-                            (e.target as HTMLImageElement).src =
-                              "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
-                          }
-                        }}
-                        referrerPolicy="no-referrer"
-                        className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
-                      />
-                    )}
+                    <img
+                      src={
+                         finalVideoPoster 
+                           ? finalVideoPoster 
+                           : getOptimizedImageUrl(car.image, windowWidth, 'thumbnail')
+                      }
+                      alt={car.name}
+                      loading="lazy"
+                      className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
+                    />
                     <div>
                       <h4 className="font-extrabold text-stone-900 text-lg sm:text-xl leading-tight flex items-center gap-2">
                         <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
