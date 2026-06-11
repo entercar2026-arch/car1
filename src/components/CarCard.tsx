@@ -623,16 +623,17 @@ Description: ${formattedDesc}`;
                       muted
                       playsInline
                       autoPlay
-                      initial={{ scale: 0.94, rotate: -2, y: 15 }}
+                      initial={{ opacity: 0 }}
                       whileInView={{
-                        scale: isHovered ? 1.15 : 1.01,
-                        x: isHovered ? 8 : 0,
-                        y: isHovered ? -4 : 0,
-                        rotate: isHovered ? -0.8 : 0,
+                        opacity: 1,
+                        scale: 1,
+                        x: 0,
+                        y: 0,
+                        rotate: 0,
                       }}
-                      viewport={{ once: false, amount: 0.15 }}
-                      transition={{ duration: 0.55, ease: "easeOut" }}
-                      className="w-full h-full object-cover select-none cursor-pointer"
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3 }}
+                      className="w-full h-full object-contain bg-stone-900 select-none cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsPlaying(false);
