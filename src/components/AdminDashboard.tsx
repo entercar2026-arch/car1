@@ -253,54 +253,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        {/* Metric dashboard overview cards */}
-        <section
-          id="admin-metrics"
-          className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8"
-        >
-          <div className="bg-white p-5 rounded-3xl border border-stone-100 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#4C0027]/10 text-[#4C0027] flex items-center justify-center">
-              <CarFront className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                Fleet Strength
-              </p>
-              <h3 className="text-2xl font-black text-black mt-0.5">
-                {totalAssets} Vehicles
-              </h3>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-3xl border border-stone-100 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                Average Rent Fee
-              </p>
-              <h3 className="text-2xl font-black text-black mt-0.5">
-                ${avgRate} /month
-              </h3>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-3xl border border-stone-100 shadow-xs flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                Approved Bookings
-              </p>
-              <h3 className="text-2xl font-black text-black mt-0.5">
-                {activeBookingsCount} active
-              </h3>
-            </div>
-          </div>
-        </section>
-
         {/* Tab Selection Row */}
         <div className="flex gap-2.5 mb-6 border-b border-stone-200 pb-px">
           <button
