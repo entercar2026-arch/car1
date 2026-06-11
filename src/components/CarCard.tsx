@@ -32,6 +32,7 @@ import {
   Gauge,
   HelpCircle,
   Loader2,
+  Car,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -555,11 +556,7 @@ Description: ${formattedDesc}`;
                       e.stopPropagation();
                       setIsPlaying(prev => !prev);
                     }}
-                    className={`w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors cursor-pointer ${
-                      isPlaying 
-                        ? "bg-[#4C0027] text-white border-[#4C0027] hover:bg-stone-900 hover:border-stone-900" 
-                        : "bg-white/80 text-stone-600 border-stone-100 hover:text-black hover:bg-stone-100"
-                    }`}
+                    className="w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors cursor-pointer bg-white/80 text-stone-600 border-stone-100 hover:text-black hover:bg-stone-100"
                     title={isPlaying ? "Pause Video" : "Play Video"}
                   >
                     {isPlaying ? (
@@ -761,29 +758,28 @@ Description: ${formattedDesc}`;
                   <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
                     This is a sample car photo/video. Please click Enquire to request the actual available car photos/videos.
                   </p>
-                  <div className="mt-3">
-                    <span
-                      id={`car-category-${car.id}`}
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${getCategoryColor(car.category)}`}
-                    >
-                      {car.category}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Highlights Info Grid (Technical) */}
                 <div
                   id={`car-specs-${car.id}`}
-                  className="grid grid-cols-3 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1"
+                  className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1"
                 >
-                  <div className="flex flex-col items-center justify-center p-1">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200">
+                    <Car className="w-4 h-4 text-stone-700 mb-1" />
+                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                      {car.category}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200">
                     <Users className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold">
                       {car.seats} Seats
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 border-x border-stone-200">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200">
                     <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.transmission}
