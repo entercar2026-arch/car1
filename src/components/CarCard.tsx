@@ -27,6 +27,8 @@ import {
   X,
   Heart,
   Share2,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 interface CarCardProps {
@@ -72,13 +74,22 @@ export const CarCard: React.FC<CarCardProps> = ({
   // States for lazy loading and conditional playing of videos
   const [videoActive, setVideoActive] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   // Toggle video on mobile via interaction, on desktop via hover
   const handleToggleVideoMobile = () => {
     if (isMobile && car.videoUrl) {
+      if (videoActive) {
+        setIsMuted(true);
+      }
       setVideoActive(!videoActive);
     }
+  };
+
+  const handleToggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted(!isMuted);
   };
 
   useEffect(() => {
@@ -91,6 +102,7 @@ export const CarCard: React.FC<CarCardProps> = ({
       } else {
         setVideoActive(false);
         setVideoLoaded(false);
+        setIsMuted(true);
       }
     }
     return () => {
@@ -373,16 +385,34 @@ Description: ${formattedDesc}`;
                   src={car.videoUrl}
                   autoPlay
                   loop
-                  muted
+                  muted={isMuted}
                   playsInline
                   preload="auto"
                   onCanPlay={() => setVideoLoaded(true)}
+                  onPlaying={() => setVideoLoaded(true)}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: videoLoaded ? 1 : 0 }}
                   transition={{ duration: 0.3 }}
                   className="absolute inset-0 w-full h-full object-cover select-none z-10"
                 />
               )}
+
+              {/* Sound toggle button */}
+              <AnimatePresence>
+                {videoActive && videoLoaded && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={handleToggleMute}
+                    className="absolute bottom-3 right-3 z-30 flex items-center justify-center p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-black/60 transition-colors shadow-xl"
+                    title={isMuted ? "Unmute video" : "Mute video"}
+                    aria-label={isMuted ? "Unmute video" : "Mute video"}
+                  >
+                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  </motion.button>
+                )}
+              </AnimatePresence>
 
               {/* Play / Preview available indicator banner - only shown if we haven't started playing video */}
               {!videoActive && (
@@ -396,10 +426,10 @@ Description: ${formattedDesc}`;
 
               {/* Shimmer loading spinner while buffering */}
               {videoActive && !videoLoaded && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900/35 backdrop-blur-xs z-15 pointer-events-none">
-                  <div className="w-7 h-7 rounded-full border-2 border-stone-300 border-t-white animate-spin mb-1.5" />
-                  <span className="text-[9px] font-mono font-medium text-stone-100 uppercase tracking-widest text-shadow-sm animate-pulse">
-                    Streaming...
+                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-900/80 backdrop-blur-md border border-white/20 select-none pointer-events-none">
+                  <div className="w-3 h-3 rounded-full border-[1.5px] border-stone-400 border-t-emerald-400 animate-spin" />
+                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">
+                    Loading
                   </span>
                 </div>
               )}
