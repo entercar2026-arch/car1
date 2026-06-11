@@ -31,6 +31,7 @@ import {
   Cpu,
   Gauge,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -125,6 +126,7 @@ export const CarCard: React.FC<CarCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -599,6 +601,11 @@ Description: ${formattedDesc}`;
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               {hasVideo ? (
                 <>
+                  {isVideoLoading && (!hasRealPoster || isPlaying) && (
+                    <div className="absolute inset-0 z-[15] flex items-center justify-center bg-stone-100/30 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+                      <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
+                    </div>
+                  )}
                   {isPlaying ? (
                     <motion.video
                       id={`car-photo-${car.id}`}
@@ -624,6 +631,10 @@ Description: ${formattedDesc}`;
                         e.stopPropagation();
                         setIsPlaying(false);
                       }}
+                      onLoadStart={() => setIsVideoLoading(true)}
+                      onWaiting={() => setIsVideoLoading(true)}
+                      onPlaying={() => setIsVideoLoading(false)}
+                      onCanPlay={() => setIsVideoLoading(false)}
                     />
                   ) : hasRealPoster ? (
                     <motion.img
@@ -666,6 +677,10 @@ Description: ${formattedDesc}`;
                         e.stopPropagation();
                         setIsPlaying(true);
                       }}
+                      onLoadStart={() => setIsVideoLoading(true)}
+                      onWaiting={() => setIsVideoLoading(true)}
+                      onLoadedData={() => setIsVideoLoading(false)}
+                      onCanPlay={() => setIsVideoLoading(false)}
                     />
                   )}
                 </>
