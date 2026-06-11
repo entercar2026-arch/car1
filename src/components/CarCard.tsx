@@ -397,20 +397,39 @@ Description: ${formattedDesc}`;
                 />
               )}
 
-              {/* Sound toggle button */}
+              {/* Quick Actions (Sound & Like) */}
               <AnimatePresence>
                 {videoActive && videoLoaded && (
-                  <motion.button
+                  <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    onClick={handleToggleMute}
-                    className="absolute bottom-3 right-3 z-30 flex items-center justify-center p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-black/60 transition-colors shadow-xl"
-                    title={isMuted ? "Unmute video" : "Mute video"}
-                    aria-label={isMuted ? "Unmute video" : "Mute video"}
+                    className="absolute bottom-3 right-3 z-30 flex items-center gap-2"
                   >
-                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  </motion.button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLike && onToggleLike(car.id);
+                      }}
+                      className="flex items-center justify-center p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-black/60 transition-colors shadow-xl"
+                      title={isLiked ? "Unlike video" : "Like video"}
+                      aria-label="Like video"
+                    >
+                      <Heart
+                        className={`w-4 h-4 transition-colors ${
+                          isLiked ? "fill-rose-500 text-rose-500" : ""
+                        }`}
+                      />
+                    </button>
+                    <button
+                      onClick={handleToggleMute}
+                      className="flex items-center justify-center p-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-black/60 transition-colors shadow-xl"
+                      title={isMuted ? "Unmute video" : "Mute video"}
+                      aria-label={isMuted ? "Unmute video" : "Mute video"}
+                    >
+                      {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    </button>
+                  </motion.div>
                 )}
               </AnimatePresence>
 
