@@ -544,7 +544,7 @@ Description: ${formattedDesc}`;
         onMouseLeave={() => setIsHovered(false)}
         whileHover={{ y: -8 }}
         transition={{ duration: 0.3 }}
-        className="relative w-full h-[530px]"
+        className="relative w-full h-[530px] group"
         style={{ perspective: 1200 }}
       >
         <motion.div
@@ -558,7 +558,7 @@ Description: ${formattedDesc}`;
               backfaceVisibility: "hidden", 
               WebkitBackfaceVisibility: "hidden" 
             }}
-            className="w-full h-full bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between absolute inset-0"
+            className="w-full h-full bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-300 flex flex-col justify-between absolute inset-0"
           >
             {/* Visual Header & Image */}
             <div
@@ -818,15 +818,15 @@ Description: ${formattedDesc}`;
                 <div className="grid grid-cols-3 gap-2 mb-2">
                   <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Engine</span>
-                    <span className="text-xs font-black text-stone-800 text-center truncate w-full">{specsDetails.engine}</span>
+                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.engine}</span>
                   </div>
                   <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Horsepower</span>
-                    <span className="text-xs font-black text-stone-800 text-center truncate w-full">{specsDetails.power}</span>
+                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.power}</span>
                   </div>
                   <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
-                    <span className="text-xs font-black text-stone-800 text-center truncate w-full">{specsDetails.accel}</span>
+                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.accel}</span>
                   </div>
                 </div>
               </div>
@@ -896,7 +896,7 @@ Description: ${formattedDesc}`;
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)"
             }}
-            className="w-full h-full bg-[#1C1917] rounded-3xl overflow-hidden border border-stone-800 shadow-2xl p-5 flex flex-col justify-between absolute inset-0 select-none text-stone-100"
+            className="w-full h-full bg-[#1C1917] rounded-3xl overflow-hidden border border-stone-800 shadow-2xl group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 p-5 flex flex-col justify-between absolute inset-0 select-none text-stone-100"
           >
             {/* Header */}
             <div className="flex justify-between items-start pb-3.5 border-b border-stone-800">
