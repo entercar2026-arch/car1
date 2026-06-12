@@ -565,61 +565,6 @@ Description: ${formattedDesc}`;
               id={`car-image-container-${car.id}`}
               className="relative h-48 bg-stone-50 overflow-hidden"
             >
-              <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-                {hasVideo && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsPlaying(prev => !prev);
-                    }}
-                    className="w-8 h-8 rounded-full border flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors cursor-pointer bg-white/80 text-stone-600 border-stone-100 hover:text-black hover:bg-stone-100"
-                    title={isPlaying ? "Pause Video" : "Play Video"}
-                  >
-                    {isPlaying ? (
-                      <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
-                    ) : (
-                      <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
-                    )}
-                  </button>
-                )}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (navigator.share) {
-                      navigator.share({
-                        title: `Check out this ${car.name}`,
-                        text: shareText,
-                        url: effectiveVideoUrl || car.image || window.location.href,
-                      }).catch(console.error);
-                    } else {
-                      navigator.clipboard.writeText(`${shareText}\n\n${effectiveVideoUrl || car.image || window.location.href}`);
-                      // Since we are in an iframe, alert might not work perfectly, but it's okay.
-                      // It provides a fallback.
-                      alert("Link & details copied to clipboard!");
-                    }
-                  }}
-                  className="p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-stone-100 transition-colors border border-stone-100 cursor-pointer"
-                  title="Share"
-                >
-                  <Share2 className="w-4 h-4 text-stone-500 hover:text-stone-700 transition-colors" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleLike && onToggleLike(car.id);
-                  }}
-                  className="p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-rose-50 transition-colors border border-stone-100 cursor-pointer"
-                >
-                  <Heart
-                    className={`w-4 h-4 transition-colors ${
-                      isLiked
-                        ? "fill-rose-500 text-rose-500"
-                        : "text-stone-500 hover:text-rose-500"
-                    }`}
-                  />
-                </button>
-              </div>
-
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               {hasVideo ? (
                 <>
@@ -757,7 +702,7 @@ Description: ${formattedDesc}`;
               className="p-5 flex-1 flex flex-col justify-between"
             >
               <div>
-                <div className="flex justify-between items-center mb-1 w-full gap-2 flex-wrap">
+                <div className="flex justify-between items-baseline mb-1 w-full gap-2 flex-wrap">
                   <h3
                     id={`car-title-${car.id}`}
                     className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-2"
@@ -765,6 +710,58 @@ Description: ${formattedDesc}`;
                     <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
                     {car.name}
                   </h3>
+                  <div className="flex items-center gap-1 -mt-1">
+                    {hasVideo && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsPlaying(prev => !prev);
+                        }}
+                        className="w-7 h-7 rounded-full border flex items-center justify-center transition-colors cursor-pointer bg-white text-stone-600 border-stone-200 hover:text-black hover:bg-stone-50"
+                        title={isPlaying ? "Pause Video" : "Play Video"}
+                      >
+                        {isPlaying ? (
+                          <span className="text-[9px] font-extrabold select-none tracking-tighter">⏸</span>
+                        ) : (
+                          <Play className="w-3 h-3 fill-current text-current ml-0.5" />
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (navigator.share) {
+                          navigator.share({
+                            title: `Check out this ${car.name}`,
+                            text: shareText,
+                            url: effectiveVideoUrl || car.image || window.location.href,
+                          }).catch(console.error);
+                        } else {
+                          navigator.clipboard.writeText(`${shareText}\n\n${effectiveVideoUrl || car.image || window.location.href}`);
+                          alert("Link & details copied to clipboard!");
+                        }
+                      }}
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white hover:bg-stone-50 transition-colors border border-stone-200 cursor-pointer"
+                      title="Share"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-stone-500 hover:text-stone-700 transition-colors" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLike && onToggleLike(car.id);
+                      }}
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white hover:bg-rose-50 transition-colors border border-stone-200 cursor-pointer"
+                    >
+                      <Heart
+                        className={`w-3.5 h-3.5 transition-colors ${
+                          isLiked
+                            ? "fill-rose-500 text-rose-500"
+                            : "text-stone-500 hover:text-rose-500"
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
                 <div className="mb-4">
                   {car.description && (
