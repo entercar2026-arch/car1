@@ -282,7 +282,7 @@ export const CarCard: React.FC<CarCardProps> = ({
   const [contactMethod, setContactMethod] = useState<"whatsapp" | "telegram" | "none">(
     "none",
   );
-  const [message, setMessage] = useState("I want to know more about this car.");
+  const [message, setMessage] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
@@ -1212,7 +1212,7 @@ Description: ${formattedDesc}`;
                       <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5">
                         Message
                       </label>
-                      <div className="relative">
+                      <div className="relative mb-2">
                         <span className="absolute top-2 left-0 pl-3 flex text-stone-400 pointer-events-none">
                           <MessageCircle className="w-3.5 h-3.5" />
                         </span>
@@ -1224,6 +1224,15 @@ Description: ${formattedDesc}`;
                           rows={2}
                           className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
                         />
+                      </div>
+                      <div className="flex">
+                        <button
+                          type="button"
+                          onClick={() => setMessage("I want to know more about this car.")}
+                          className="px-2.5 py-1 text-[10px] font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-all border border-stone-200 cursor-pointer"
+                        >
+                          "I want to know more about this car."
+                        </button>
                       </div>
                     </div>
                   </div>
