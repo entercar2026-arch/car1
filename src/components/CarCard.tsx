@@ -276,6 +276,7 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [bookingMode, setBookingMode] = useState<"enquire" | "book">("enquire");
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [location, setLocation] = useState("");
@@ -284,6 +285,7 @@ export const CarCard: React.FC<CarCardProps> = ({
   );
   const [message, setMessage] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [tel, setTel] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(
@@ -365,10 +367,11 @@ Description: ${formattedDesc}`;
   }, [car.name, car.price, car.description, car.image, effectiveVideoUrl]);
 
   const targetUrl = useMemo(() => {
-    const carDetails = `*Enquiry for: ${car.name}*`;
-    const customerDetails = `Name: ${customerName}`;
-    const userMessage = message ? `\nMessage: ${message}` : "";
-    const fullText = `${carDetails}\n\n${customerDetails}${userMessage}`;
+    const carDetails = `*${bookingMode === "book" ? "Booking" : "Enquiry"} for: ${car.name}*`;
+    const customerDetails = `Name: ${customerName}${tel ? `\nTel: ${tel}` : ""}`;
+    const bookingDetails = bookingMode === "book" ? `\nLocation: ${location}\nDate: ${pickupDate}\nTime: ${pickupTime}` : "";
+    const userMessage = bookingMode === "enquire" && message ? `\nMessage: ${message}` : "";
+    const fullText = `${carDetails}\n\n${customerDetails}${bookingDetails}${userMessage}`;
 
     const adminPhone = "855966714442";
     const adminTelegram = "+855966714442";
@@ -379,13 +382,15 @@ Description: ${formattedDesc}`;
       return `https://t.me/${adminTelegram}?text=${encodeURIComponent(fullText)}`;
     }
     return "#";
-  }, [car, customerName, location, pickupDate, pickupTime, message, contactMethod]);
+  }, [car, customerName, tel, location, pickupDate, pickupTime, message, contactMethod, bookingMode]);
 
-  const isFormComplete = !!(customerName && contactMethod !== "none");
+  const isFormComplete = bookingMode === "book" 
+    ? !!(customerName && location && pickupDate && pickupTime && contactMethod !== "none")
+    : !!(customerName && contactMethod !== "none");
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName) return;
+    if (!isFormComplete) return;
     if (contactMethod === "none") {
       alert("Please select either WhatsApp or Telegram to send your enquiry.");
       return;
@@ -508,9 +513,13 @@ Description: ${formattedDesc}`;
     setIsSuccess(false);
     setConfirmedBooking(null);
     setCustomerName("");
+    setTel("");
     setLocation("");
+    setPickupDate("");
+    setPickupTime("");
     setMessage("");
     setContactMethod("whatsapp");
+    setBookingMode("enquire");
   };
 
   useEffect(() => {
@@ -859,15 +868,24 @@ Description: ${formattedDesc}`;
                     </button>
                   </div>
                 ) : (
-                  <button
-                    id={`car-btn-rent-${car.id}`}
-                    onClick={() => setIsBookingOpen(true)}
-                    className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
-                    style={{ backgroundColor: brandPlum }}
-                  >
-                    Enquire
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      id={`car-btn-book-${car.id}`}
+                      onClick={() => { setBookingMode("book"); setIsBookingOpen(true); }}
+                      className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer bg-stone-800"
+                    >
+                      Book Now
+                    </button>
+                    <button
+                      id={`car-btn-rent-${car.id}`}
+                      onClick={() => { setBookingMode("enquire"); setIsBookingOpen(true); }}
+                      className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
+                      style={{ backgroundColor: brandPlum }}
+                    >
+                      Enquire
+                      <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -998,7 +1016,7 @@ Description: ${formattedDesc}`;
               ) : (
                 <button
                   id={`car-back-btn-rent-${car.id}`}
-                  onClick={(e) => { e.stopPropagation(); setIsBookingOpen(true); }}
+                  onClick={(e) => { e.stopPropagation(); setBookingMode("book"); setIsBookingOpen(true); }}
                   className="flex items-center gap-1 px-4 py-2 text-[10px] font-bold bg-rose-600 text-white rounded-lg shadow-sm hover:bg-rose-500 transition-all cursor-pointer"
                 >
                   Book Service
@@ -1044,10 +1062,10 @@ Description: ${formattedDesc}`;
 
                   <div className="text-center">
                     <h3 className="font-extrabold text-stone-900 text-xl tracking-tight mb-1">
-                      Your Enquiry Sent!
+                      Your {bookingMode === "book" ? "Booking Request" : "Enquiry"} Sent!
                     </h3>
                     <p className="text-xs text-stone-500 max-w-xs mx-auto mb-5 leading-normal">
-                      Thank you for your inquiry. We will check availability and follow up shortly with specific car photos and details.
+                      Thank you for your {bookingMode === "book" ? "booking request. We will follow up shortly to confirm details." : "inquiry. We will check availability and follow up shortly with specific car photos and details."}
                     </p>
                   </div>
 
@@ -1083,6 +1101,27 @@ Description: ${formattedDesc}`;
                         </p>
                       </div>
                     </div>
+
+                    {bookingMode === "book" && (
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-stone-100 mt-2">
+                        <div>
+                          <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
+                            LOCATION
+                          </p>
+                          <p className="font-bold text-stone-800 truncate mt-0.5">
+                            {confirmedBooking.location}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
+                            PICKUP
+                          </p>
+                          <p className="font-bold text-stone-800 truncate mt-0.5">
+                            {confirmedBooking.pickupDate} {confirmedBooking.pickupTime}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="bg-[#4C0027]/5 border border-[#4C0027]/10 p-3 rounded-xl flex items-center justify-between mt-4">
                       <div className="flex flex-col">
@@ -1158,7 +1197,7 @@ Description: ${formattedDesc}`;
                   </div>
 
                   <h3 className="font-sans font-black text-stone-900 text-lg tracking-tight">
-                    Enterprise Enquiry System
+                    {bookingMode === "book" ? "Enterprise Booking System" : "Enterprise Enquiry System"}
                   </h3>
 
                   {/* Active reservation form inputs */}
@@ -1185,6 +1224,27 @@ Description: ${formattedDesc}`;
                         </div>
                       </div>
 
+                      {bookingMode === "book" && (
+                        <div>
+                          <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1">
+                            TEL (OPTIONAL)
+                          </label>
+                          <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 pointer-events-none">
+                              <span className="text-xs font-mono">📱</span>
+                            </span>
+                            <input
+                              id={`book-tel-${car.id}`}
+                              type="tel"
+                              placeholder="e.g. +855..."
+                              value={tel}
+                              onChange={(e) => setTel(e.target.value)}
+                              className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                            />
+                          </div>
+                        </div>
+                      )}
+
                       <div>
                         <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1">
                           I HAVE
@@ -1208,33 +1268,89 @@ Description: ${formattedDesc}`;
                       </div>
                     </div>
 
-                    <div>
-                      <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5">
-                        Message
-                      </label>
-                      <div className="relative mb-2">
-                        <span className="absolute top-2 left-0 pl-3 flex text-stone-400 pointer-events-none">
-                          <MessageCircle className="w-3.5 h-3.5" />
-                        </span>
-                        <textarea
-                          id={`book-message-${car.id}`}
-                          placeholder="Your message"
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          rows={2}
-                          className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
-                        />
+                    {bookingMode === "book" ? (
+                      <div className="bg-stone-50 p-2.5 rounded-2xl border border-stone-100 space-y-2.5 mt-2">
+                        <label className="text-[10px] font-semibold text-stone-800 block mb-1.5 font-sans">
+                          I'm ready to rent this car, please bring to me at:
+                        </label>
+                        <div>
+                          <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
+                            LOCATION
+                          </label>
+                          <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 pointer-events-none">
+                              <MapPin className="w-3.5 h-3.5" />
+                            </span>
+                            <input
+                              id={`book-location-${car.id}`}
+                              type="text"
+                              required
+                              placeholder="City, Airport..."
+                              value={location}
+                              onChange={(e) => setLocation(e.target.value)}
+                              className="w-full text-xs pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-xl text-black focus:outline-none focus:border-[#4C0027] transition-all"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
+                              PICKUP DATE
+                            </label>
+                            <input
+                              id={`book-pickup-${car.id}`}
+                              type="date"
+                              required
+                              min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0]}
+                              value={pickupDate}
+                              onChange={(e) => setPickupDate(e.target.value)}
+                              className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
+                              PICKUP TIME
+                            </label>
+                            <input
+                              id={`book-pickup-time-${car.id}`}
+                              type="time"
+                              required
+                              value={pickupTime}
+                              onChange={(e) => setPickupTime(e.target.value)}
+                              className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex">
-                        <button
-                          type="button"
-                          onClick={() => setMessage("I want to know more about this car.")}
-                          className="px-2.5 py-1 text-[10px] font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-all border border-stone-200 cursor-pointer"
-                        >
-                          "I want to know more about this car."
-                        </button>
+                    ) : (
+                      <div>
+                        <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1.5">
+                          Message
+                        </label>
+                        <div className="relative mb-2">
+                          <span className="absolute top-2 left-0 pl-3 flex text-stone-400 pointer-events-none">
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </span>
+                          <textarea
+                            id={`book-message-${car.id}`}
+                            placeholder="Your message"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            rows={2}
+                            className="w-full text-xs pl-9 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-black focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
+                          />
+                        </div>
+                        <div className="flex">
+                          <button
+                            type="button"
+                            onClick={() => setMessage("I want to know more about this car.")}
+                            className="px-2.5 py-1 text-[10px] font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-all border border-stone-200 cursor-pointer"
+                          >
+                            "I want to know more about this car."
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   <button
@@ -1244,11 +1360,11 @@ Description: ${formattedDesc}`;
                     style={{ backgroundColor: brandPlum }}
                     onClick={() => {
                       if (contactMethod === "none") {
-                        alert("Please select either WhatsApp or Telegram to send your enquiry.");
+                        alert(`Please select either WhatsApp or Telegram to send your ${bookingMode === "book" ? "booking request" : "enquiry"}.`);
                       }
                     }}
                   >
-                    Send Enquiry Now
+                    {bookingMode === "book" ? "Send Booking Now" : "Send Enquiry Now"}
                   </button>
                 </form>
               )}

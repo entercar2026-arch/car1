@@ -744,7 +744,7 @@ export default function App() {
             </button>
             <button
               id="nav-link-catalog"
-              onClick={() => scrollToAnchor("catalog-section")}
+              onClick={() => scrollToAnchor("category-filter-container")}
               className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
               Car Catalog
@@ -755,6 +755,20 @@ export default function App() {
               className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
               About Us
+            </button>
+            <button
+              id="nav-link-workflow"
+              onClick={() => scrollToAnchor("workflow-section")}
+              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+            >
+              Our Process Workflow
+            </button>
+            <button
+              id="nav-link-faq"
+              onClick={() => scrollToAnchor("faq-section")}
+              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+            >
+              FAQ
             </button>
 
             {/* Desktop Global Search Bar */}
@@ -1070,7 +1084,7 @@ export default function App() {
                 <button
                   id="mobile-link-catalog"
                   onClick={() => {
-                    scrollToAnchor("catalog-section");
+                    scrollToAnchor("category-filter-container");
                     setIsMobileMenuOpen(false);
                   }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
@@ -1086,6 +1100,26 @@ export default function App() {
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
                   About Us
+                </button>
+                <button
+                  id="mobile-link-workflow"
+                  onClick={() => {
+                    scrollToAnchor("workflow-section");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                >
+                  Our Process Workflow
+                </button>
+                <button
+                  id="mobile-link-faq"
+                  onClick={() => {
+                    scrollToAnchor("faq-section");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                >
+                  FAQ
                 </button>
               </div>
             </motion.div>
@@ -2155,7 +2189,7 @@ export default function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => scrollToAnchor("catalog-section")}
+                    onClick={() => scrollToAnchor("category-filter-container")}
                     className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
                     Car Catalog
