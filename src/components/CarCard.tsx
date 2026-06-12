@@ -1247,7 +1247,7 @@ Description: ${formattedDesc}`;
 
                       <div>
                         <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1">
-                          I HAVE
+                          I HAVE <span className="normal-case tracking-normal font-sans text-stone-400 font-normal ml-1">(if you don't have telegram/whatsapp, please call or text us at 096 671 4442)</span>
                         </label>
                         <div className="flex gap-2">
                           <button
@@ -1311,15 +1311,25 @@ Description: ${formattedDesc}`;
                             <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
                               PICKUP TIME
                             </label>
-                            <input
+                            <select
                               id={`book-pickup-time-${car.id}`}
-                              type="time"
                               required
-                              step="900"
                               value={pickupTime}
                               onChange={(e) => setPickupTime(e.target.value)}
-                              className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono"
-                            />
+                              className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono select-none"
+                            >
+                              <option value="" disabled>Select Time</option>
+                              {Array.from({ length: 24 * 4 }).map((_, i) => {
+                                const totalMinutes = i * 15;
+                                const hours = Math.floor(totalMinutes / 60);
+                                const minutes = totalMinutes % 60;
+                                const ampm = hours >= 12 ? 'PM' : 'AM';
+                                const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+                                const timeValue = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                                const displayTime = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                                return <option key={timeValue} value={timeValue}>{displayTime}</option>;
+                              })}
+                            </select>
                           </div>
                         </div>
                       </div>
