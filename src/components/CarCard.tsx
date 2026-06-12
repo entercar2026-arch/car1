@@ -846,13 +846,6 @@ Description: ${formattedDesc}`;
                     </span>
                     <span className="text-stone-400 text-xs font-semibold flex items-center gap-1">
                       /month
-                      <div className="relative group flex items-center">
-                        <HelpCircle className="w-4 h-4 text-stone-400 cursor-help hover:text-stone-600 transition-colors" />
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-stone-900 border border-stone-800 text-stone-100 text-[10px] leading-tight sm:text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60] text-center shadow-xl pointer-events-none">
-                          Monthly rental breakdown (Deposit + Monthly Rent)
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-stone-900"></div>
-                        </div>
-                      </div>
                     </span>
                   </div>
                 </div>
@@ -990,13 +983,6 @@ Description: ${formattedDesc}`;
                   </span>
                   <span className="text-stone-500 text-[10px] font-semibold flex items-center gap-1">
                     /mo
-                    <div className="relative group flex items-center">
-                      <HelpCircle className="w-3.5 h-3.5 text-stone-500 cursor-help hover:text-stone-400 transition-colors" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-stone-900 border border-stone-800 text-stone-100 text-[10px] leading-tight sm:text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60] text-center shadow-xl pointer-events-none">
-                        Monthly rental breakdown (Deposit + Monthly Rent)
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-stone-900"></div>
-                      </div>
-                    </div>
                   </span>
                 </div>
               </div>
