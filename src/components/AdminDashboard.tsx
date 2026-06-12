@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Car, Booking, Review } from "../types";
 import { BrandLogo } from "./BrandLogo";
 import { motion, AnimatePresence } from "motion/react";
@@ -74,6 +74,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [activePassportUrl, setActivePassportUrl] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsFormOpen(false);
+        setCarToDelete(null);
+        setActivePassportUrl(null);
+      }
+    };
+
+    if (isFormOpen || carToDelete || activePassportUrl) {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [isFormOpen, carToDelete, activePassportUrl]);
 
   // Form Fields State
   const [formName, setFormName] = useState("");

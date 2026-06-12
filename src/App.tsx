@@ -292,6 +292,48 @@ export default function App() {
     safeStorage.setItem("enter_liked_cars", JSON.stringify(likedCars));
   }, [likedCars]);
 
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+
+      if (e.key === "/") {
+        if (!isInput) {
+          e.preventDefault();
+          const desktopSearch = document.getElementById("filter-input-search");
+          const mobileSearch = document.getElementById("global-input-search-mobile");
+
+          if (window.innerWidth < 1024 && mobileSearch) {
+            setIsMobileMenuOpen(true);
+            setTimeout(() => {
+              document.getElementById("global-input-search-mobile")?.focus();
+            }, 100);
+          } else if (desktopSearch) {
+            desktopSearch.focus();
+            const element = document.getElementById("search-filters-container");
+            if (element) {
+              const y = element.getBoundingClientRect().top + window.scrollY - 100;
+              window.scrollTo({ top: y, behavior: "smooth" });
+            }
+          }
+        }
+      } else if (e.key === "Escape") {
+        if (isInput) {
+          target.blur();
+        }
+        setIsMobileMenuOpen(false);
+        setShowClearConfirm(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
+
   // Handle addition of a new vehicle catalog item
   const handleAddCar = async (newCarFields: Omit<Car, "id">) => {
     const freshCar: Car = {
@@ -1067,7 +1109,12 @@ export default function App() {
                     Find your car
                     <span className="flex items-center gap-1 text-sm font-semibold text-stone-500 ml-2 group-hover:text-stone-700 transition-colors">
                       Advance search
-                      {isFiltersOpen ? <ChevronUp className="w-4 h-4 text-stone-400" /> : <ChevronDown className="w-4 h-4 text-stone-400" />}
+                      <motion.div
+                        animate={{ rotate: isFiltersOpen ? 180 : 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                      >
+                        <ChevronDown className="w-4 h-4 text-stone-400" />
+                      </motion.div>
                     </span>
                   </h2>
                 </div>
@@ -1160,7 +1207,11 @@ export default function App() {
                   initial={{ height: 0, opacity: 0, marginTop: 0 }}
                   animate={{ height: "auto", opacity: 1, marginTop: 16 }}
                   exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  transition={{
+                    height: { type: "spring", stiffness: 450, damping: 40 },
+                    opacity: { duration: 0.25 },
+                    marginTop: { type: "spring", stiffness: 450, damping: 40 }
+                  }}
                   className="overflow-hidden"
                 >
                   <div className="grid grid-cols-1 gap-4">
@@ -1487,7 +1538,12 @@ export default function App() {
                           onToggleLike={handleToggleLike}
                           onFilterSelect={(filterType, value) => {
                             setFilters(prev => ({ ...prev, [filterType]: value }));
-                            scrollToAnchor("category-filter-container");
+                            if (filterType === 'category') {
+                              scrollToAnchor("category-filter-container");
+                            } else {
+                              setIsFiltersOpen(true);
+                              scrollToAnchor("search-filters-container");
+                            }
                           }}
                         />
                       </motion.div>

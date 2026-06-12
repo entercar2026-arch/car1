@@ -32,7 +32,7 @@ import {
   Gauge,
   HelpCircle,
   Loader2,
-  Car,
+  Car as CarIcon,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -522,6 +522,20 @@ Description: ${formattedDesc}`;
     setContactMethod("whatsapp");
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleCloseBookingModal();
+        setIsReviewsOpen(false);
+      }
+    };
+
+    if (isBookingOpen || isReviewsOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [isBookingOpen, isReviewsOpen]);
+
   return (
     <>
       <motion.div
@@ -769,7 +783,7 @@ Description: ${formattedDesc}`;
                   className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1"
                 >
                   <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
-                    <Car className="w-4 h-4 text-stone-700 mb-1" />
+                    <CarIcon className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.category}
                     </span>
