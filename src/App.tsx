@@ -1464,11 +1464,15 @@ export default function App() {
                     {paginatedCars.map((car) => (
                       <motion.div
                         key={car.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        layout="position"
+                        initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-                        transition={{ duration: 0.3 }}
+                        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                        transition={{
+                          layout: { type: "spring", stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.25 },
+                          scale: { duration: 0.25 }
+                        }}
                         className="h-full pt-2 pb-2"
                       >
                         <CarCard
