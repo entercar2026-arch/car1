@@ -659,10 +659,12 @@ export default function App() {
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
     setIsMobileMenuOpen(false);
-    const target = document.getElementById(elementId);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    setTimeout(() => {
+      const target = document.getElementById(elementId);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 300);
   };
 
   // Hero Search execution and viewport scroll
@@ -1029,6 +1031,7 @@ export default function App() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
               className="lg:hidden bg-white border-t border-stone-200 overflow-hidden font-sans shadow-lg"
             >
               <div className="px-4 py-5 space-y-4">
@@ -1553,7 +1556,7 @@ export default function App() {
               }}
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
               >
-                <span>Liked</span>
+                <span>{t.liked}</span>
                 <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${filters.likedOnly ? "bg-rose-200/50 text-rose-700" : "bg-stone-100 text-stone-400"}`}>
                   {likedCars.length}
                 </span>
@@ -1594,7 +1597,7 @@ export default function App() {
           </section>
 
           {/* 5. Car catalog grid block */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-start gap-4 mb-4 px-2">
+          <div id="catalog-header" className="flex flex-col sm:flex-row sm:items-center justify-start gap-4 mb-4 px-2 scroll-mt-24">
             <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider font-mono text-white/70 hidden sm:inline-block">
@@ -1721,7 +1724,7 @@ export default function App() {
                       disabled={currentPage === 1}
                       onClick={() => {
                         setCurrentPage((p) => Math.max(1, p - 1));
-                        const element = document.getElementById("collection-grid-view");
+                        const element = document.getElementById("catalog-header");
                         if (element) {
                           element.scrollIntoView({ behavior: "smooth", block: "start" });
                         }
@@ -1752,7 +1755,7 @@ export default function App() {
                             id={`btn-pagination-page-${pageNum}`}
                             onClick={() => {
                               setCurrentPage(pageNum);
-                              const element = document.getElementById("collection-grid-view");
+                              const element = document.getElementById("catalog-header");
                               if (element) {
                                 element.scrollIntoView({ behavior: "smooth", block: "start" });
                               }
@@ -1773,7 +1776,7 @@ export default function App() {
                       disabled={currentPage === totalPages}
                       onClick={() => {
                         setCurrentPage((p) => Math.min(totalPages, p + 1));
-                        const element = document.getElementById("collection-grid-view");
+                        const element = document.getElementById("catalog-header");
                         if (element) {
                           element.scrollIntoView({ behavior: "smooth", block: "start" });
                         }
