@@ -783,7 +783,7 @@ Description: ${formattedDesc}`;
                 {/* Highlights Info Grid (Technical) */}
                 <div
                   id={`car-specs-${car.id}`}
-                  className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-4 bg-stone-100/50 rounded-xl px-1"
+                  className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-3 bg-stone-100/50 rounded-xl px-1"
                 >
                   <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
                     <CarIcon className="w-4 h-4 text-stone-700 mb-1" />
@@ -811,6 +811,22 @@ Description: ${formattedDesc}`;
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.fuelType}
                     </span>
+                  </div>
+                </div>
+
+                {/* Additional Technical Specifications Grid */}
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
+                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Engine</span>
+                    <span className="text-xs font-black text-stone-800 text-center truncate w-full">{specsDetails.engine}</span>
+                  </div>
+                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
+                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Horsepower</span>
+                    <span className="text-xs font-black text-stone-800 text-center truncate w-full">{specsDetails.power}</span>
+                  </div>
+                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
+                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
+                    <span className="text-xs font-black text-stone-800 text-center truncate w-full">{specsDetails.accel}</span>
                   </div>
                 </div>
               </div>
