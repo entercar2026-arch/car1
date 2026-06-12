@@ -659,12 +659,17 @@ export default function App() {
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
     setIsMobileMenuOpen(false);
-    setTimeout(() => {
-      const target = document.getElementById(elementId);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 300);
+    const target = document.getElementById(elementId);
+    if (target) {
+      const headerOffset = 80; // approximate sticky header height
+      const elementPosition = target.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
   };
 
   // Hero Search execution and viewport scroll
@@ -735,7 +740,7 @@ export default function App() {
       {/* 1. Responsive & Sticky Navigation Header */}
       <header
         id="main-public-header"
-        className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-xs"
+        className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-xs relative"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-auto py-2.5 lg:py-0 lg:h-20 flex items-center justify-between">
           <div
@@ -1032,7 +1037,7 @@ export default function App() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="lg:hidden bg-white border-t border-stone-200 overflow-hidden font-sans shadow-lg"
+              className="lg:hidden bg-white border-t border-stone-200 overflow-hidden font-sans shadow-lg absolute top-full left-0 right-0 w-full z-50 origin-top"
             >
               <div className="px-4 py-5 space-y-4">
                 {/* Mobile Global Search Bar */}

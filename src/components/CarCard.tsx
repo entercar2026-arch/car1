@@ -783,7 +783,7 @@ Description: ${formattedDesc}`;
                     </p>
                   )}
                   <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
-                    This is a sample car photo/video. Please click Enquire to request the actual available car photos/videos.
+                    {t.samplePhotoNotice}
                   </p>
                 </div>
 
