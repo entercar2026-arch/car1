@@ -112,6 +112,8 @@ export default function App() {
     return INITIAL_CARS;
   });
 
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
   useEffect(() => {
     if (supabase) {
       db.cars.getAll().then(async (data) => {
@@ -133,7 +135,14 @@ export default function App() {
             setCars(data);
           }
         }
-      }).catch(err => console.error("Failed to fetch initial cars from Supabase", err));
+        setIsLoadingData(false);
+      }).catch(err => {
+        console.error("Failed to fetch initial cars from Supabase", err);
+        setIsLoadingData(false);
+      });
+    } else {
+      // Simulate loading if no db
+      setTimeout(() => setIsLoadingData(false), 800);
     }
   }, []);
 
@@ -1532,7 +1541,7 @@ export default function App() {
             </div>
           </div>
           <div id="collection-grid-view">
-            {isFiltering ? (
+            {isFiltering || isLoadingData ? (
               <div
                 id="cars-grid-loading"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
