@@ -1537,7 +1537,17 @@ export default function App() {
                           isLiked={likedCars.includes(car.id)}
                           onToggleLike={handleToggleLike}
                           onFilterSelect={(filterType, value) => {
-                            setFilters(prev => ({ ...prev, [filterType]: value }));
+                            setFilters({
+                              searchTerm: "",
+                              category: "All",
+                              maxPrice: 5000,
+                              transmission: "All",
+                              fuelType: "All",
+                              seats: "All",
+                              brand: "All",
+                              likedOnly: false,
+                              [filterType]: value
+                            });
                             scrollToAnchor("catalog-section");
                           }}
                         />
