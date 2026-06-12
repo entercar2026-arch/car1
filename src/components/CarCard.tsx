@@ -1315,6 +1315,7 @@ Description: ${formattedDesc}`;
                               id={`book-pickup-time-${car.id}`}
                               type="time"
                               required
+                              step="900"
                               value={pickupTime}
                               onChange={(e) => setPickupTime(e.target.value)}
                               className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono"
