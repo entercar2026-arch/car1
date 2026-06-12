@@ -1502,16 +1502,18 @@ export default function App() {
               <button
                 id="filter-liked-cars"
                 onClick={() => {
-                  if (likedCars.length === 0) {
-                    setFilters((prev) => ({ ...prev, likedOnly: false, category: "All" }));
-                  } else {
-                    setFilters((prev) => ({
-                      ...prev,
-                      likedOnly: !prev.likedOnly,
-                      ...(!prev.likedOnly ? { category: "All" } : {})
-                    }));
-                  }
-                }}
+  // Helper to handle like filter selection
+                if (likedCars.length === 0) {
+                  setFilters((prev) => ({ ...prev, likedOnly: false, category: "All", searchTerm: "" }));
+                } else {
+                  setFilters((prev) => ({
+                    ...prev,
+                    likedOnly: !prev.likedOnly,
+                    searchTerm: "",
+                    ...(!prev.likedOnly ? { category: "All" } : {})
+                  }));
+                }
+              }}
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
               >
                 <span>Liked</span>
@@ -1531,7 +1533,7 @@ export default function App() {
                     key={cat}
                     id={`filter-cat-tab-${cat}`}
                     onClick={() =>
-                      setFilters((prev) => ({ ...prev, category: cat, likedOnly: false }))
+                      setFilters((prev) => ({ ...prev, category: cat, likedOnly: false, searchTerm: "" }))
                     }
                     className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-black"}`}
                   >

@@ -26,6 +26,7 @@ import {
   Calendar,
   Camera,
   FileWarning,
+  Search,
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -66,6 +67,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [activeTab, setActiveTab] = useState<"fleet" | "bookings" | "reviews">(
     "fleet",
   );
+
+  // Search state for cars
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredCars = useMemo(() => {
+    return cars.filter((car) =>
+      car.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      car.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [cars, searchTerm]);
 
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -317,29 +328,56 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     updates. Updates broadcast instantly.
                   </p>
                 </div>
-
-                <button
-                  id="admin-btn-add-vehicle"
-                  onClick={handleOpenAdd}
-                  className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-101 hover:brightness-110 transition-all cursor-pointer self-start sm:self-center"
-                  style={{ backgroundColor: brandPlum }}
-                >
-                  <Plus className="w-4 h-4 text-white" />
-                  <span>Add New Vehicle</span>
-                </button>
+                
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                    <input
+                      type="text"
+                      placeholder="Search inventory..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full sm:w-64 pl-9 pr-4 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans"
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    id="admin-btn-add-vehicle"
+                    onClick={handleOpenAdd}
+                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-101 hover:brightness-110 transition-all cursor-pointer self-start sm:self-center whitespace-nowrap"
+                    style={{ backgroundColor: brandPlum }}
+                  >
+                    <Plus className="w-4 h-4 text-white" />
+                    <span>Add New Vehicle</span>
+                  </button>
+                </div>
               </div>
 
               {/* Table Container */}
-              {cars.length === 0 ? (
+              {filteredCars.length === 0 ? (
                 <div className="p-12 text-center flex flex-col items-center justify-center">
                   <CarFront className="w-12 h-12 text-stone-300 mb-3" />
                   <p className="font-semibold text-stone-800 text-sm">
-                    No cars available
+                    {searchTerm ? "No cars found matching your search" : "No cars available"}
                   </p>
                   <p className="text-xs text-stone-400 max-w-sm mt-1 mb-4 leading-normal">
-                    Your database is empty. Click "Add New Vehicle" to seed
-                    listings.
+                    {searchTerm ? "Try adjusting your search terms." : 'Your database is empty. Click "Add New Vehicle" to seed listings.'}
                   </p>
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
+                    >
+                      Clear Search
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -355,7 +393,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
-                      {cars.map((car) => (
+                      {filteredCars.map((car) => (
                         <tr
                           id={`admin-row-${car.id}`}
                           key={car.id}
