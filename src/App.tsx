@@ -188,15 +188,19 @@ export default function App() {
 
   // Filter criteria state
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<CatalogFilters>({
-    searchTerm: "",
-    category: "All",
-    maxPrice: 5000,
-    transmission: "All",
-    fuelType: "All",
-    seats: "All",
-    brand: "All",
-    likedOnly: false,
+  const [filters, setFilters] = useState<CatalogFilters>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialModel = params.get('model') || "";
+    return {
+      searchTerm: initialModel,
+      category: "All",
+      maxPrice: 5000,
+      transmission: "All",
+      fuelType: "All",
+      seats: "All",
+      brand: "All",
+      likedOnly: false,
+    };
   });
 
   // Sorting state
