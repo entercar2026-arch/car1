@@ -276,21 +276,13 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [pickupDate, setPickupDate] = useState(() => {
-    const today = new Date();
-    const offset = today.getTimezoneOffset() * 60000;
-    return new Date(today.getTime() - offset).toISOString().split("T")[0];
-  });
-  const [pickupTime, setPickupTime] = useState(() => {
-    const today = new Date();
-    const offset = today.getTimezoneOffset() * 60000;
-    return new Date(today.getTime() - offset).toISOString().split("T")[1].substring(0, 5);
-  });
+  const [pickupDate, setPickupDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
   const [location, setLocation] = useState("");
   const [contactMethod, setContactMethod] = useState<"whatsapp" | "telegram" | "none">(
     "none",
   );
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("I want to know more about this car.");
   const [customerName, setCustomerName] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
@@ -375,9 +367,8 @@ Description: ${formattedDesc}`;
   const targetUrl = useMemo(() => {
     const carDetails = `*Enquiry for: ${car.name}*`;
     const customerDetails = `Name: ${customerName}`;
-    const bookingDetails = `Pickup Location: ${location}\nDate: ${pickupDate}\nTime: ${pickupTime}`;
     const userMessage = message ? `\nMessage: ${message}` : "";
-    const fullText = `${carDetails}\n\n${customerDetails}\n\n${bookingDetails}${userMessage}`;
+    const fullText = `${carDetails}\n\n${customerDetails}${userMessage}`;
 
     const adminPhone = "855966714442";
     const adminTelegram = "+855966714442";
@@ -390,11 +381,11 @@ Description: ${formattedDesc}`;
     return "#";
   }, [car, customerName, location, pickupDate, pickupTime, message, contactMethod]);
 
-  const isFormComplete = !!(customerName && pickupDate && pickupTime && location && contactMethod !== "none");
+  const isFormComplete = !!(customerName && contactMethod !== "none");
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName || !pickupDate || !pickupTime || !location) return;
+    if (!customerName) return;
     if (contactMethod === "none") {
       alert("Please select either WhatsApp or Telegram to send your enquiry.");
       return;
@@ -1093,27 +1084,7 @@ Description: ${formattedDesc}`;
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 pt-1 border-t border-stone-100">
-                      <div>
-                        <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
-                          LOCATION
-                        </p>
-                        <p className="font-semibold text-stone-800 font-mono mt-0.5">
-                          {confirmedBooking.location}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
-                          PICKUP DATE & TIME
-                        </p>
-                        <p className="font-semibold text-stone-800 font-mono mt-0.5">
-                          {confirmedBooking.pickupDate} at{" "}
-                          {confirmedBooking.pickupTime}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#4C0027]/5 border border-[#4C0027]/10 p-3 rounded-xl flex items-center justify-between mt-2">
+                    <div className="bg-[#4C0027]/5 border border-[#4C0027]/10 p-3 rounded-xl flex items-center justify-between mt-4">
                       <div className="flex flex-col">
                         <span className="text-[10px] text-stone-500 font-semibold font-sans">
                           Payment: 6 Months Contract
@@ -1233,58 +1204,6 @@ Description: ${formattedDesc}`;
                           >
                             Telegram
                           </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Location, Date & Time Panel grouped together */}
-                    <div className="bg-stone-50 p-2.5 rounded-2xl border border-stone-100 space-y-2.5">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
-                            PICKUP DATE
-                          </label>
-                          <input
-                            id={`book-pickup-${car.id}`}
-                            type="date"
-                            required
-                            min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0]}
-                            value={pickupDate}
-                            onChange={(e) => setPickupDate(e.target.value)}
-                            className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
-                            PICKUP TIME
-                          </label>
-                          <input
-                            id={`book-pickup-time-${car.id}`}
-                            type="time"
-                            required
-                            value={pickupTime}
-                            onChange={(e) => setPickupTime(e.target.value)}
-                            className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
-                          LOCATION
-                        </label>
-                        <div className="relative">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 pointer-events-none">
-                            <MapPin className="w-3.5 h-3.5" />
-                          </span>
-                          <input
-                            id={`book-location-${car.id}`}
-                            type="text"
-                            required
-                            placeholder="City, Airport..."
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                            className="w-full text-xs pl-9 pr-3 py-2 bg-white border border-stone-200 rounded-xl text-black focus:outline-none focus:border-[#4C0027] transition-all"
-                          />
                         </div>
                       </div>
                     </div>
