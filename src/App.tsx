@@ -39,6 +39,7 @@ import {
   Send,
   MessageCircle,
   Heart,
+  Globe,
 } from "lucide-react";
 
 const SECURE_TOKEN_KEY = "enter_admin_session_token";
@@ -62,6 +63,8 @@ const safeStorage = {
     } catch (e) {}
   }
 };
+
+import { translations } from "./translations";
 
 // Verification helper checking token integrity and session time window
 const isSessionTokenValid = (): boolean => {
@@ -175,6 +178,9 @@ export default function App() {
   // Back to Top State
   const [showBackToTop, setShowBackToTop] = useState(false);
 
+  // Support Floating Button State
+  const [isSupportExpanded, setIsSupportExpanded] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
       // Show when scrolled past roughly the hero section (e.g., 600px)
@@ -194,6 +200,10 @@ export default function App() {
     const isAuth = isSessionTokenValid();
     return isAuth ? "admin" : "customer";
   });
+
+  // Language state
+  const [lang, setLang] = useState<"en" | "kh">("en");
+  const t = translations[lang];
 
   // Filter criteria state
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -639,11 +649,11 @@ export default function App() {
     return results;
   }, [cars, activeFilters, likedCars, sortBy]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredCars.length / 6));
+  const totalPages = Math.max(1, Math.ceil(filteredCars.length / 12));
 
   const paginatedCars = useMemo(() => {
-    const startIndex = (currentPage - 1) * 6;
-    return filteredCars.slice(startIndex, startIndex + 6);
+    const startIndex = (currentPage - 1) * 12;
+    return filteredCars.slice(startIndex, startIndex + 12);
   }, [filteredCars, currentPage]);
 
   // Smooth scroll helper matching IDs
@@ -740,35 +750,35 @@ export default function App() {
               onClick={() => scrollToAnchor("home-panel")}
               className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
-              Home
+              {t.navHome}
             </button>
             <button
               id="nav-link-catalog"
               onClick={() => scrollToAnchor("category-filter-container")}
               className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
-              Catalog
+              {t.navCatalog}
             </button>
             <button
               id="nav-link-about"
               onClick={() => scrollToAnchor("about-section")}
               className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
-              About
+              {t.navAbout}
             </button>
             <button
               id="nav-link-workflow"
               onClick={() => scrollToAnchor("workflow-section")}
               className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
-              Workflow
+              {t.navWorkflow}
             </button>
             <button
               id="nav-link-faq"
               onClick={() => scrollToAnchor("faq-section")}
               className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
             >
-              FAQ
+              {t.navFAQ}
             </button>
 
             {/* Desktop Global Search Bar */}
@@ -779,7 +789,7 @@ export default function App() {
               <input
                 id="global-input-search-desktop"
                 type="text"
-                placeholder="Find car..."
+                placeholder={t.searchBox}
                 value={filters.searchTerm}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
@@ -872,6 +882,18 @@ export default function App() {
             {/* Quick Station info with Telegram & WhatsApp */}
             <div className="flex items-center select-none animate-fade-in pr-1">
               <div className="flex flex-row flex-nowrap items-center gap-1.5 sm:gap-4">
+                {/* Language Switcher */}
+                <button
+                  onClick={() => setLang(l => l === "en" ? "kh" : "en")}
+                  className="px-2 py-1 flex items-center gap-1 shrink-0 lg:mr-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
+                  title="Toggle Language"
+                >
+                  <Globe className="w-3.5 h-3.5 text-[#4C0027]" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600">
+                    {lang === "en" ? "KH" : "EN"}
+                  </span>
+                </button>
+
                 <a
                   href="tel:0966714442"
                   className="text-xs sm:text-lg font-black text-[#4C0027] hover:underline whitespace-nowrap flex items-center gap-1 sm:gap-1.5 font-mono"
@@ -1014,7 +1036,7 @@ export default function App() {
                   <input
                     id="global-input-search-mobile"
                     type="text"
-                    placeholder="Find car..."
+                    placeholder={t.searchBox}
                     value={filters.searchTerm}
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
@@ -1079,7 +1101,7 @@ export default function App() {
                   }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
-                  Home
+                  {t.navHome}
                 </button>
                 <button
                   id="mobile-link-catalog"
@@ -1089,7 +1111,7 @@ export default function App() {
                   }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
-                  Catalog
+                  {t.navCatalog}
                 </button>
                 <button
                   id="mobile-link-about"
@@ -1099,7 +1121,7 @@ export default function App() {
                   }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
-                  About
+                  {t.navAbout}
                 </button>
                 <button
                   id="mobile-link-workflow"
@@ -1109,7 +1131,7 @@ export default function App() {
                   }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
-                  Workflow
+                  {t.navWorkflow}
                 </button>
                 <button
                   id="mobile-link-faq"
@@ -1119,7 +1141,7 @@ export default function App() {
                   }}
                   className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
                 >
-                  FAQ
+                  {t.navFAQ}
                 </button>
               </div>
             </motion.div>
@@ -1138,16 +1160,13 @@ export default function App() {
 
             <div className="space-y-4 max-w-3xl flex flex-col items-center">
               <span className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black bg-yellow-400 text-black border border-yellow-500/20 uppercase tracking-widest shadow-xs">
-                24/7 Nationwide Delivery
+                {t.deliveryBadge}
               </span>
               <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
-                Car Rental Service Over 25 Cities/Provinces.
+                {t.heroTitle}
               </h1>
               <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
-                Browse for your favorite car and we will bring the car to you.
-                All cars are guaranteed in high quality and under well
-                maintenance, fully detailed and mechanically inspected for your
-                absolute peace of mind.
+                {t.heroDesc}
               </p>
 
               <div className="pt-2 flex flex-col items-center gap-4 w-full">
@@ -1161,7 +1180,7 @@ export default function App() {
                     style={{ backgroundColor: brandPlum }}
                   >
                     <Search className="w-4 h-4" />
-                    <span>Find</span>
+                    <span>{t.findBtn}</span>
                   </button>
 
                   <button
@@ -1170,7 +1189,7 @@ export default function App() {
                     onClick={() => scrollToAnchor("category-filter-container")}
                     className="flex-1 px-8 py-3.5 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
                   >
-                    <span>Explore Catalog</span>
+                    <span>{t.exploreCatalog}</span>
                   </button>
                 </div>
               </div>
@@ -1185,15 +1204,15 @@ export default function App() {
               <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
               <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
-                Contract Requirement
+                {t.contractRequirement}
               </span>
 
               <h2 className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-wider uppercase mb-3 drop-shadow-md">
-                6-Month Term
+                {t.sixMonthTerm}
               </h2>
 
               <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
-                1 Mo. Deposit + 1 Mo. Rent
+                {t.termDetail}
               </p>
             </div>
           </div>
@@ -1217,9 +1236,9 @@ export default function App() {
                       className="w-5 h-5 text-[#4C0027]"
                       style={{ color: brandPlum }}
                     />
-                    Find your car
+                    {t.findYourCar}
                     <span className="flex items-center gap-1 text-sm font-semibold text-stone-500 ml-2 group-hover:text-stone-700 transition-colors">
-                      Advance search
+                      {t.advanceSearch}
                       <motion.div
                         animate={{ rotate: isFiltersOpen ? 180 : 0 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -1236,7 +1255,7 @@ export default function App() {
                   className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg border border-stone-200 text-[11px] sm:text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-800 transition-all cursor-pointer bg-white whitespace-nowrap shrink-0"
                 >
                   <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Reset Filters</span>
+                  <span className="hidden sm:inline">{t.resetFiltersText}</span>
                 </button>
               </div>
 
@@ -1244,7 +1263,7 @@ export default function App() {
                 {/* Search Box - Now in header */}
                 <div className="w-full flex flex-col justify-center" onClick={(e) => e.stopPropagation()}>
                   <label className="text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono pl-1">
-                    Search Model / Keywords
+                    {t.searchModelKeywords}
                   </label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-stone-400">
@@ -1253,7 +1272,7 @@ export default function App() {
                     <input
                       id="filter-input-search"
                       type="text"
-                      placeholder="e.g. Porsche, Tesla, SUV..."
+                      placeholder={t.searchPlaceholder}
                       value={filters.searchTerm}
                       onChange={(e) =>
                         setFilters((prev) => ({
@@ -1279,13 +1298,13 @@ export default function App() {
                 <div className="w-full flex flex-col justify-center bg-stone-50 rounded-xl px-5 py-3 border border-stone-100 shadow-sm" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase tracking-wider font-mono">
-                      Max Monthly Fee
+                      {t.maxMonthlyFee}
                     </label>
                     <span
                       id="price-slider-display"
                       className="text-[11px] font-mono font-bold text-red-600 bg-white px-2.5 py-1 rounded-md border border-stone-200 shadow-sm"
                     >
-                      up to ${filters.maxPrice}/month
+                      {t.upTo} ${filters.maxPrice}{t.monthSuffix}
                     </span>
                   </div>
                   <input
@@ -1305,8 +1324,8 @@ export default function App() {
                     style={{ accentColor: brandPlum }}
                   />
                   <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
-                    <span>$300/mo</span>
-                    <span>$5,000/mo</span>
+                    <span>$300{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
+                    <span>$5,000{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
                   </div>
                 </div>
               </div>
@@ -1330,7 +1349,7 @@ export default function App() {
               <div className="col-span-1 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    Car Brand
+                    {t.brand}
                   </label>
                   <div className="relative">
                     <select
@@ -1357,7 +1376,7 @@ export default function App() {
 
                 <div>
                   <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    Type of Car
+                    {t.category}
                   </label>
                   <div className="relative">
                     <select
@@ -1372,11 +1391,18 @@ export default function App() {
                       className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
                     >
                       {["All", "Sedan", "SUV", "MPV", "Pickup", "Truck"].map(
-                        (cat) => (
+                        (cat) => {
+                          const tCat = cat === "All" ? t.allCategories : 
+                           cat === "Sedan" ? t.sedan : 
+                           cat === "SUV" ? t.suv : 
+                           cat === "MPV" ? t.mpv : 
+                           cat === "Pickup" ? t.pickup : 
+                           cat === "Truck" ? t.truck : cat;
+                          return (
                           <option value={cat} key={cat}>
-                            {cat}
+                            {tCat}
                           </option>
-                        ),
+                        )}
                       )}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
@@ -1387,7 +1413,7 @@ export default function App() {
 
                 <div>
                   <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    Fuel System Type
+                    {t.fuelType}
                   </label>
                   <div className="relative">
                     <select
@@ -1407,11 +1433,18 @@ export default function App() {
                         "LPG",
                         "Hybrid",
                         "Electric",
-                      ].map((fuel) => (
+                      ].map((fuel) => {
+                        const tFuel = fuel === "All" ? t.allCategories :
+                                      fuel === "Gasoline" ? t.petrol :
+                                      fuel === "Diesel" ? t.diesel :
+                                      fuel === "LPG" ? "LPG" :
+                                      fuel === "Hybrid" ? t.hybrid :
+                                      fuel === "Electric" ? t.electric : fuel;
+                        return (
                         <option value={fuel} key={fuel}>
-                          {fuel}
+                          {tFuel}
                         </option>
-                      ))}
+                      )})}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
                       <ChevronDown className="h-4 w-4" />
@@ -1421,7 +1454,7 @@ export default function App() {
 
                 <div>
                   <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    Gearbox
+                    {t.transmission}
                   </label>
                   <div className="relative">
                     <select
@@ -1434,15 +1467,15 @@ export default function App() {
                       }
                       className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
                     >
-                      {["All", "Automatic", "Manual"].map((mode) => (
+                      {["All", "Automatic", "Manual"].map((mode) => {
+                        const tMode = mode === "All" ? t.allCategories :
+                                      mode === "Automatic" ? t.automatic :
+                                      mode === "Manual" ? t.manual : mode;
+                        return (
                         <option value={mode} key={mode}>
-                          {mode === "All"
-                            ? "All"
-                            : mode === "Automatic"
-                              ? "Auto"
-                              : "Manual"}
+                          {tMode}
                         </option>
-                      ))}
+                      )})}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
                       <ChevronDown className="h-4 w-4" />
@@ -1452,7 +1485,7 @@ export default function App() {
 
                 <div>
                   <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    Seats
+                    {t.seats}
                   </label>
                   <div className="relative">
                     <select
@@ -1467,7 +1500,7 @@ export default function App() {
                     >
                       {["All", "2", "4", "5", "7", "8", "9", "10", "12", "15"].map((count) => (
                         <option value={count} key={count}>
-                          {count === "All" ? "All" : `${count} Seats`}
+                          {count === "All" ? t.allCategories : t.formatSeats(count)}
                         </option>
                       ))}
                     </select>
@@ -1494,7 +1527,7 @@ export default function App() {
                   className="w-5 h-5 text-[#4C0027]"
                   style={{ color: brandPlum }}
                 />
-                Explore our catalog
+                {t.exploreOurCatalog}
               </h2>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
@@ -1527,17 +1560,24 @@ export default function App() {
               {["All", "Sedan", "SUV", "MPV", "Pickup", "Truck"].map((cat) => {
                 const isSelected = filters.category === cat;
                 const count = categoryCounts[cat] || 0;
+                
+                const tCat = cat === "All" ? t.allCategories : 
+                             cat === "Sedan" ? t.sedan : 
+                             cat === "SUV" ? t.suv : 
+                             cat === "MPV" ? t.mpv : 
+                             cat === "Pickup" ? t.pickup : 
+                             cat === "Truck" ? t.truck : cat;
 
                 return (
                   <button
                     key={cat}
                     id={`filter-cat-tab-${cat}`}
                     onClick={() =>
-                      setFilters((prev) => ({ ...prev, category: cat, likedOnly: false, searchTerm: "" }))
+                      setFilters((prev) => ({ ...prev, category: cat as any, likedOnly: false, searchTerm: "" }))
                     }
                     className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${isSelected ? "bg-[#4C0027] text-white border-[#4C0027] shadow-sm" : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100 hover:text-black"}`}
                   >
-                    <span>{cat}</span>
+                    <span>{tCat}</span>
                     <span
                       className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${isSelected ? "bg-white/20 text-white" : "bg-stone-200 text-stone-500"}`}
                     >
@@ -1554,20 +1594,20 @@ export default function App() {
             <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider font-mono text-white/70 hidden sm:inline-block">
-                  Sort By Price:
+                  {t.sortByPrice}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setSortBy(sortBy === "price-asc" ? "default" : "price-asc")}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-asc" ? "bg-white text-stone-900 border-white shadow-sm" : "bg-white/10 border-white/20 text-stone-200 hover:bg-white/20 hover:text-white"}`}
                   >
-                    Low to High
+                    {t.lowestToHighest}
                   </button>
                   <button
                     onClick={() => setSortBy(sortBy === "price-desc" ? "default" : "price-desc")}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-desc" ? "bg-white text-stone-900 border-white shadow-sm" : "bg-white/10 border-white/20 text-stone-200 hover:bg-white/20 hover:text-white"}`}
                   >
-                    High to Low
+                    {t.highestToLowest}
                   </button>
                 </div>
               </div>
@@ -1606,11 +1646,10 @@ export default function App() {
                   <SlidersHorizontal className="w-7 h-7" />
                 </div>
                 <h3 className="font-extrabold text-black text-lg">
-                  No vehicles match filters
+                  {t.noCarsMatch}
                 </h3>
                 <p className="text-xs text-stone-500 mt-2 max-w-sm mx-auto leading-relaxed font-sans">
-                  Adjust your searching keywords, price limit settings, or
-                  category selection to retrieve archived vehicle records.
+                  {t.tryAdjusting}
                 </p>
                 <button
                   id="btn-empty-state-reset"
@@ -1618,7 +1657,7 @@ export default function App() {
                   className="mt-5 px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer"
                   style={{ backgroundColor: brandPlum }}
                 >
-                  Restore Full Inventory
+                  {t.clearFilters}
                 </button>
               </div>
             ) : (
@@ -1649,6 +1688,7 @@ export default function App() {
                           }
                           isLiked={likedCars.includes(car.id)}
                           onToggleLike={handleToggleLike}
+                          lang={lang}
                           onFilterSelect={(filterType, value) => {
                             setFilters({
                               searchTerm: "",
@@ -1757,14 +1797,14 @@ export default function App() {
           <div className="relative text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#4C0027]/5 rounded-full text-[10px] font-black uppercase text-[#4C0027] tracking-widest mb-4">
               <Award className="w-3.5 h-3.5" style={{ color: brandPlum }} />
-              <span>Established 2021</span>
+              <span>{t.established2021}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight mb-4">
-              Providing Seamless Connections Between Discerning Clients & Trusted Car Owners
+              {t.providingConnections}
             </h2>
             <div className="w-12 h-1 bg-[#4C0027] mx-auto rounded-full mb-4" style={{ backgroundColor: brandPlum }} />
             <p className="text-stone-600 text-sm leading-relaxed max-w-2xl mx-auto">
-              For several years, Enter Car Rental has served as your elite concierge brokerage, curating custom relationships between clients and our network of private vehicle owners.
+              {t.brokerageDesc}
             </p>
           </div>
 
@@ -1775,19 +1815,17 @@ export default function App() {
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <h3 className="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight">
-                Trust Built on Relationships
+                {t.trustBuilt}
               </h3>
               <div className="space-y-4 text-stone-600 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+                <p dangerouslySetInnerHTML={{ __html: t.foundedDesc.replace('2021', '<strong>2021</strong>') }} />
                 <p>
-                  Founded in <strong>2021</strong>, our agency was established to solve a vital market need: providing complete safety and direct, uninflated pricing in the car leasing market.
-                </p>
-                <p>
-                  As your dedicated agent, I work intimately with both our clientele and a trusted network of verified car owners. Over the years, we have nurtured personal connections with car owners who treat their vehicles with utmost care, allowing us to source and verify the absolute best rides at competitive price structures.
+                  {t.agentDesc}
                 </p>
                 <div className="pt-4 pb-2">
                   <div className="inline-flex items-center justify-center px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-700 text-xs font-bold gap-2">
                     <ShieldCheck className="w-4 h-4" />
-                    Direct Verification: All vehicles personally inspected before dispatch
+                    {t.directVerif}
                   </div>
                 </div>
               </div>
@@ -1800,10 +1838,10 @@ export default function App() {
               </div>
               <div className="bg-stone-50 border border-[#4C0027]/10 rounded-xl p-6 sm:p-8 text-center shadow-xs relative z-10">
                 <div className="text-[10px] text-[#4C0027] font-extrabold uppercase tracking-widest mb-3" style={{ color: brandPlum }}>
-                  Agent Philosophy
+                  {t.agentPhiloTitle}
                 </div>
                 <blockquote className="text-stone-800 font-medium italic text-sm sm:text-base leading-relaxed">
-                  "Your journey is our reputation. Leveraging years of trust with vehicle owners is how we win your peace of mind."
+                  {t.agentPhiloDesc}
                 </blockquote>
               </div>
             </div>
@@ -1818,7 +1856,7 @@ export default function App() {
           {/* Unified 5-Step Work Flow Highlight */}
           <div className="pt-2">
             <h3 className="text-stone-900 font-extrabold text-2xl sm:text-3xl text-center mb-8 tracking-tight font-sans">
-              Our Process Workflow
+              {t.processWorkflow}
             </h3>
             <div className="relative max-w-2xl mx-auto px-4 sm:px-8">
               {/* Vertical connecting line */}
@@ -1839,10 +1877,10 @@ export default function App() {
                   </div>
                   <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
                     <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
-                      Select & Specify
+                      {t.wfSelectTitle}
                     </h4>
                     <p className="text-stone-500 text-sm leading-relaxed max-w-md">
-                      Tell us the car you want or browse our comprehensive car catalog to identify your preference.
+                      {t.wfSelectDesc}
                     </p>
                   </div>
                 </motion.div>
@@ -1861,10 +1899,10 @@ export default function App() {
                   </div>
                   <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
                     <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
-                      Owner Sourcing
+                      {t.wfOwnerTitle}
                     </h4>
                     <p className="text-stone-500 text-sm leading-relaxed max-w-md">
-                      We work with cooperative car owners to find your preferred car (or similar substitute) and send you the exact available vehicle details and photos.
+                      {t.wfOwnerDesc}
                     </p>
                   </div>
                 </motion.div>
@@ -1883,10 +1921,10 @@ export default function App() {
                   </div>
                   <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
                     <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
-                      Direct Delivery
+                      {t.wfDeliveryTitle}
                     </h4>
                     <p className="text-stone-500 text-sm leading-relaxed max-w-md">
-                      We coordinate with vehicle owners to bring the car straight to your location for a smooth, stress-free handover.
+                      {t.wfDeliveryDesc}
                     </p>
                   </div>
                 </motion.div>
@@ -1905,10 +1943,10 @@ export default function App() {
                   </div>
                   <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
                     <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
-                      Agreement Execution
+                      {t.wfAgreementTitle}
                     </h4>
                     <p className="text-stone-500 text-sm leading-relaxed max-w-md">
-                      Sign the clear lease contract securely on-site with zero complex barriers or dynamic fees.
+                      {t.wfAgreementDesc}
                     </p>
                   </div>
                 </motion.div>
@@ -1927,10 +1965,10 @@ export default function App() {
                   </div>
                   <div className="pt-3 pb-10 flex-1 border-b border-stone-100 group-last:border-0 group-last:pb-2">
                     <h4 className="text-stone-900 font-bold text-base sm:text-lg tracking-tight mb-2">
-                      Active Aftercare
+                      {t.wfAftercareTitle}
                     </h4>
                     <p className="text-stone-500 text-sm leading-relaxed max-w-md">
-                      Remain fully supported throughout your drive with continuous agent updates and technical troubleshooting.
+                      {t.wfAftercareDesc}
                     </p>
                   </div>
                 </motion.div>
@@ -1946,30 +1984,15 @@ export default function App() {
         >
           <div className="pt-2 w-full mx-auto px-0 sm:px-8">
             <h3 className="text-stone-900 font-extrabold text-2xl sm:text-3xl text-center mb-8 tracking-tight font-sans">
-              Frequently Asked Questions
+              {t.frequentlyAskedQuestions}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
               {[
-                {
-                  question: "What is the term and condition to rent a car?",
-                  answer: "The standard term of rental is 6-Month with 1-month deposit and 1-month rent. A photo of passport is required."
-                },
-                {
-                  question: "Can I extend my rental?",
-                  answer: "Yes, rental extensions are certainly possible. You can let us know in 15 days in advance."
-                },
-                {
-                  question: "Can I return the car back earlier?",
-                  answer: "Yes, you can."
-                },
-                {
-                  question: "When do I get my deposit back?",
-                  answer: "You can get back your deposit at the end of contract. After hand over the vehicle back."
-                },
-                {
-                  question: "Who covers the maintenance?",
-                  answer: "Basic maintenance and spare parts replace by its aged is the responsibility of the car owner."
-                }
+                { question: t.q1Title, answer: t.q1Desc },
+                { question: t.q2Title, answer: t.q2Desc },
+                { question: t.q3Title, answer: t.q3Desc },
+                { question: t.q4Title, answer: t.q4Desc },
+                { question: t.q5Title, answer: t.q5Desc },
               ].map((faq, index) => (
                 <div 
                   key={index} 
@@ -2134,10 +2157,10 @@ export default function App() {
 
               {/* Title & Warning description */}
               <h3 className="text-stone-900 font-extrabold text-base mb-2 font-sans tracking-tight">
-                Clear Favorites?
+                {t.clearFavoritesTitle}
               </h3>
               <p className="text-xs text-stone-500 leading-relaxed max-w-[270px] mx-auto mb-6 font-sans">
-                Are you sure you want to remove all cars from your liked list? This action cannot be undone.
+                {t.clearFavoritesDesc}
               </p>
 
               {/* Modulated Buttons */}
@@ -2147,14 +2170,14 @@ export default function App() {
                   onClick={() => setShowClearConfirm(false)}
                   className="flex-1 py-2.5 rounded-xl border border-stone-200 text-stone-600 text-xs font-bold font-sans hover:bg-stone-50 transition-all cursor-pointer active:scale-95"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="button"
                   onClick={confirmClearLikes}
                   className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold font-sans transition-all cursor-pointer shadow-sm active:scale-95"
                 >
-                  Yes, Clear
+                  {t.yesClear}
                 </button>
               </div>
             </motion.div>
@@ -2172,13 +2195,13 @@ export default function App() {
             <div className="md:col-span-2 space-y-4">
               <BrandLogo size="md" variant="dark" />
               <p className="text-xs text-stone-400 max-w-sm leading-relaxed font-sans">
-                Since 2021, Enter Car Rental has served as your dedicated agent, bridging the gap between clients and trusted vehicle owners. We leverage deep, long-term owner relationships to secure competitive rates and worry-free driving experiences.
+                {t.footerDesc}
               </p>
             </div>
 
             <div>
               <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4">
-                Quick Navigation
+                {t.quickNavigation}
               </h4>
               <ul className="space-y-2.5 text-xs text-stone-400">
                 <li>
@@ -2186,7 +2209,7 @@ export default function App() {
                     onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                     className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
-                    Home
+                    {t.navHome}
                   </button>
                 </li>
                 <li>
@@ -2194,7 +2217,7 @@ export default function App() {
                     onClick={() => scrollToAnchor("category-filter-container")}
                     className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
-                    Catalog
+                    {t.navCatalog}
                   </button>
                 </li>
                 <li>
@@ -2202,7 +2225,7 @@ export default function App() {
                     onClick={() => scrollToAnchor("about-section")}
                     className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
-                    About
+                    {t.navAbout}
                   </button>
                 </li>
                 <li>
@@ -2210,7 +2233,7 @@ export default function App() {
                     onClick={() => scrollToAnchor("workflow-section")}
                     className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
-                    Workflow
+                    {t.navWorkflow}
                   </button>
                 </li>
                 <li>
@@ -2218,7 +2241,7 @@ export default function App() {
                     onClick={() => scrollToAnchor("faq-section")}
                     className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
-                    FAQ
+                    {t.navFAQ}
                   </button>
                 </li>
                 <li className="pt-2">
@@ -2228,7 +2251,7 @@ export default function App() {
                     }
                     className="hover:text-amber-300 transition-colors cursor-pointer text-left font-semibold"
                   >
-                    Administrative Security Portal
+                    {t.adminSecurityPortal}
                   </button>
                 </li>
               </ul>
@@ -2236,7 +2259,7 @@ export default function App() {
 
             <div>
               <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4">
-                Top Brands
+                {t.topBrands}
               </h4>
               <ul className="space-y-2.5 text-xs text-stone-400">
                 <li>
@@ -2281,7 +2304,7 @@ export default function App() {
 
             <div>
               <h4 className="text-[10px] font-extrabold text-stone-300 uppercase tracking-widest mb-4 font-mono">
-                Follow Us
+                {t.followUs}
               </h4>
               <ul className="space-y-4 text-xs text-stone-400">
                 <li>
@@ -2320,16 +2343,15 @@ export default function App() {
 
           <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-500 font-sans">
             <p>
-              © 2026 Enter Car Rental Inc. All rights reserved. Managed with
-              strict mechanics parameters.
+              {t.copyrightLine}
             </p>
             <div className="flex gap-4">
               <span className="hover:text-stone-300 cursor-pointer">
-                Privacy Policy
+                {t.privacyPolicy}
               </span>
               <span>•</span>
               <span className="hover:text-stone-300 cursor-pointer">
-                Terms of Service
+                {t.termsOfService}
               </span>
             </div>
           </div>
@@ -2352,6 +2374,73 @@ export default function App() {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Support Floating Button */}
+      <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
+        <AnimatePresence>
+          {isSupportExpanded && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col gap-2 origin-bottom-left"
+            >
+              <a
+                href="tel:+855966714442"
+                className="flex items-center gap-3 px-4 py-3 bg-stone-900 text-white rounded-2xl shadow-lg border border-stone-800 transition-all hover:bg-stone-800 hover:scale-105 active:scale-95"
+              >
+                <div className="bg-white/10 p-1.5 rounded-full inline-flex">
+                  <PhoneCall className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold font-mono tracking-widest">+855 96 671 4442</span>
+              </a>
+              <a
+                href="https://t.me/+855966714442"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-4 py-3 bg-[#4C0027] text-white rounded-2xl shadow-lg border border-[#4C0027]/80 transition-all hover:bg-[#600030] hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <div className="bg-white/10 p-1.5 rounded-full inline-flex">
+                  <Send className="w-4 h-4 -rotate-12 -translate-x-0.5" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest">Telegram</span>
+              </a>
+              <a
+                href="https://wa.me/855966714442"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-4 py-3 bg-emerald-600 text-white rounded-2xl shadow-lg border border-emerald-500 transition-all hover:bg-emerald-500 hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                <div className="bg-white/10 p-1.5 rounded-full inline-flex">
+                  <MessageCircle className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest">WhatsApp</span>
+              </a>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setIsSupportExpanded((prev) => !prev)}
+          className={`group flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-full shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer focus:outline-none ${
+            isSupportExpanded
+              ? "bg-white text-stone-900 border border-stone-200"
+              : "bg-[#4C0027] text-white border border-[#4C0027]"
+          }`}
+        >
+          {isSupportExpanded ? (
+            <X className="w-5 h-5 transition-transform duration-300 rotate-90 group-hover:rotate-180" />
+          ) : (
+            <>
+              <HelpCircle className="w-5 h-5 animate-pulse" />
+              <span className="text-xs flex items-center pt-0.5 font-bold uppercase tracking-widest">
+                {t.support}
+              </span>
+            </>
+          )}
+        </button>
+      </div>
 
     </div>
   );

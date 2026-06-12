@@ -87,6 +87,8 @@ const getFallbackCarThumbnail = (carName: string, category: string): string => {
   return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
 };
 
+import { translations } from "../translations";
+
 export interface CarCardProps {
   car: Car;
   isAdminMode?: boolean;
@@ -112,6 +114,7 @@ export interface CarCardProps {
   isLiked?: boolean;
   onToggleLike?: (carId: string) => void;
   onFilterSelect?: (filterType: "category" | "transmission" | "fuelType" | "seats", value: string | number) => void;
+  lang?: "en" | "kh";
 }
 
 export const CarCard: React.FC<CarCardProps> = ({
@@ -126,7 +129,10 @@ export const CarCard: React.FC<CarCardProps> = ({
   isLiked = false,
   onToggleLike,
   onFilterSelect,
+  lang = "en",
 }) => {
+  const t = translations[lang];
+
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
@@ -385,21 +391,17 @@ Description: ${formattedDesc}`;
   }, [car, customerName, tel, location, pickupDate, pickupTime, message, contactMethod, bookingMode]);
 
   const isFormComplete = bookingMode === "book" 
-    ? !!(customerName && location && pickupDate && pickupTime && contactMethod !== "none")
-    : !!(customerName && contactMethod !== "none");
+    ? !!(customerName && location && pickupDate && pickupTime)
+    : !!(customerName);
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormComplete) return;
-    if (contactMethod === "none") {
-      alert("Please select either WhatsApp or Telegram to send your enquiry.");
-      return;
-    }
 
     setRedirectUrl(targetUrl);
     
     // Attempt automatic popup
-    if (targetUrl !== "#") {
+    if (targetUrl !== "#" && contactMethod !== "none") {
       const newWin = window.open(targetUrl, "_blank");
       if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
         console.warn("Popup blocked, user needs to click link manually.");
@@ -412,7 +414,7 @@ Description: ${formattedDesc}`;
         pickupDate,
         pickupTime,
         location,
-        contactMethod: contactMethod as "whatsapp" | "telegram",
+        contactMethod: contactMethod,
         message,
         totalCost: totalBookingCost,
       });
@@ -817,11 +819,11 @@ Description: ${formattedDesc}`;
                 {/* Additional Technical Specifications Grid */}
                 <div className="grid grid-cols-3 gap-2 mb-2">
                   <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Engine</span>
+                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.engine}</span>
                     <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.engine}</span>
                   </div>
                   <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Horsepower</span>
+                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.horsepower}</span>
                     <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.power}</span>
                   </div>
                   <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
@@ -845,7 +847,7 @@ Description: ${formattedDesc}`;
                       ${car.price.toLocaleString()}
                     </span>
                     <span className="text-stone-400 text-xs font-semibold flex items-center gap-1">
-                      /month
+                      /{t.perMonth}
                     </span>
                   </div>
                 </div>
@@ -874,7 +876,7 @@ Description: ${formattedDesc}`;
                       onClick={() => { setBookingMode("book"); setIsBookingOpen(true); }}
                       className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer bg-stone-800"
                     >
-                      Book Now
+                      {t.bookNow}
                     </button>
                     <button
                       id={`car-btn-rent-${car.id}`}
@@ -882,7 +884,7 @@ Description: ${formattedDesc}`;
                       className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
                       style={{ backgroundColor: brandPlum }}
                     >
-                      Enquire
+                      {t.enquire}
                       <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                     </button>
                   </div>
@@ -905,7 +907,7 @@ Description: ${formattedDesc}`;
               <div className="flex flex-col gap-0.5">
                 <span className="text-[9px] font-mono font-black text-rose-500 uppercase tracking-widest flex items-center gap-1">
                   <Sparkles className="w-3 h-3 animate-pulse text-rose-400" />
-                  Vehicle Specs
+                  {t.vehicleSpecs}
                 </span>
                 <h4 className="font-sans font-black text-white text-base tracking-tight flex items-center gap-2">
                   <BrandIcon brand={car.name} className="w-4 h-4 fill-current text-stone-300 shrink-0" />
@@ -923,7 +925,7 @@ Description: ${formattedDesc}`;
                 <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
                   <Cpu className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Engine Assembly</p>
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.engineAssembly}</p>
                     <p className="text-xs font-black text-white mt-0.5 truncate">{specsDetails.engine}</p>
                     <p className="text-[10px] font-bold text-rose-400 font-mono mt-0.5">{specsDetails.power}</p>
                   </div>
@@ -932,7 +934,7 @@ Description: ${formattedDesc}`;
                 <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
                   <Gauge className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Velocity Hub</p>
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.velocityHub}</p>
                     <p className="text-xs font-black text-white mt-0.5">0-100: <span className="text-amber-400 font-extrabold">{specsDetails.accel}</span></p>
                     <p className="text-[10px] font-bold text-stone-400 font-mono mt-0.5">Max {specsDetails.topSpeed}</p>
                   </div>
@@ -941,7 +943,7 @@ Description: ${formattedDesc}`;
                 <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
                   <Settings2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Transmission</p>
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.transmissionBack}</p>
                     <p className="text-xs font-black text-white mt-0.5 truncate">{car.transmission}</p>
                     <p className="text-[10px] font-bold text-stone-400 font-mono mt-0.5">{specsDetails.driveType}</p>
                   </div>
@@ -950,7 +952,7 @@ Description: ${formattedDesc}`;
                 <div className="bg-stone-900/65 p-3 rounded-2xl border border-stone-800/80 flex items-start gap-2.5">
                   <Fuel className="w-4 h-4 text-sky-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">Fuel System</p>
+                    <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.fuelSystem}</p>
                     <p className="text-xs font-black text-white mt-0.5 truncate">{car.fuelType}</p>
                     <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5 truncate">{specsDetails.efficiency}</p>
                   </div>
@@ -961,10 +963,10 @@ Description: ${formattedDesc}`;
               <div className="bg-stone-900/40 px-3 py-2 rounded-xl border border-stone-800/60 flex items-center justify-between text-xs">
                 <span className="text-stone-400 flex items-center gap-1.5 text-[9px] uppercase font-bold tracking-widest font-mono">
                   <Users className="w-3.5 h-3.5 text-teal-400" />
-                  Cabin Capacity
+                  {t.cabinCapacity}
                 </span>
                 <span className="font-sans font-black text-stone-200">
-                  {car.seats} Premium Seats
+                  {car.seats} {t.premiumSeats}
                 </span>
               </div>
 
@@ -972,7 +974,7 @@ Description: ${formattedDesc}`;
               <div className="bg-stone-900/40 px-3 py-2 rounded-xl border border-stone-800/60 flex items-center justify-between text-xs">
                 <span className="text-stone-400 flex items-center gap-1.5 text-[9px] uppercase font-bold tracking-widest font-mono">
                   <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-                  Sustainability
+                  {t.sustainability}
                 </span>
                 <span className="font-mono font-extrabold text-rose-300">
                   {specsDetails.co2}
@@ -984,14 +986,14 @@ Description: ${formattedDesc}`;
             <div className="border-t border-stone-800 pt-3 flex items-center justify-between gap-1">
               <div className="flex flex-col">
                 <span className="text-[8px] text-stone-500 uppercase font-mono font-bold tracking-widest">
-                  RATE PLAN
+                  {t.ratePlan}
                 </span>
                 <div className="flex items-baseline gap-0.5">
                   <span className="text-lg font-black text-rose-500">
                     ${car.price.toLocaleString()}
                   </span>
                   <span className="text-stone-500 text-[10px] font-semibold flex items-center gap-1">
-                    /mo
+                    /{t.perMonth}
                   </span>
                 </div>
               </div>
@@ -1019,7 +1021,7 @@ Description: ${formattedDesc}`;
                   onClick={(e) => { e.stopPropagation(); setBookingMode("book"); setIsBookingOpen(true); }}
                   className="flex items-center gap-1 px-4 py-2 text-[10px] font-bold bg-rose-600 text-white rounded-lg shadow-sm hover:bg-rose-500 transition-all cursor-pointer"
                 >
-                  Book Service
+                  {t.bookService}
                   <ArrowRight className="w-3 h-3" />
                 </button>
               )}
@@ -1056,16 +1058,27 @@ Description: ${formattedDesc}`;
                   id={`booking-success-box-${car.id}`}
                   className="flex flex-col py-2"
                 >
-                  <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 text-emerald-600 mx-auto">
-                    <Check className="w-6 h-6 stroke-[3]" />
-                  </div>
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                    className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center mb-4 text-emerald-600 mx-auto"
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.2 }}
+                    >
+                      <Check className="w-6 h-6 stroke-[3]" />
+                    </motion.div>
+                  </motion.div>
 
                   <div className="text-center">
                     <h3 className="font-extrabold text-stone-900 text-xl tracking-tight mb-1">
-                      Your {bookingMode === "book" ? "Booking Request" : "Enquiry"} Sent!
+                      {bookingMode === "book" ? t.bookingRequestSent : t.enquirySent}
                     </h3>
                     <p className="text-xs text-stone-500 max-w-xs mx-auto mb-5 leading-normal">
-                      Thank you for your {bookingMode === "book" ? "booking request. We will follow up shortly to confirm details." : "inquiry. We will check availability and follow up shortly with specific car photos and details."}
+                      {bookingMode === "book" ? t.bookingThankYou : t.enquiryThankYou}
                     </p>
                   </div>
 
@@ -1075,7 +1088,7 @@ Description: ${formattedDesc}`;
                       <div className="flex items-center gap-2">
                         <Receipt className="w-4 h-4 text-stone-400" />
                         <span className="font-mono font-bold uppercase tracking-wider text-stone-400 text-[10px]">
-                          DATE-TIME
+                          {t.dateTime}
                         </span>
                       </div>
                       <span className="font-mono font-black text-stone-900 tracking-wider text-sm">
@@ -1086,7 +1099,7 @@ Description: ${formattedDesc}`;
                     <div className="grid grid-cols-2 gap-3 pt-1">
                       <div>
                         <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
-                          SELECTED VEHICLE
+                          {t.selectedVehicle}
                         </p>
                         <p className="font-bold text-stone-800 truncate mt-0.5">
                           {car.name}
@@ -1094,7 +1107,7 @@ Description: ${formattedDesc}`;
                       </div>
                       <div>
                         <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
-                          CLIENT NAME
+                          {t.clientName}
                         </p>
                         <p className="font-bold text-stone-800 truncate mt-0.5">
                           {confirmedBooking.customerName}
@@ -1106,7 +1119,7 @@ Description: ${formattedDesc}`;
                       <div className="grid grid-cols-2 gap-3 pt-2 border-t border-stone-100 mt-2">
                         <div>
                           <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
-                            LOCATION
+                            {t.location}
                           </p>
                           <p className="font-bold text-stone-800 truncate mt-0.5">
                             {confirmedBooking.location}
@@ -1114,7 +1127,7 @@ Description: ${formattedDesc}`;
                         </div>
                         <div>
                           <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
-                            PICKUP
+                            {t.pickup}
                           </p>
                           <p className="font-bold text-stone-800 truncate mt-0.5">
                             {confirmedBooking.pickupDate} {confirmedBooking.pickupTime}
@@ -1154,12 +1167,13 @@ Description: ${formattedDesc}`;
                   </div>
 
                   <p className="text-[10px] text-stone-400 mt-4 text-center leading-relaxed font-sans">
-                    A copy of the booking voucher and checklist rules will be
-                    replied via your{" "}
-                    <span className="font-semibold">
-                      {confirmedBooking.contactMethod}
-                    </span>{" "}
-                    account. Feel free to contact dispatchers.
+                    {confirmedBooking.contactMethod === "none" ? (
+                      <>We will reach out to you via SMS or phone call using the provided details. Feel free to contact dispatchers.</>
+                    ) : (
+                      <>
+                        A copy of the booking voucher and checklist rules will be replied via your <span className="font-semibold uppercase">{confirmedBooking.contactMethod}</span> account. Feel free to contact dispatchers.
+                      </>
+                    )}
                   </p>
 
 
@@ -1191,13 +1205,14 @@ Description: ${formattedDesc}`;
                         {car.name}
                       </h4>
                       <p className="text-sm sm:text-base text-stone-600 font-mono font-bold mt-0.5 drop-shadow-sm">
-                        <span className="text-stone-400 text-[10px] sm:text-xs uppercase">{car.category} FLEET COLLECTION</span>
+                        <span className="text-stone-400 text-[10px] sm:text-xs uppercase">{car.category}</span>
+                        <span className="text-stone-400 text-[10px] sm:text-xs uppercase ml-1">{t.fleetCollection}</span>
                       </p>
                     </div>
                   </div>
 
                   <h3 className="font-sans font-black text-stone-900 text-lg tracking-tight">
-                    {bookingMode === "book" ? "Enterprise Booking System" : "Enterprise Enquiry System"}
+                    {bookingMode === "book" ? t.enterpriseBookingSystem : t.enterpriseEnquirySystem}
                   </h3>
 
                   {/* Active reservation form inputs */}
@@ -1206,7 +1221,7 @@ Description: ${formattedDesc}`;
                     <div className="grid grid-cols-1 gap-2.5">
                       <div>
                         <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1">
-                          NAME
+                          {t.nameLabel}
                         </label>
                         <div className="relative">
                           <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 pointer-events-none">
@@ -1247,7 +1262,7 @@ Description: ${formattedDesc}`;
 
                       <div>
                         <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1">
-                          I HAVE <span className="normal-case tracking-normal font-sans text-stone-400 font-normal ml-1">(if you don't have telegram/whatsapp, please call or text us at 096 671 4442)</span>
+                          {t.iHave} <span className="normal-case tracking-normal font-sans text-stone-400 font-normal ml-1">{t.ifYouDontHave}</span>
                         </label>
                         <div className="flex gap-2">
                           <button
@@ -1264,6 +1279,13 @@ Description: ${formattedDesc}`;
                           >
                             Telegram
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setContactMethod("none")}
+                            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all border ${contactMethod === "none" ? "bg-stone-200 border-stone-300 text-stone-700" : "bg-stone-50 border-stone-200 text-stone-500"}`}
+                          >
+                            None
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1271,11 +1293,11 @@ Description: ${formattedDesc}`;
                     {bookingMode === "book" ? (
                       <div className="bg-stone-50 p-2.5 rounded-2xl border border-stone-100 space-y-2.5 mt-2">
                         <label className="text-[10px] font-semibold text-stone-800 block mb-1.5 font-sans">
-                          I'm ready to rent this car, please bring to me at:
+                          {t.readyToRent}
                         </label>
                         <div>
                           <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
-                            LOCATION
+                            {t.location}
                           </label>
                           <div className="relative">
                             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 pointer-events-none">
@@ -1295,7 +1317,7 @@ Description: ${formattedDesc}`;
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
-                              PICKUP DATE
+                              {t.pickupDate}
                             </label>
                             <input
                               id={`book-pickup-${car.id}`}
@@ -1309,7 +1331,7 @@ Description: ${formattedDesc}`;
                           </div>
                           <div>
                             <label className="text-[9px] font-semibold text-stone-500 uppercase block mb-1.5 font-mono">
-                              PICKUP TIME
+                              {t.pickupTime}
                             </label>
                             <select
                               id={`book-pickup-time-${car.id}`}
@@ -1318,7 +1340,7 @@ Description: ${formattedDesc}`;
                               onChange={(e) => setPickupTime(e.target.value)}
                               className="w-full text-xs py-1.5 px-2 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-[#4C0027] text-stone-800 font-mono select-none"
                             >
-                              <option value="" disabled>Select Time</option>
+                              <option value="" disabled>{t.selectTime}</option>
                               {Array.from({ length: 24 * 4 }).map((_, i) => {
                                 const totalMinutes = i * 15;
                                 const hours = Math.floor(totalMinutes / 60);
@@ -1369,11 +1391,6 @@ Description: ${formattedDesc}`;
                     type="submit"
                     className="w-full py-3.5 text-xs font-bold text-white rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer text-center uppercase tracking-wider mt-2.5 opacity-90"
                     style={{ backgroundColor: brandPlum }}
-                    onClick={() => {
-                      if (contactMethod === "none") {
-                        alert(`Please select either WhatsApp or Telegram to send your ${bookingMode === "book" ? "booking request" : "enquiry"}.`);
-                      }
-                    }}
                   >
                     {bookingMode === "book" ? "Send Booking Now" : "Send Enquiry Now"}
                   </button>
