@@ -885,10 +885,12 @@ export default function App() {
                 {/* Language Switcher */}
                 <button
                   onClick={() => setLang(l => l === "en" ? "kh" : "en")}
-                  className="px-2 py-1 flex items-center gap-1 shrink-0 lg:mr-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
+                  className="px-2 py-1 flex items-center gap-1.5 shrink-0 lg:mr-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
                   title="Toggle Language"
                 >
-                  <Globe className="w-3.5 h-3.5 text-[#4C0027]" />
+                  <span className="text-[14px] leading-none">
+                    {lang === "en" ? "🇰🇭" : "🇺🇸"}
+                  </span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600">
                     {lang === "en" ? "KH" : "EN"}
                   </span>

@@ -391,12 +391,17 @@ Description: ${formattedDesc}`;
   }, [car, customerName, tel, location, pickupDate, pickupTime, message, contactMethod, bookingMode]);
 
   const isFormComplete = bookingMode === "book" 
-    ? !!(customerName && location && pickupDate && pickupTime)
-    : !!(customerName);
+    ? !!(customerName && location && pickupDate && pickupTime && (contactMethod !== "none" || tel))
+    : !!(customerName && (contactMethod !== "none" || tel));
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormComplete) return;
+    if (!isFormComplete) {
+       if (contactMethod === "none" && !tel) {
+           alert("Please provide a phone number when selecting None as Contact Method.");
+       }
+       return;
+    }
 
     setRedirectUrl(targetUrl);
     
@@ -790,28 +795,28 @@ Description: ${formattedDesc}`;
                   <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
                     <CarIcon className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
-                      {car.category}
+                      {car.category === 'Sedan' ? t.sedan : car.category === 'SUV' ? t.suv : car.category === 'MPV' ? t.mpv : car.category === 'Pickup' ? t.pickup : car.category === 'Truck' ? t.truck : car.category}
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('seats', car.seats); }}>
                     <Users className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold">
-                      {car.seats} Seats
+                       {t.formatSeats(car.seats.toString())}
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('transmission', car.transmission); }}>
                     <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
-                      {car.transmission}
+                      {car.transmission === 'Automatic' ? t.automatic : car.transmission === 'Manual' ? t.manual : car.transmission}
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('fuelType', car.fuelType); }}>
                     <Fuel className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
-                      {car.fuelType}
+                      {car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType}
                     </span>
                   </div>
                 </div>
@@ -915,7 +920,7 @@ Description: ${formattedDesc}`;
                 </h4>
               </div>
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getCategoryColor(car.category)}`}>
-                {car.category}
+                {car.category === 'Sedan' ? t.sedan : car.category === 'SUV' ? t.suv : car.category === 'MPV' ? t.mpv : car.category === 'Pickup' ? t.pickup : car.category === 'Truck' ? t.truck : car.category}
               </span>
             </div>
 
@@ -944,7 +949,7 @@ Description: ${formattedDesc}`;
                   <Settings2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.transmissionBack}</p>
-                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.transmission}</p>
+                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.transmission === 'Automatic' ? t.automatic : car.transmission === 'Manual' ? t.manual : car.transmission}</p>
                     <p className="text-[10px] font-bold text-stone-400 font-mono mt-0.5">{specsDetails.driveType}</p>
                   </div>
                 </div>
@@ -953,7 +958,7 @@ Description: ${formattedDesc}`;
                   <Fuel className="w-4 h-4 text-sky-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.fuelSystem}</p>
-                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.fuelType}</p>
+                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType}</p>
                     <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5 truncate">{specsDetails.efficiency}</p>
                   </div>
                 </div>
@@ -1127,7 +1132,7 @@ Description: ${formattedDesc}`;
                         </div>
                         <div>
                           <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold font-mono">
-                            {t.pickup}
+                            {t.pickupLabel}
                           </p>
                           <p className="font-bold text-stone-800 truncate mt-0.5">
                             {confirmedBooking.pickupDate} {confirmedBooking.pickupTime}
@@ -1205,7 +1210,9 @@ Description: ${formattedDesc}`;
                         {car.name}
                       </h4>
                       <p className="text-sm sm:text-base text-stone-600 font-mono font-bold mt-0.5 drop-shadow-sm">
-                        <span className="text-stone-400 text-[10px] sm:text-xs uppercase">{car.category}</span>
+                        <span className="text-stone-400 text-[10px] sm:text-xs uppercase">
+                          {car.category === 'Sedan' ? t.sedan : car.category === 'SUV' ? t.suv : car.category === 'MPV' ? t.mpv : car.category === 'Pickup' ? t.pickup : car.category === 'Truck' ? t.truck : car.category}
+                        </span>
                         <span className="text-stone-400 text-[10px] sm:text-xs uppercase ml-1">{t.fleetCollection}</span>
                       </p>
                     </div>
@@ -1239,10 +1246,10 @@ Description: ${formattedDesc}`;
                         </div>
                       </div>
 
-                      {bookingMode === "book" && (
+                      {(bookingMode === "book" || contactMethod === "none") && (
                         <div>
-                          <label className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-1">
-                            TEL (OPTIONAL)
+                          <label className={`text-[9px] font-bold uppercase tracking-widest block mb-1 ${contactMethod === 'none' ? 'text-rose-500' : 'text-stone-400'}`}>
+                            {contactMethod === 'none' ? t.telRequired : t.telOptional}
                           </label>
                           <div className="relative">
                             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 pointer-events-none">
@@ -1251,6 +1258,7 @@ Description: ${formattedDesc}`;
                             <input
                               id={`book-tel-${car.id}`}
                               type="tel"
+                              required={contactMethod === "none"}
                               placeholder="e.g. +855..."
                               value={tel}
                               onChange={(e) => setTel(e.target.value)}
