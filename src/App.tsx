@@ -888,9 +888,11 @@ export default function App() {
                   className="px-2 py-1 flex items-center gap-1.5 shrink-0 lg:mr-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
                   title="Toggle Language"
                 >
-                  <span className="text-[14px] leading-none">
-                    {lang === "en" ? "🇰🇭" : "🇺🇸"}
-                  </span>
+                  <img 
+                    src={lang === "en" ? "https://flagcdn.com/w40/kh.png" : "https://flagcdn.com/w40/us.png"} 
+                    alt="flag" 
+                    className="w-4 h-auto rounded-[2px] shadow-sm border border-stone-200" 
+                  />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600">
                     {lang === "en" ? "KH" : "EN"}
                   </span>
