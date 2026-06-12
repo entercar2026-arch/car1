@@ -206,6 +206,11 @@ export default function App() {
   // Sorting state
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "alphabetical">("default");
 
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchSuggestions = cars
+    .filter((c) => c.name.toLowerCase().includes(filters.searchTerm.toLowerCase()))
+    .slice(0, 3);
+
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -753,6 +758,8 @@ export default function App() {
                 type="text"
                 placeholder="Find car..."
                 value={filters.searchTerm}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                 onChange={(e) =>
                   setFilters((prev) => ({
                     ...prev,
@@ -775,6 +782,33 @@ export default function App() {
                   <X className="h-4 w-4" />
                 </button>
               )}
+              <AnimatePresence>
+                {filters.searchTerm && isSearchFocused && searchSuggestions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 py-1"
+                  >
+                    {searchSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion.id}
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setFilters((prev) => ({ ...prev, searchTerm: suggestion.name }));
+                          scrollToAnchor("catalog-section");
+                          setIsSearchFocused(false);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
+                      >
+                        <span className="text-sm font-semibold text-stone-800 group-hover/item:text-[#4C0027]">{suggestion.name}</span>
+                        <span className="text-xs text-stone-500 font-mono">${suggestion.price}/mo</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </nav>
 
@@ -959,6 +993,8 @@ export default function App() {
                     type="text"
                     placeholder="Find car..."
                     value={filters.searchTerm}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                     onChange={(e) =>
                       setFilters((prev) => ({
                         ...prev,
@@ -982,6 +1018,34 @@ export default function App() {
                       <X className="h-4 w-4" />
                     </button>
                   )}
+                  <AnimatePresence>
+                    {filters.searchTerm && isSearchFocused && searchSuggestions.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 py-1"
+                      >
+                        {searchSuggestions.map((suggestion) => (
+                          <button
+                            key={suggestion.id}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setFilters((prev) => ({ ...prev, searchTerm: suggestion.name }));
+                              scrollToAnchor("catalog-section");
+                              setIsSearchFocused(false);
+                              setIsMobileMenuOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
+                          >
+                            <span className="text-sm font-semibold text-stone-800 group-hover/item:text-[#4C0027]">{suggestion.name}</span>
+                            <span className="text-xs text-stone-500 font-mono">${suggestion.price}/mo</span>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <button

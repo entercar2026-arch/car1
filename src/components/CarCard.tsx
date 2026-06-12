@@ -694,64 +694,41 @@ Description: ${formattedDesc}`;
 
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
-            </div>
 
-            {/* Action Buttons Row (Right/Down of the video) */}
-            <div className="flex justify-end gap-1.5 px-4 pt-3 pb-1 bg-white w-full">
-              {hasVideo && (
+              {/* Video Actions overlay */}
+              <div className="absolute bottom-3 right-3 flex items-center gap-1.5 z-10">
+                {hasVideo && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPlaying(prev => !prev);
+                    }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-white/80 backdrop-blur-sm text-stone-700 border border-stone-200 hover:bg-white shadow-sm"
+                    title={isPlaying ? "Pause Video" : "Play Video"}
+                  >
+                    {isPlaying ? (
+                      <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
+                    ) : (
+                      <Play className="w-3.5 h-3.5 fill-current text-stone-700 ml-0.5" />
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsPlaying(prev => !prev);
+                    onToggleLike && onToggleLike(car.id);
                   }}
-                  className="w-8 h-8 rounded-full border flex items-center justify-center transition-colors cursor-pointer bg-stone-50 text-stone-600 border-stone-200 hover:text-black shadow-sm"
-                  title={isPlaying ? "Pause Video" : "Play Video"}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm"
                 >
-                  {isPlaying ? (
-                    <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
-                  ) : (
-                    <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
-                  )}
+                  <Heart
+                    className={`w-4 h-4 transition-colors ${
+                      isLiked
+                        ? "fill-rose-500 text-rose-500"
+                        : "text-stone-500"
+                    }`}
+                  />
                 </button>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const shareUrl = new URL(window.location.href);
-                  shareUrl.searchParams.set('model', car.name);
-                  const finalUrl = shareUrl.toString();
-
-                  if (navigator.share) {
-                    navigator.share({
-                      title: `Check out this ${car.name}`,
-                      text: shareText,
-                      url: finalUrl,
-                    }).catch(console.error);
-                  } else {
-                    navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
-                    alert("Link & details copied to clipboard!");
-                  }
-                }}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm"
-                title="Share"
-              >
-                <Share2 className="w-3.5 h-3.5 text-stone-500 hover:text-stone-700 transition-colors" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleLike && onToggleLike(car.id);
-                }}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-rose-50 transition-colors border border-stone-200 cursor-pointer shadow-sm"
-              >
-                <Heart
-                  className={`w-3.5 h-3.5 transition-colors ${
-                    isLiked
-                      ? "fill-rose-500 text-rose-500"
-                      : "text-stone-500 hover:text-rose-500"
-                  }`}
-                />
-              </button>
+              </div>
             </div>
 
             {/* Narrative & Info */}
@@ -768,6 +745,29 @@ Description: ${formattedDesc}`;
                     <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
                     {car.name}
                   </h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const shareUrl = new URL(window.location.href);
+                      shareUrl.searchParams.set('model', car.name);
+                      const finalUrl = shareUrl.toString();
+
+                      if (navigator.share) {
+                        navigator.share({
+                          title: `Check out this ${car.name}`,
+                          text: shareText,
+                          url: finalUrl,
+                        }).catch(console.error);
+                      } else {
+                        navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
+                        alert("Link & details copied to clipboard!");
+                      }
+                    }}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm -mt-1"
+                    title="Share"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-stone-500 hover:text-stone-700 transition-colors" />
+                  </button>
                 </div>
                 <div className="mb-4">
                   {car.description && (
