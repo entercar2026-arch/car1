@@ -696,7 +696,7 @@ Description: ${formattedDesc}`;
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
 
               {/* Video Actions overlay */}
-              <div className="absolute bottom-3 right-3 flex items-center gap-1.5 z-10">
+              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                 {hasVideo && (
                   <button
                     onClick={(e) => {
