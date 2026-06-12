@@ -226,9 +226,11 @@ export default function App() {
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "alphabetical">("default");
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const searchSuggestions = cars
-    .filter((c) => c.name.toLowerCase().includes(filters.searchTerm.toLowerCase()))
-    .slice(0, 3);
+  const searchSuggestions = filters.searchTerm
+    ? cars
+        .filter((c) => c.name.toLowerCase().includes(filters.searchTerm.toLowerCase()))
+        .slice(0, 4)
+    : cars.slice(0, 4);
 
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -823,7 +825,7 @@ export default function App() {
                 </button>
               )}
               <AnimatePresence>
-                {filters.searchTerm && isSearchFocused && searchSuggestions.length > 0 && (
+                {isSearchFocused && searchSuggestions.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -956,6 +958,22 @@ export default function App() {
 
               {/* Row 2: Social Buttons & Favorites Icon */}
               <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5">
+                {/* Language Switcher (Mobile) */}
+                <button
+                  onClick={() => setLang(l => l === "en" ? "kh" : "en")}
+                  className="px-1.5 py-0.5 flex items-center gap-1 shrink-0 rounded-md bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer shadow-3xs"
+                  title="Toggle Language"
+                >
+                  <img 
+                    src={lang === "en" ? "https://flagcdn.com/w40/kh.png" : "https://flagcdn.com/w40/us.png"} 
+                    alt="flag" 
+                    className="w-3.5 h-auto rounded-[2px] shadow-sm border border-stone-200" 
+                  />
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-stone-600">
+                    {lang === "en" ? "KH" : "EN"}
+                  </span>
+                </button>
+
                 {/* Telegram */}
                 <a
                   href="https://t.me/+855966714442"
@@ -1076,7 +1094,7 @@ export default function App() {
                     </button>
                   )}
                   <AnimatePresence>
-                    {filters.searchTerm && isSearchFocused && searchSuggestions.length > 0 && (
+                    {isSearchFocused && searchSuggestions.length > 0 && (
                       <motion.div
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
