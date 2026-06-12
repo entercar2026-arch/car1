@@ -1538,12 +1538,7 @@ export default function App() {
                           onToggleLike={handleToggleLike}
                           onFilterSelect={(filterType, value) => {
                             setFilters(prev => ({ ...prev, [filterType]: value }));
-                            if (filterType === 'category') {
-                              scrollToAnchor("category-filter-container");
-                            } else {
-                              setIsFiltersOpen(true);
-                              scrollToAnchor("search-filters-container");
-                            }
+                            scrollToAnchor("catalog-section");
                           }}
                         />
                       </motion.div>
