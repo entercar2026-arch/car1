@@ -939,7 +939,7 @@ Description: ${formattedDesc}`;
                     id={`car-btn-details-${car.id}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsPhotosOpen(true);
+                      setIsDetailsOpen(true);
                       setCurrentPhotoIndex(0);
                     }}
                     className="flex-1 px-1 py-2 text-[11px] font-bold text-stone-700 bg-stone-100/80 hover:bg-stone-200/80 border border-stone-200/60 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
@@ -1740,11 +1740,11 @@ Description: ${formattedDesc}`;
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Left/Top Area - Hero Media Screen */}
-                <div className="relative w-full md:w-1/2 h-56 md:h-auto bg-stone-900 flex flex-col justify-between overflow-hidden">
+                <div className="relative w-full md:w-1/2 h-56 md:h-auto bg-stone-900 flex flex-col justify-between overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsPhotosOpen(true); }}>
                   <img
                     src={getOptimizedImageUrl(currentImage, windowWidth, 'cover')}
                     alt={car.name}
-                    className="absolute inset-0 w-full h-full object-cover opacity-90 transition-all duration-500"
+                    className="absolute inset-0 w-full h-full object-cover opacity-90 hover:opacity-100 transition-all duration-500 hover:scale-[1.02]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/40 pointer-events-none" />
 
