@@ -1394,7 +1394,7 @@ export default function App() {
                     >
                       {dynamicBrands.map((b) => (
                         <option value={b} key={b}>
-                          {b}
+                          {b === "All" ? t.allCategories : b}
                         </option>
                       ))}
                     </select>
@@ -1642,7 +1642,15 @@ export default function App() {
                 </div>
               </div>
               <div className="text-xs sm:text-sm font-medium text-stone-500 bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-xs">
-                Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> of <span className="font-bold text-stone-800">{cars.length}</span> vehicles
+                {lang === "en" ? (
+                  <>
+                    Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> of <span className="font-bold text-stone-800">{cars.length}</span> vehicles
+                  </>
+                ) : (
+                  <>
+                    កំពុងបង្ហាញរថយន្ដ <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> នៃ <span className="font-bold text-stone-800">{cars.length}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
