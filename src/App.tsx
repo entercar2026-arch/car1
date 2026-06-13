@@ -1142,51 +1142,56 @@ export default function App() {
 
                 <button
                   id="mobile-link-home"
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
                     scrollToAnchor("home-panel");
-                    setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
                 >
                   {t.navHome}
                 </button>
                 <button
                   id="mobile-link-catalog"
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
                     scrollToAnchor("category-filter-container");
-                    setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
                 >
                   {t.navCatalog}
                 </button>
                 <button
                   id="mobile-link-about"
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
                     scrollToAnchor("about-section");
-                    setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
                 >
                   {t.navAbout}
                 </button>
                 <button
                   id="mobile-link-workflow"
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
                     scrollToAnchor("workflow-section");
-                    setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
                 >
                   {t.navWorkflow}
                 </button>
                 <button
                   id="mobile-link-faq"
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
                     scrollToAnchor("faq-section");
-                    setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027]"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
                 >
                   {t.navFAQ}
                 </button>
