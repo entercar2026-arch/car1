@@ -230,6 +230,34 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : (car.image || getFallbackCarThumbnail(car.name, car.category)));
 
+  const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover'), [currentImage, windowWidth]);
+  const [renderedImageSrc, setRenderedImageSrc] = useState(targetImageSrc);
+  const [isPreloading, setIsPreloading] = useState(false);
+
+  useEffect(() => {
+    if (targetImageSrc !== renderedImageSrc) {
+      let isCancelled = false;
+      setIsPreloading(true);
+      const img = new Image();
+      img.onload = () => {
+        if (!isCancelled) {
+          setRenderedImageSrc(targetImageSrc);
+          setIsPreloading(false);
+        }
+      };
+      img.onerror = () => {
+        if (!isCancelled) {
+          setRenderedImageSrc(targetImageSrc);
+          setIsPreloading(false);
+        }
+      };
+      img.src = targetImageSrc;
+      return () => {
+        isCancelled = true;
+      };
+    }
+  }, [targetImageSrc, renderedImageSrc]);
+
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
     return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
@@ -639,6 +667,11 @@ Description: ${formattedDesc}`;
                       <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
                     </div>
                   )}
+                  {(isPreloading || isFetchingColor) && (
+                    <div className="absolute inset-0 z-[16] flex items-center justify-center bg-stone-100/30 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+                      <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
+                    </div>
+                  )}
                   {isPlaying ? (
                     <motion.video
                       id={`car-photo-${car.id}`}
@@ -733,7 +766,7 @@ Description: ${formattedDesc}`;
               ) : (
                 <motion.img
                   id={`car-photo-${car.id}`}
-                  src={getOptimizedImageUrl(currentImage, windowWidth, 'cover')}
+                  src={renderedImageSrc}
                   alt={car.name}
                   loading="lazy"
                   decoding="async"
@@ -939,7 +972,7 @@ Description: ${formattedDesc}`;
                     id={`car-btn-details-${car.id}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsDetailsOpen(true);
+                      setIsPhotosOpen(true);
                       setCurrentPhotoIndex(0);
                     }}
                     className="flex-1 px-1 py-2 text-[11px] font-bold text-stone-700 bg-stone-100/80 hover:bg-stone-200/80 border border-stone-200/60 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
@@ -1742,11 +1775,16 @@ Description: ${formattedDesc}`;
                 {/* Left/Top Area - Hero Media Screen */}
                 <div className="relative w-full md:w-1/2 h-56 md:h-auto bg-stone-900 flex flex-col justify-between overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsPhotosOpen(true); }}>
                   <img
-                    src={getOptimizedImageUrl(currentImage, windowWidth, 'cover')}
+                    src={renderedImageSrc}
                     alt={car.name}
                     className="absolute inset-0 w-full h-full object-cover opacity-90 hover:opacity-100 transition-all duration-500 hover:scale-[1.02]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/40 pointer-events-none" />
+                  {(isPreloading || isFetchingColor) && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+                      <Loader2 className="w-6 h-6 text-stone-200 animate-spin opacity-70" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 z-10 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/40 pointer-events-none" />
 
                   {/* Inline Gallery controls for Details Modal */}
                   {allPhotos.length > 1 && (
@@ -2023,12 +2061,12 @@ Description: ${formattedDesc}`;
                 
                 <div className="relative w-full group flex justify-center">
                   <motion.img
-                    key={aiColorImage || allPhotos[currentPhotoIndex]}
+                    key={renderedImageSrc}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    src={getOptimizedImageUrl(aiColorImage || allPhotos[currentPhotoIndex] || getFallbackCarThumbnail(car.name, car.category), windowWidth, 'cover')}
+                    src={renderedImageSrc}
                     alt={`${car.name} photo`}
                     className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                   />
