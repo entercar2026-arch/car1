@@ -2060,16 +2060,49 @@ Description: ${formattedDesc}`;
                 </div>
                 
                 <div className="relative w-full group flex justify-center">
-                  <motion.img
-                    key={renderedImageSrc}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    src={renderedImageSrc}
-                    alt={`${car.name} photo`}
-                    className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                  />
+                  {hasVideo ? (
+                    <motion.video
+                      key={`video-${renderedImageSrc}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      src={videoSource}
+                      controls
+                      autoPlay
+                      loop
+                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                    />
+                  ) : imageError && isGoogleDrive && driveId ? (
+                    <motion.iframe
+                      key={`iframe-${renderedImageSrc}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      src={`https://drive.google.com/file/d/${driveId}/preview`}
+                      className="w-full max-w-4xl h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      allow="autoplay"
+                    />
+                  ) : (
+                    <motion.img
+                      key={`img-${renderedImageSrc}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      src={renderedImageSrc}
+                      alt={`${car.name} photo`}
+                      onError={(e) => {
+                        if (isGoogleDrive) {
+                          setImageError(true);
+                        } else {
+                          (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
+                        }
+                      }}
+                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                    />
+                  )}
                   
                   {!aiColorImage && allPhotos.length > 1 && (
                     <>
