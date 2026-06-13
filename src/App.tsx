@@ -1140,61 +1140,56 @@ export default function App() {
                   </AnimatePresence>
                 </div>
 
-                <button
+                <a
                   id="mobile-link-home"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToAnchor("home-panel");
+                  href="#home-panel"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
                 >
                   {t.navHome}
-                </button>
-                <button
+                </a>
+                <a
                   id="mobile-link-catalog"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToAnchor("category-filter-container");
+                  href="#category-filter-container"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
                 >
                   {t.navCatalog}
-                </button>
-                <button
+                </a>
+                <a
                   id="mobile-link-about"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToAnchor("about-section");
+                  href="#about-section"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
                 >
                   {t.navAbout}
-                </button>
-                <button
+                </a>
+                <a
                   id="mobile-link-workflow"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToAnchor("workflow-section");
+                  href="#workflow-section"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
                 >
                   {t.navWorkflow}
-                </button>
-                <button
+                </a>
+                <a
                   id="mobile-link-faq"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToAnchor("faq-section");
+                  href="#faq-section"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer touch-manipulation"
+                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
                 >
                   {t.navFAQ}
-                </button>
+                </a>
               </div>
             </motion.div>
           )}
