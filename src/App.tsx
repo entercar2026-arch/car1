@@ -235,6 +235,7 @@ export default function App() {
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
 
   // Booking details toast state
   const [bookingToast, setBookingToast] = useState<string | null>(null);
@@ -1247,14 +1248,24 @@ export default function App() {
                 {t.termDetail}
               </p>
 
-              <button
-                type="button"
-                onClick={() => setIsContractModalOpen(true)}
-                className="mt-6 px-6 py-2.5 bg-amber-400 text-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors shadow-sm flex items-center gap-2 cursor-pointer relative z-10"
-              >
-                <FileText className="w-4 h-4" />
-                {t.viewContract}
-              </button>
+              <div className="mt-6 flex flex-wrap justify-center gap-4 relative z-10 w-full px-4">
+                <button
+                  type="button"
+                  onClick={() => setIsContractModalOpen(true)}
+                  className="px-6 py-2.5 bg-amber-400 text-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText className="w-4 h-4" />
+                  {t.viewContract}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsQuotationModalOpen(true)}
+                  className="px-6 py-2.5 bg-stone-800 border border-amber-400/50 text-amber-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-stone-700 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText className="w-4 h-4" />
+                  {t.viewQuotation || "View Quotation"}
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -2277,6 +2288,75 @@ export default function App() {
                     <div className="border-b border-stone-500 mx-8 mb-2"></div>
                     <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
                   </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Quotation Modal */}
+      <AnimatePresence>
+        {isQuotationModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 min-w-[320px]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsQuotationModalOpen(false)}
+              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-4xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200/60 shrink-0">
+                <h3 className="font-bold text-stone-900 flex items-center gap-2 text-xl tracking-wide uppercase">
+                  <FileText className="w-6 h-6 text-[#4C0027]" />
+                  {t.viewQuotation || "Quotation"}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsQuotationModalOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-1 pr-2 -mr-2">
+                <div className="bg-white rounded-xl border border-stone-200/60 overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left whitespace-nowrap min-w-[600px]">
+                      <thead className="bg-[#4C0027] text-amber-400">
+                        <tr>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Deposit</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-stone-100">
+                        {cars.map((car: Car) => (
+                          <tr key={car.id} className="hover:bg-stone-50/80 transition-colors group">
+                            <td className="px-6 py-4 font-semibold text-stone-800">
+                              <div className="flex flex-col">
+                                <span>{car.name}</span>
+                                <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.brand}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-center text-stone-500">{car.category}</td>
+                            <td className="px-6 py-4 text-center font-bold text-emerald-700 bg-emerald-50/30 group-hover:bg-emerald-50">${car.pricePerMonth}</td>
+                            <td className="px-6 py-4 text-center font-bold text-stone-600 bg-stone-50/50 group-hover:bg-amber-50/30">${car.pricePerMonth}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="mt-6 text-center text-xs text-stone-500 uppercase tracking-widest leading-relaxed">
+                  * Prices are valid at the time of quotation request.<br className="sm:hidden" /> Contact us to lock this rate.
                 </div>
               </div>
             </motion.div>
