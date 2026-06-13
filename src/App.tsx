@@ -216,7 +216,7 @@ export default function App() {
 
   // Filter criteria state
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<CatalogFilters>(() => {
+  const [filters, setFiltersRaw] = useState<CatalogFilters>(() => {
     const params = new URLSearchParams(window.location.search);
     const initialModel = params.get('model') || "";
     return {
@@ -231,8 +231,20 @@ export default function App() {
     };
   });
 
+  const setFilters = React.useCallback((action: any) => {
+    React.startTransition(() => {
+      setFiltersRaw(action);
+    });
+  }, []);
+
   // Sorting state
-  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "alphabetical">("default");
+  const [sortByRaw, setSortByRaw] = useState<"default" | "price-asc" | "price-desc" | "alphabetical">("default");
+  const sortBy = sortByRaw;
+  const setSortBy = React.useCallback((val: "default" | "price-asc" | "price-desc" | "alphabetical") => {
+    React.startTransition(() => {
+      setSortByRaw(val);
+    });
+  }, []);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchSuggestions = filters.searchTerm
@@ -597,9 +609,21 @@ export default function App() {
 
   // Filter computation logic
   const [isFiltering, setIsFiltering] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<CatalogFilters>(filters);
+  const [activeFiltersRaw, setActiveFiltersRaw] = useState<CatalogFilters>(filters);
+  const activeFilters = activeFiltersRaw;
+  const setActiveFilters = React.useCallback((val: CatalogFilters | ((prev: CatalogFilters) => CatalogFilters)) => {
+    React.startTransition(() => {
+      setActiveFiltersRaw(val);
+    });
+  }, []);
   const filterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageRaw, setCurrentPageRaw] = useState(1);
+  const currentPage = currentPageRaw;
+  const setCurrentPage = React.useCallback((val: number | ((prev: number) => number)) => {
+    React.startTransition(() => {
+      setCurrentPageRaw(val);
+    });
+  }, []);
 
   useEffect(() => {
     setIsFiltering(true);

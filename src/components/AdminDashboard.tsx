@@ -39,9 +39,10 @@ const OptimizedTextArea = ({ id, value, onChange, placeholder, className, rows }
       id={id}
       value={localVal}
       onChange={(e) => {
-        setLocalVal(e.target.value);
+        const val = e.target.value;
+        setLocalVal(val);
         startTransition(() => {
-          onChange(e);
+          onChange(val);
         });
       }}
       placeholder={placeholder}
@@ -64,9 +65,10 @@ const OptimizedInput = ({ id, type, value, onChange, placeholder, className, req
       step={step}
       value={localVal}
       onChange={(e) => {
-        setLocalVal(e.target.value);
+        const val = e.target.value;
+        setLocalVal(val);
         startTransition(() => {
-          onChange(e);
+          onChange(val);
         });
       }}
       placeholder={placeholder}
@@ -110,12 +112,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onDeleteReview,
 }) => {
   // Tabs management
-  const [activeTab, setActiveTab] = useState<"fleet" | "bookings" | "reviews">(
-    "fleet",
-  );
+  const [activeTabRaw, setActiveTabRaw] = useState<"fleet" | "bookings" | "reviews">("fleet");
+
+  const activeTab = activeTabRaw;
+  const setActiveTab = React.useCallback((val: "fleet" | "bookings" | "reviews") => {
+    startTransition(() => {
+      setActiveTabRaw(val);
+    });
+  }, []);
 
   // Search state for cars
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermRaw, setSearchTermRaw] = useState("");
+  const searchTerm = searchTermRaw;
+  const setSearchTerm = React.useCallback((val: string) => {
+    startTransition(() => {
+      setSearchTermRaw(val);
+    });
+  }, []);
 
   const filteredCars = useMemo(() => {
     return cars.filter((car) =>
