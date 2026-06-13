@@ -5,6 +5,7 @@ export interface Car {
   price: number; // in USD per month
   image: string; // URL
   altImage?: string; // photo of car in different color
+  photos?: string[]; // Array of image URLs for the carousel
   transmission: "Automatic" | "Manual";
   seats: number;
   fuelType: "Electric" | "Gasoline" | "Hybrid" | "Diesel" | "LPG";
@@ -12,6 +13,16 @@ export interface Car {
   isAvailable?: boolean;
   videoUrl?: string;
   thumbnail?: string;
+  extendedSpecs?: {
+    engine?: string;
+    horsepower?: string;
+    topSpeed?: string;
+    acceleration?: string;
+    driveType?: string;
+    fuelEfficiency?: string;
+    co2Emissions?: string;
+    ownerNotes?: string;
+  };
 }
 
 export type ViewMode = "customer" | "admin" | "login";

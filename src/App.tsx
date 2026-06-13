@@ -2265,7 +2265,7 @@ export default function App() {
                 </button>
               </div>
               <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
-                <p className="text-sm text-stone-600 leading-relaxed font-mono">
+                <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
                   {t.contractContent}
                 </p>
                 <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">

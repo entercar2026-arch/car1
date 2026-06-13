@@ -34,6 +34,9 @@ import {
   Loader2,
   Car as CarIcon,
   Palette,
+  Images,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -186,6 +189,10 @@ export const CarCard: React.FC<CarCardProps> = ({
     return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
   };
 
+  const allPhotos = useMemo(() => {
+    return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
+  }, [car.photos, car.image, car.altImage]);
+
   const hasVideo = useMemo(() => {
     return isVideoMedia(currentImage) || isVideoMedia(effectiveVideoUrl);
   }, [currentImage, effectiveVideoUrl]);
@@ -304,6 +311,9 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   // Reviews flow states
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPhotosOpen, setIsPhotosOpen] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [reviewAuthor, setReviewAuthor] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
@@ -538,14 +548,16 @@ Description: ${formattedDesc}`;
       if (e.key === "Escape") {
         handleCloseBookingModal();
         setIsReviewsOpen(false);
+        setIsDetailsOpen(false);
+        setIsPhotosOpen(false);
       }
     };
 
-    if (isBookingOpen || isReviewsOpen) {
+    if (isBookingOpen || isReviewsOpen || isDetailsOpen || isPhotosOpen) {
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isBookingOpen, isReviewsOpen]);
+  }, [isBookingOpen, isReviewsOpen, isDetailsOpen, isPhotosOpen]);
 
   return (
     <>
@@ -708,18 +720,6 @@ Description: ${formattedDesc}`;
 
               {/* Video Actions overlay */}
               <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                {car.altImage && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setUseAltImage((prev) => !prev);
-                    }}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm"
-                    title={t.viewDifferentColor}
-                  >
-                    <Palette className="w-4 h-4 text-stone-600" />
-                  </button>
-                )}
                 {hasVideo && (
                   <button
                     onClick={(e) => {
@@ -851,6 +851,38 @@ Description: ${formattedDesc}`;
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
                     <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.accel}</span>
                   </div>
+                </div>
+
+                {/* Advanced Quick Actions Panel */}
+                <div className="flex items-center gap-2 mt-2 mb-1">
+                  <button
+                    type="button"
+                    id={`car-btn-details-${car.id}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDetailsOpen(true);
+                    }}
+                    className="flex-1 px-1 py-2 text-[11px] font-bold text-stone-700 bg-stone-100/80 hover:bg-stone-200/80 border border-stone-200/60 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#4C0027] shrink-0" />
+                    <span className="truncate">{t.viewDetails}</span>
+                  </button>
+                  
+                  {allPhotos.length > 1 && (
+                    <button
+                      type="button"
+                      id={`car-btn-photos-${car.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPhotosOpen(true);
+                        setCurrentPhotoIndex(0);
+                      }}
+                      className="flex-1 px-1 py-2 text-[11px] font-bold text-stone-700 bg-stone-100/80 hover:bg-stone-200/80 border border-stone-200/60 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                    >
+                      <Images className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+                      <span className="truncate">{t.viewPhotos}</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1617,6 +1649,296 @@ Description: ${formattedDesc}`;
             </motion.div>
           </div>
         )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Elegant Vehicle Extended details & Specs Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {isDetailsOpen && (
+            <div
+              id={`details-modal-${car.id}`}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs select-none"
+              onClick={() => setIsDetailsOpen(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="bg-white rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl relative flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Left/Top Area - Hero Media Screen */}
+                <div className="relative w-full md:w-1/2 h-56 md:h-auto bg-stone-900 flex flex-col justify-between overflow-hidden">
+                  <img
+                    src={getOptimizedImageUrl(currentImage, windowWidth, 'cover')}
+                    alt={car.name}
+                    className="absolute inset-0 w-full h-full object-cover opacity-90 transition-all duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/40 pointer-events-none" />
+
+                  {/* Header metadata overlay */}
+                  <div className="relative p-4 flex justify-between items-start z-10 w-full">
+                    <span className="text-[10px] font-extrabold uppercase bg-amber-400 text-stone-950 px-2.5 py-1 rounded-lg tracking-wider shadow-sm font-mono flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-stone-950 animate-pulse" />
+                      {car.category === 'Sedan' ? t.sedan : car.category === 'SUV' ? t.suv : car.category === 'MPV' ? t.mpv : car.category === 'Pickup' ? t.pickup : car.category === 'Truck' ? t.truck : car.category}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsDetailsOpen(false)}
+                      className="md:hidden w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Interactive toggle alternate color in left picture pane */}
+                  {car.altImage && (
+                    <div className="relative p-4 z-10 select-none">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setUseAltImage(prev => !prev);
+                        }}
+                        className="bg-white/95 backdrop-blur-md hover:bg-white border border-stone-200/50 px-3.5 py-2 rounded-xl text-xs font-black text-stone-850 shadow-md transition-all flex items-center gap-1.5 cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <Palette className="w-4 h-4 text-[#4C0027]" />
+                        {t.viewDifferentColor}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Area - Detailed Description and Specs sheet */}
+                <div className="flex-1 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto max-h-[60vh] md:max-h-none">
+                  {/* Close button for desktop */}
+                  <button
+                    onClick={() => setIsDetailsOpen(false)}
+                    className="hidden md:flex absolute top-5 right-5 w-8 h-8 items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer shadow-sm border border-stone-200/30"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div className="space-y-5">
+                    {/* Identification */}
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <BrandIcon brand={car.name} className="w-5 h-5 fill-current text-stone-700 mt-0.5 shrink-0" />
+                        <span className="text-[10px] tracking-widest text-[#4C0027] font-extrabold uppercase font-mono bg-rose-50 px-2 py-0.5 rounded-md">{car.transmission === 'Automatic' ? t.automatic : car.transmission === 'Manual' ? t.manual : car.transmission}</span>
+                        <span className="text-[10px] tracking-widest text-emerald-800 font-extrabold uppercase font-mono bg-emerald-50 px-2 py-0.5 rounded-md">{car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType}</span>
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight font-sans tracking-tight">
+                        {car.name}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-stone-500 mt-2 font-sans leading-relaxed">
+                        {car.description}
+                      </p>
+                    </div>
+
+                    {/* Extended technical spec blocks */}
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-extrabold text-[#4C0027] uppercase tracking-widest font-sans border-b border-stone-100 pb-1 flex items-center gap-1.5">
+                        <Cpu className="w-3.5 h-3.5 text-[#4C0027]" />
+                        {t.extendedSpecsTitle}
+                      </h4>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
+                          <Cpu className="w-4 h-4 text-purple-600 mt-0.5 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.engineType}</p>
+                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.engine || specsDetails.engine}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
+                          <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.horsepowerLabel}</p>
+                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.horsepower || specsDetails.power}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
+                          <Gauge className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.accelerationLabel}</p>
+                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.acceleration || specsDetails.accel}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
+                          <Settings2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.driveTypeLabel}</p>
+                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.driveType || specsDetails.driveType}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Fuel Efficiency block */}
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest font-sans border-b border-stone-100 pb-1 flex items-center gap-1.5">
+                        <Fuel className="w-3.5 h-3.5 text-emerald-600" />
+                        {t.fuelEfficiencyTitle}
+                      </h4>
+                      <div className="p-4 bg-emerald-50/40 rounded-2xl border border-emerald-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-emerald-750 flex items-center justify-center shrink-0">
+                            <Fuel className="w-5 h-5 text-emerald-700" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-stone-900 font-mono">
+                              {car.extendedSpecs?.fuelEfficiency || specsDetails.efficiency}
+                            </p>
+                            <p className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider font-sans mt-0.5">
+                              {car.fuelType === "Electric" ? "100% Zero-Carbon Eco Ride" : car.fuelType === "Hybrid" ? "Ultra Low Fuel Assist" : "Clean Intake Efficiency Motor"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-start sm:items-end font-mono">
+                          <span className="text-[9px] uppercase tracking-wider text-stone-400 font-bold">{t.co2Label}</span>
+                          <span className="text-xs font-extrabold text-emerald-700 bg-emerald-100/60 px-2.5 py-0.5 rounded-lg mt-1 block">
+                            {car.extendedSpecs?.co2Emissions || specsDetails.co2}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Owner Notes block */}
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest font-sans border-b border-stone-100 pb-1 flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                        {t.ownerNotesTitle}
+                      </h4>
+                      <div className="p-4 bg-amber-50/50 border border-amber-200/45 rounded-2xl text-amber-950 font-sans text-xs italic leading-relaxed shadow-3xs flex items-start gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <p>{car.extendedSpecs?.ownerNotes || "This vehicle has been highly checked and verified under Enterprise standards. Pristine performance guarantee with responsive roadside support coverage included."}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pricing and CTAs */}
+                  <div className="border-t border-stone-100 pt-5 mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex flex-col select-none">
+                      <span className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.ratePlan}</span>
+                      <div className="flex items-baseline gap-0.5 mt-0.5">
+                        <span className="text-3xl font-black text-red-650">
+                          ${car.price.toLocaleString()}
+                        </span>
+                        <span className="text-stone-400 text-xs font-semibold">
+                          /{t.perMonth}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsDetailsOpen(false);
+                          setBookingMode("book");
+                          setIsBookingOpen(true);
+                        }}
+                        className="px-5 py-2.5 bg-stone-850 hover:bg-stone-900 border border-stone-800 text-white rounded-xl text-xs font-extrabold shadow-sm hover:scale-[1.01] transition-all cursor-pointer tracking-wider"
+                      >
+                        {t.bookNow}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsDetailsOpen(false);
+                          setBookingMode("enquire");
+                          setIsBookingOpen(true);
+                        }}
+                        className="px-5 py-2.5 text-white rounded-xl text-xs font-extrabold shadow-sm hover:scale-[1.01] transition-all cursor-pointer tracking-wider flex items-center gap-1"
+                        style={{ backgroundColor: brandPlum }}
+                      >
+                        {t.enquire}
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Photos Viewer Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {isPhotosOpen && (
+            <div
+              className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md select-none"
+              onClick={() => setIsPhotosOpen(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="relative max-w-5xl w-full flex flex-col items-center gap-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="w-full flex items-center justify-between px-2 mb-2">
+                  <div className="flex flex-col">
+                    <span className="text-white font-sans font-bold text-lg">{car.name}</span>
+                    <span className="text-white/60 font-mono text-xs">{currentPhotoIndex + 1} / {allPhotos.length}</span>
+                  </div>
+                  <button
+                    onClick={() => setIsPhotosOpen(false)}
+                    className="text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer border border-white/10"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="relative w-full group">
+                  <motion.img
+                    key={allPhotos[currentPhotoIndex]}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    src={getOptimizedImageUrl(allPhotos[currentPhotoIndex], windowWidth, 'cover')}
+                    alt={`${car.name} photo ${currentPhotoIndex + 1}`}
+                    className="w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                  />
+                  
+                  {allPhotos.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+                        }}
+                        className="absolute top-1/2 left-4 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm text-white/80 hover:text-white transition-colors cursor-pointer border border-white/10 opacity-0 group-hover:opacity-100"
+                        title="Previous Photo"
+                      >
+                        <ChevronLeft className="w-8 h-8" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+                        }}
+                        className="absolute top-1/2 right-4 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm text-white/80 hover:text-white transition-colors cursor-pointer border border-white/10 opacity-0 group-hover:opacity-100"
+                        title="Next Photo"
+                      >
+                        <ChevronRight className="w-8 h-8" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          )}
         </AnimatePresence>,
         document.body
       )}
