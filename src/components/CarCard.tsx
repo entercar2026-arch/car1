@@ -59,9 +59,9 @@ const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 
     return `${url}${separator}w=${targetWidth}&q=70&auto=format&fit=crop`;
   }
   
-  if (url.includes('upload/')) {
+  if (url.includes('/upload/') && !url.includes('wikimedia.org')) {
     // f_auto will serve webp/avif for images, and wepm/mp4 for videos automatically based on browser
-    return url.replace('upload/', `upload/f_auto,q_auto,w_${targetWidth},c_scale/`);
+    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${targetWidth},c_scale/`);
   }
   
   return url;
@@ -228,7 +228,7 @@ export const CarCard: React.FC<CarCardProps> = ({
     return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
   }, [car.photos, car.image, car.altImage]);
 
-  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : car.image);
+  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : (car.image || getFallbackCarThumbnail(car.name, car.category)));
 
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
@@ -2011,7 +2011,7 @@ Description: ${formattedDesc}`;
                 <div className="w-full flex items-center justify-between px-2 mb-2">
                   <div className="flex flex-col">
                     <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-                    <span className="text-white/60 font-mono text-xs">{currentPhotoIndex + 1} / {allPhotos.length}</span>
+                    <span className="text-white/60 font-mono text-xs">{aiColorImage ? activeColor : `${currentPhotoIndex + 1} / ${allPhotos.length}`}</span>
                   </div>
                   <button
                     onClick={() => setIsPhotosOpen(false)}
@@ -2021,19 +2021,19 @@ Description: ${formattedDesc}`;
                   </button>
                 </div>
                 
-                <div className="relative w-full group">
+                <div className="relative w-full group flex justify-center">
                   <motion.img
-                    key={allPhotos[currentPhotoIndex]}
+                    key={aiColorImage || allPhotos[currentPhotoIndex]}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    src={getOptimizedImageUrl(allPhotos[currentPhotoIndex], windowWidth, 'cover')}
-                    alt={`${car.name} photo ${currentPhotoIndex + 1}`}
-                    className="w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                    src={getOptimizedImageUrl(aiColorImage || allPhotos[currentPhotoIndex] || getFallbackCarThumbnail(car.name, car.category), windowWidth, 'cover')}
+                    alt={`${car.name} photo`}
+                    className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                   />
                   
-                  {allPhotos.length > 1 && (
+                  {!aiColorImage && allPhotos.length > 1 && (
                     <>
                       <button
                         onClick={(e) => {
