@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, startTransition } from "react";
 import { Car, Booking, Review } from "../types";
 import { BrandLogo } from "./BrandLogo";
 import { motion, AnimatePresence } from "motion/react";
@@ -151,7 +151,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormDescription("");
     setFormVideoUrl("");
     setFormThumbnail("");
-    setIsFormOpen(true);
+    startTransition(() => {
+      setIsFormOpen(true);
+    });
   };
 
   // Open edit product form preloaded with details
@@ -168,7 +170,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormDescription(car.description || "");
     setFormVideoUrl(car.videoUrl || "");
     setFormThumbnail(car.thumbnail || "");
-    setIsFormOpen(true);
+    startTransition(() => {
+      setIsFormOpen(true);
+    });
   };
 
   // Submit processing
