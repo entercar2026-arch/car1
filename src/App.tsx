@@ -202,7 +202,7 @@ export default function App() {
   });
 
   // Language state
-  const [lang, setLang] = useState<"en" | "kh">("en");
+  const [lang, setLang] = useState<"en" | "kh" | "zh">("en");
   const t = translations[lang];
 
   // Filter criteria state
@@ -896,17 +896,17 @@ export default function App() {
               <div className="flex flex-row flex-nowrap items-center gap-1.5 sm:gap-4">
                 {/* Language Switcher */}
                 <button
-                  onClick={() => setLang(l => l === "en" ? "kh" : "en")}
+                  onClick={() => setLang(l => l === "en" ? "kh" : l === "kh" ? "zh" : "en")}
                   className="px-2 py-1 flex items-center gap-1.5 shrink-0 lg:mr-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
                   title="Toggle Language"
                 >
                   <img 
-                    src={lang === "en" ? "https://flagcdn.com/w40/kh.png" : "https://flagcdn.com/w40/us.png"} 
+                    src={lang === "en" ? "https://flagcdn.com/w40/kh.png" : lang === "kh" ? "https://flagcdn.com/w40/cn.png" : "https://flagcdn.com/w40/us.png"} 
                     alt="flag" 
                     className="w-4 h-auto rounded-[2px] shadow-sm border border-stone-200" 
                   />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600">
-                    {lang === "en" ? "KH" : "EN"}
+                    {lang === "en" ? "KH" : lang === "kh" ? "ZH" : "EN"}
                   </span>
                 </button>
 
@@ -963,17 +963,17 @@ export default function App() {
               <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5">
                 {/* Language Switcher (Mobile) */}
                 <button
-                  onClick={() => setLang(l => l === "en" ? "kh" : "en")}
+                  onClick={() => setLang(l => l === "en" ? "kh" : l === "kh" ? "zh" : "en")}
                   className="px-1.5 py-0.5 flex items-center gap-1 shrink-0 rounded-md bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer shadow-3xs"
                   title="Toggle Language"
                 >
                   <img 
-                    src={lang === "en" ? "https://flagcdn.com/w40/kh.png" : "https://flagcdn.com/w40/us.png"} 
+                    src={lang === "en" ? "https://flagcdn.com/w40/kh.png" : lang === "kh" ? "https://flagcdn.com/w40/cn.png" : "https://flagcdn.com/w40/us.png"} 
                     alt="flag" 
                     className="w-3.5 h-auto rounded-[2px] shadow-sm border border-stone-200" 
                   />
                   <span className="text-[9px] font-bold uppercase tracking-widest text-stone-600">
-                    {lang === "en" ? "KH" : "EN"}
+                    {lang === "en" ? "KH" : lang === "kh" ? "ZH" : "EN"}
                   </span>
                 </button>
 
@@ -1359,6 +1359,25 @@ export default function App() {
                       {t.upTo} ${filters.maxPrice}{t.monthSuffix}
                     </span>
                   </div>
+
+                  {/* Quick Range Shortcuts */}
+                  <div className="flex gap-2 mb-3">
+                    {[500, 1000, 2000].map(val => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setFilters(prev => ({ ...prev, maxPrice: val })); }}
+                        className={`flex-1 py-1 px-2 text-[10px] sm:text-[11px] font-mono font-bold rounded text-center transition-colors shadow-sm ${
+                          filters.maxPrice === val 
+                            ? 'bg-amber-400 text-stone-900 border border-amber-500/30' 
+                            : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100 hover:text-stone-900'
+                        }`}
+                      >
+                        ${val}
+                      </button>
+                    ))}
+                  </div>
+
                   <input
                     id="filter-slider-price"
                     type="range"
@@ -1566,6 +1585,68 @@ export default function App() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Active Filters Bar */}
+            {(() => {
+              const activeTags = [];
+              if (filters.searchTerm) activeTags.push({ id: 'searchTerm', label: `"${filters.searchTerm}"`, onRemove: () => setFilters(pre => ({ ...pre, searchTerm: "" })) });
+              if (filters.brand !== "All") activeTags.push({ id: 'brand', label: `${filters.brand}`, onRemove: () => setFilters(pre => ({ ...pre, brand: "All" })) });
+              if (filters.category !== "All") {
+                const tCat = filters.category === "Sedan" ? t.sedan : filters.category === "SUV" ? t.suv : filters.category === "MPV" ? t.mpv : filters.category === "Pickup" ? t.pickup : filters.category === "Truck" ? t.truck : filters.category;
+                activeTags.push({ id: 'category', label: `${tCat}`, onRemove: () => setFilters(pre => ({ ...pre, category: "All" })) });
+              }
+              if (filters.fuelType !== "All") {
+                const fType = filters.fuelType === "Gasoline" ? t.petrol : filters.fuelType === "Diesel" ? t.diesel : filters.fuelType === "Hybrid" ? t.hybrid : filters.fuelType === "Electric" ? t.electric : filters.fuelType;
+                activeTags.push({ id: 'fuelType', label: `${fType}`, onRemove: () => setFilters(pre => ({ ...pre, fuelType: "All" })) });
+              }
+              if (filters.transmission !== "All") {
+                const trType = filters.transmission === "Automatic" ? t.automatic : filters.transmission === "Manual" ? t.manual : filters.transmission;
+                activeTags.push({ id: 'transmission', label: `${trType}`, onRemove: () => setFilters(pre => ({ ...pre, transmission: "All" })) });
+              }
+              if (filters.maxPrice < 5000) activeTags.push({ id: 'maxPrice', label: `Max $${filters.maxPrice}/mo`, onRemove: () => setFilters(pre => ({ ...pre, maxPrice: 5000 })) });
+              if (filters.seats !== "All") activeTags.push({ id: 'seats', label: `${filters.seats} Seats`, onRemove: () => setFilters(pre => ({ ...pre, seats: "All" })) });
+              if (filters.likedOnly) activeTags.push({ id: 'likedOnly', label: `${t.liked || 'Liked'}`, onRemove: () => setFilters(pre => ({ ...pre, likedOnly: false })) });
+
+              if (activeTags.length === 0) return null;
+
+              return (
+                <div className="flex flex-wrap items-center gap-2 pt-4 mt-2 border-t border-stone-100">
+                  <span className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider mr-1">
+                    Active Filters:
+                  </span>
+                  <AnimatePresence>
+                    {activeTags.map(tag => (
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        key={tag.id}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-stone-100 border border-stone-200 text-[10px] sm:text-[11px] font-semibold text-stone-700"
+                      >
+                        {tag.label}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); tag.onRemove(); }}
+                          className="p-0.5 rounded-sm hover:bg-stone-200 text-stone-500 hover:text-stone-800 transition-colors"
+                          title="Remove filter"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </motion.span>
+                    ))}
+                  </AnimatePresence>
+                  {activeTags.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleResetFilters(); }}
+                      className="text-[10px] sm:text-[11px] font-bold text-[#4C0027] hover:underline ml-1"
+                    >
+                      {t.clearFilters || "Clear All"}
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
           </section>
 
           {/* 4. Horizontal Category Tab Selector Bar */}
