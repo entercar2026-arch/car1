@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, startTransition } from "react";
 import { createPortal } from "react-dom";
 import { Car, Review, Booking } from "../types";
 import { motion, AnimatePresence } from "motion/react";
@@ -972,8 +972,10 @@ Description: ${formattedDesc}`;
                     id={`car-btn-details-${car.id}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsDetailsOpen(true);
-                      setCurrentPhotoIndex(0);
+                      startTransition(() => {
+                        setIsDetailsOpen(true);
+                        setCurrentPhotoIndex(0);
+                      });
                     }}
                     className="flex-1 px-1 py-2 text-[11px] font-bold text-stone-700 bg-stone-100/80 hover:bg-stone-200/80 border border-stone-200/60 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                   >
@@ -1763,17 +1765,17 @@ Description: ${formattedDesc}`;
             <div
               id={`details-modal-${car.id}`}
               className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs select-none"
-              onClick={() => setIsDetailsOpen(false)}
+              onClick={() => startTransition(() => setIsDetailsOpen(false))}
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 15 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                className="bg-white rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl relative flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh]"
+                className="bg-stone-900 rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl relative flex flex-col max-h-[90vh] md:max-h-[85vh]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Left/Top Area - Hero Media Screen */}
-                <div className="relative w-full md:w-1/2 h-56 md:h-auto bg-stone-900 flex flex-col justify-between overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsPhotosOpen(true); }}>
+                <div className="relative w-full h-[60vh] md:h-[80vh] flex flex-col justify-between overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsPhotosOpen(true); }}>
                   <img
                     src={renderedImageSrc}
                     alt={car.name}
@@ -1830,200 +1832,17 @@ Description: ${formattedDesc}`;
 
                     <button
                       type="button"
-                      onClick={() => setIsDetailsOpen(false)}
-                      className="md:hidden w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); startTransition(() => setIsDetailsOpen(false)); }}
+                      className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
 
-                  {/* Internet Image Color Search Palette */}
-                  <div className="relative p-4 z-10 select-none">
-                    <div className="bg-white/95 backdrop-blur-md border border-stone-200/50 p-2.5 rounded-2xl shadow-md inline-flex items-center gap-2 pointer-events-auto">
-                       <span className="flex items-center gap-1 text-[10px] font-bold text-stone-500 uppercase tracking-widest pl-1">
-                          {isFetchingColor ? <Loader2 className="w-3 h-3 animate-spin"/> : <Palette className="w-3 h-3" />}
-                          {isFetchingColor ? "Searching..." : "Web Colors"}
-                       </span>
-                       <div className="flex items-center gap-1.5 ml-1 border-l border-stone-200 pl-3">
-                         {CAR_COLORS.map(color => (
-                            <button
-                               key={color.hex}
-                               type="button"
-                               disabled={isFetchingColor}
-                               onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (activeColor === color.name) {
-                                     setActiveColor(null);
-                                     setAiColorImage(null);
-                                  } else {
-                                     fetchCarImageFromInternet(color.name);
-                                  }
-                               }}
-                               className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${activeColor === color.name ? "scale-110 border-[#4C0027] shadow-md" : "border-stone-200 hover:scale-110 shadow-sm"}`}
-                               style={{ backgroundColor: color.hex }}
-                               title={`Search for ${color.name} variant`}
-                            />
-                         ))}
-                       </div>
-                    </div>
-                  </div>
+
                 </div>
 
-                {/* Right Area - Detailed Description and Specs sheet */}
-                <div className="flex-1 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto max-h-[60vh] md:max-h-none">
-                  {/* Close button for desktop */}
-                  <button
-                    onClick={() => setIsDetailsOpen(false)}
-                    className="hidden md:flex absolute top-5 right-5 w-8 h-8 items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer shadow-sm border border-stone-200/30"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
 
-                  <div className="space-y-5">
-                    {/* Identification */}
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <BrandIcon brand={car.name} className="w-5 h-5 fill-current text-stone-700 mt-0.5 shrink-0" />
-                        <span className="text-[10px] tracking-widest text-[#4C0027] font-extrabold uppercase font-mono bg-rose-50 px-2 py-0.5 rounded-md">{car.transmission === 'Automatic' ? t.automatic : car.transmission === 'Manual' ? t.manual : car.transmission}</span>
-                        <span className="text-[10px] tracking-widest text-emerald-800 font-extrabold uppercase font-mono bg-emerald-50 px-2 py-0.5 rounded-md">{car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType}</span>
-                      </div>
-                      <h3 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight font-sans tracking-tight">
-                        {car.name}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-stone-500 mt-2 font-sans leading-relaxed">
-                        {car.description}
-                      </p>
-                    </div>
-
-                    {/* Extended technical spec blocks */}
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-extrabold text-[#4C0027] uppercase tracking-widest font-sans border-b border-stone-100 pb-1 flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-[#4C0027]" />
-                        {t.extendedSpecsTitle}
-                      </h4>
-                      
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
-                          <Cpu className="w-4 h-4 text-purple-600 mt-0.5 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.engineType}</p>
-                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.engine || specsDetails.engine}</p>
-                          </div>
-                        </div>
-
-                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
-                          <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.horsepowerLabel}</p>
-                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.horsepower || specsDetails.power}</p>
-                          </div>
-                        </div>
-
-                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
-                          <Gauge className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.accelerationLabel}</p>
-                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.acceleration || specsDetails.accel}</p>
-                          </div>
-                        </div>
-
-                        <div className="bg-stone-50/75 p-3 rounded-2xl border border-stone-100 flex items-start gap-2.5 min-w-0">
-                          <Settings2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                          <div className="min-w-0">
-                            <p className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.driveTypeLabel}</p>
-                            <p className="text-xs font-black text-stone-800 mt-0.5 truncate">{car.extendedSpecs?.driveType || specsDetails.driveType}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Fuel Efficiency block */}
-                    <div className="space-y-2">
-                      <h4 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest font-sans border-b border-stone-100 pb-1 flex items-center gap-1.5">
-                        <Fuel className="w-3.5 h-3.5 text-emerald-600" />
-                        {t.fuelEfficiencyTitle}
-                      </h4>
-                      <div className="p-4 bg-emerald-50/40 rounded-2xl border border-emerald-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-emerald-750 flex items-center justify-center shrink-0">
-                            <Fuel className="w-5 h-5 text-emerald-700" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-black text-stone-900 font-mono">
-                              {car.extendedSpecs?.fuelEfficiency || specsDetails.efficiency}
-                            </p>
-                            <p className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider font-sans mt-0.5">
-                              {car.fuelType === "Electric" ? "100% Zero-Carbon Eco Ride" : car.fuelType === "Hybrid" ? "Ultra Low Fuel Assist" : "Clean Intake Efficiency Motor"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-start sm:items-end font-mono">
-                          <span className="text-[9px] uppercase tracking-wider text-stone-400 font-bold">{t.co2Label}</span>
-                          <span className="text-xs font-extrabold text-emerald-700 bg-emerald-100/60 px-2.5 py-0.5 rounded-lg mt-1 block">
-                            {car.extendedSpecs?.co2Emissions || specsDetails.co2}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Owner Notes block */}
-                    <div className="space-y-2">
-                      <h4 className="text-[10px] font-extrabold text-stone-400 uppercase tracking-widest font-sans border-b border-stone-100 pb-1 flex items-center gap-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                        {t.ownerNotesTitle}
-                      </h4>
-                      <div className="p-4 bg-amber-50/50 border border-amber-200/45 rounded-2xl text-amber-950 font-sans text-xs italic leading-relaxed shadow-3xs flex items-start gap-2">
-                        <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                        <p>{car.extendedSpecs?.ownerNotes || "This vehicle has been highly checked and verified under Enterprise standards. Pristine performance guarantee with responsive roadside support coverage included."}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Pricing and CTAs */}
-                  <div className="border-t border-stone-100 pt-5 mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex flex-col select-none">
-                      <span className="text-[9px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.ratePlan}</span>
-                      <div className="flex items-baseline gap-0.5 mt-0.5">
-                        <span className="text-3xl font-black text-red-650">
-                          ${car.price.toLocaleString()}
-                        </span>
-                        <span className="text-stone-400 text-xs font-semibold">
-                          /{t.perMonth}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-stone-400 mt-1 font-sans">
-                        {(t as any).standardPriceNotice}
-                      </span>
-                    </div>
-
-                    <div className="flex gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsDetailsOpen(false);
-                          setBookingMode("book");
-                          setIsBookingOpen(true);
-                        }}
-                        className="px-5 py-2.5 bg-stone-850 hover:bg-stone-900 border border-stone-800 text-white rounded-xl text-xs font-extrabold shadow-sm hover:scale-[1.01] transition-all cursor-pointer tracking-wider"
-                      >
-                        {t.bookNow}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsDetailsOpen(false);
-                          setBookingMode("enquire");
-                          setIsBookingOpen(true);
-                        }}
-                        className="px-5 py-2.5 text-white rounded-xl text-xs font-extrabold shadow-sm hover:scale-[1.01] transition-all cursor-pointer tracking-wider flex items-center gap-1"
-                        style={{ backgroundColor: brandPlum }}
-                      >
-                        {t.enquire}
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </motion.div>
             </div>
           )}
@@ -2037,7 +1856,7 @@ Description: ${formattedDesc}`;
           {isPhotosOpen && (
             <div
               className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md select-none"
-              onClick={() => setIsPhotosOpen(false)}
+              onClick={() => startTransition(() => setIsPhotosOpen(false))}
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -2052,7 +1871,7 @@ Description: ${formattedDesc}`;
                     <span className="text-white/60 font-mono text-xs">{aiColorImage ? activeColor : `${currentPhotoIndex + 1} / ${allPhotos.length}`}</span>
                   </div>
                   <button
-                    onClick={() => setIsPhotosOpen(false)}
+                    onClick={() => startTransition(() => setIsPhotosOpen(false))}
                     className="text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer border border-white/10"
                   >
                     <X className="w-5 h-5" />
@@ -2060,20 +1879,7 @@ Description: ${formattedDesc}`;
                 </div>
                 
                 <div className="relative w-full group flex justify-center">
-                  {hasVideo ? (
-                    <motion.video
-                      key={`video-${renderedImageSrc}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      src={videoSource}
-                      controls
-                      autoPlay
-                      loop
-                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                    />
-                  ) : imageError && isGoogleDrive && driveId ? (
+                  {imageError && isGoogleDrive && driveId ? (
                     <motion.iframe
                       key={`iframe-${renderedImageSrc}`}
                       initial={{ opacity: 0 }}
@@ -2091,7 +1897,7 @@ Description: ${formattedDesc}`;
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
-                      src={renderedImageSrc}
+                      src={hasVideo ? finalVideoPoster : renderedImageSrc}
                       alt={`${car.name} photo`}
                       onError={(e) => {
                         if (isGoogleDrive) {
