@@ -903,6 +903,9 @@ Description: ${formattedDesc}`;
                       /{t.perMonth}
                     </span>
                   </div>
+                  <span className="text-[9px] text-stone-400 mt-0.5 font-sans leading-none">
+                    {(t as any).standardPriceNotice}
+                  </span>
                 </div>
 
                 {isAdminMode ? (
@@ -1049,6 +1052,9 @@ Description: ${formattedDesc}`;
                     /{t.perMonth}
                   </span>
                 </div>
+                <span className="text-[8px] text-stone-400 mt-0.5 font-sans leading-none">
+                  {(t as any).standardPriceNotice}
+                </span>
               </div>
 
               {isAdminMode ? (
@@ -1834,6 +1840,9 @@ Description: ${formattedDesc}`;
                           /{t.perMonth}
                         </span>
                       </div>
+                      <span className="text-[10px] text-stone-400 mt-1 font-sans">
+                        {(t as any).standardPriceNotice}
+                      </span>
                     </div>
 
                     <div className="flex gap-2.5">

@@ -202,7 +202,16 @@ export default function App() {
   });
 
   // Language state
-  const [lang, setLang] = useState<"en" | "kh" | "zh">("en");
+  const [lang, setLang] = useState<"en" | "kh" | "zh">(() => {
+    const saved = localStorage.getItem("preferredLanguage");
+    if (saved === "en" || saved === "kh" || saved === "zh") return saved as "en" | "kh" | "zh";
+    return "en";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("preferredLanguage", lang);
+  }, [lang]);
+
   const t = translations[lang];
 
   // Filter criteria state
@@ -1805,17 +1814,19 @@ export default function App() {
               <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <AnimatePresence mode="popLayout">
-                    {paginatedCars.map((car) => (
+                    {paginatedCars.map((car, index) => (
                       <motion.div
                         key={car.id}
                         layout="position"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "100px 0px -50px 0px" }}
                         exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                         transition={{
                           layout: { type: "spring", stiffness: 350, damping: 30 },
-                          opacity: { duration: 0.25 },
-                          scale: { duration: 0.25 }
+                          opacity: { duration: 0.5, ease: "easeOut" },
+                          y: { duration: 0.5, ease: "easeOut", type: "spring", stiffness: 100, damping: 15 },
+                          delay: index % 12 * 0.05
                         }}
                         className="h-full pt-2 pb-2"
                       >
