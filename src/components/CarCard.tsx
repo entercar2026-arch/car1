@@ -174,14 +174,8 @@ export const CarCard: React.FC<CarCardProps> = ({
   const isMobile = windowWidth <= 768;
 
   const effectiveVideoUrl = useMemo(() => {
-    if (car.name?.toLowerCase().includes("prius")) {
-      return car.videoUrl || "https://files.catbox.moe/2zvvj8.mp4";
-    }
-    if (car.name?.toLowerCase().includes("lexus")) {
-      return car.videoUrl || "https://files.catbox.moe/icbp1v.mp4";
-    }
     return car.videoUrl || "";
-  }, [car.name, car.videoUrl]);
+  }, [car.videoUrl]);
 
   const allPhotos = useMemo(() => {
     return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
