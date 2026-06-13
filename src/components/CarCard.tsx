@@ -33,6 +33,7 @@ import {
   HelpCircle,
   Loader2,
   Car as CarIcon,
+  Palette,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -135,6 +136,7 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [useAltImage, setUseAltImage] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
@@ -177,32 +179,34 @@ export const CarCard: React.FC<CarCardProps> = ({
     return car.videoUrl || "";
   }, [car.name, car.videoUrl]);
 
+  const currentImage = useAltImage && car.altImage ? car.altImage : car.image;
+
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
     return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
   };
 
   const hasVideo = useMemo(() => {
-    return isVideoMedia(car.image) || isVideoMedia(effectiveVideoUrl);
-  }, [car.image, effectiveVideoUrl]);
+    return isVideoMedia(currentImage) || isVideoMedia(effectiveVideoUrl);
+  }, [currentImage, effectiveVideoUrl]);
 
   const videoSource = useMemo(() => {
-    return isVideoMedia(car.image) ? car.image : effectiveVideoUrl;
-  }, [car.image, effectiveVideoUrl]);
+    return isVideoMedia(currentImage) ? currentImage : effectiveVideoUrl;
+  }, [currentImage, effectiveVideoUrl]);
 
   const optimizedVideoSource = useMemo(() => {
     return getOptimizedImageUrl(videoSource, windowWidth, 'cover');
   }, [videoSource, windowWidth]);
 
-  const isGoogleDrive = car.image.includes("drive.google.com/uc");
-  const driveId = isGoogleDrive ? car.image.match(/id=([^&]+)/)?.[1] : null;
+  const isGoogleDrive = currentImage.includes("drive.google.com/uc");
+  const driveId = isGoogleDrive ? currentImage.match(/id=([^&]+)/)?.[1] : null;
 
   const videoPoster = useMemo(() => {
-    if (car.image.includes("upload/") && car.image.match(/\.(mp4|webm|ogg)$/i)) {
-      return getOptimizedImageUrl(car.image.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
+    if (currentImage.includes("upload/") && currentImage.match(/\.(mp4|webm|ogg)$/i)) {
+      return getOptimizedImageUrl(currentImage.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
     }
     return undefined;
-  }, [car.image, windowWidth]);
+  }, [currentImage, windowWidth]);
 
   const youtubeThumbnail = useMemo(() => {
     const getYoutubeId = (url?: string): string | null => {
@@ -211,12 +215,12 @@ export const CarCard: React.FC<CarCardProps> = ({
       const match = url.match(regExp);
       return (match && match[2].length === 11) ? match[2] : null;
     };
-    const ytId = getYoutubeId(car.image) || getYoutubeId(car.videoUrl);
+    const ytId = getYoutubeId(currentImage) || getYoutubeId(car.videoUrl);
     if (ytId) {
       return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
     }
     return undefined;
-  }, [car.image, car.videoUrl]);
+  }, [currentImage, car.videoUrl]);
 
   const [generatedPoster, setGeneratedPoster] = useState<string | undefined>();
   
@@ -274,7 +278,7 @@ export const CarCard: React.FC<CarCardProps> = ({
     return cleanup;
   }, [hasVideo, videoPoster, youtubeThumbnail, optimizedVideoSource]);
   
-  const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || car.image;
+  const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || currentImage;
 
   const hasRealPoster = useMemo(() => {
     return !!(car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster);
@@ -674,7 +678,7 @@ Description: ${formattedDesc}`;
               ) : (
                 <motion.img
                   id={`car-photo-${car.id}`}
-                  src={getOptimizedImageUrl(car.image, windowWidth, 'cover')}
+                  src={getOptimizedImageUrl(currentImage, windowWidth, 'cover')}
                   alt={car.name}
                   loading="lazy"
                   decoding="async"
@@ -704,6 +708,18 @@ Description: ${formattedDesc}`;
 
               {/* Video Actions overlay */}
               <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                {car.altImage && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUseAltImage((prev) => !prev);
+                    }}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm"
+                    title={t.viewDifferentColor}
+                  >
+                    <Palette className="w-4 h-4 text-stone-600" />
+                  </button>
+                )}
                 {hasVideo && (
                   <button
                     onClick={(e) => {
@@ -1198,7 +1214,7 @@ Description: ${formattedDesc}`;
                       src={
                          finalVideoPoster 
                            ? finalVideoPoster 
-                           : getOptimizedImageUrl(car.image, windowWidth, 'thumbnail')
+                           : getOptimizedImageUrl(currentImage, windowWidth, 'thumbnail')
                       }
                       alt={car.name}
                       loading="lazy"

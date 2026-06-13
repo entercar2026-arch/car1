@@ -234,6 +234,7 @@ export default function App() {
 
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
 
   // Booking details toast state
   const [bookingToast, setBookingToast] = useState<string | null>(null);
@@ -357,6 +358,7 @@ export default function App() {
         }
         setIsMobileMenuOpen(false);
         setShowClearConfirm(false);
+        setIsContractModalOpen(false);
       }
     };
 
@@ -1244,6 +1246,15 @@ export default function App() {
               <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
                 {t.termDetail}
               </p>
+
+              <button
+                type="button"
+                onClick={() => setIsContractModalOpen(true)}
+                className="mt-6 px-6 py-2.5 bg-amber-400 text-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors shadow-sm flex items-center gap-2 cursor-pointer relative z-10"
+              >
+                <FileText className="w-4 h-4" />
+                {t.viewContract}
+              </button>
             </div>
           </div>
         </section>
@@ -2217,6 +2228,56 @@ export default function App() {
                 >
                   {t.yesClear}
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Contract Modal */}
+      <AnimatePresence>
+        {isContractModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsContractModalOpen(false)}
+              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
+                <h3 className="font-bold text-stone-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#4C0027]" />
+                  {t.contractTitle}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsContractModalOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
+                <p className="text-sm text-stone-600 leading-relaxed font-mono">
+                  {t.contractContent}
+                </p>
+                <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
+                  </div>
+                  <div>
+                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>

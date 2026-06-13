@@ -4,6 +4,7 @@ export interface Car {
   category: "Sedan" | "SUV" | "MPV" | "Pickup" | "Truck";
   price: number; // in USD per month
   image: string; // URL
+  altImage?: string; // photo of car in different color
   transmission: "Automatic" | "Manual";
   seats: number;
   fuelType: "Electric" | "Gasoline" | "Hybrid" | "Diesel" | "LPG";
