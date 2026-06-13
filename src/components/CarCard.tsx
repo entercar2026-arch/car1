@@ -121,7 +121,7 @@ export interface CarCardProps {
   lang?: "en" | "kh";
 }
 
-export const CarCard: React.FC<CarCardProps> = ({
+const CarCardComponent: React.FC<CarCardProps> = ({
   car,
   isAdminMode = false,
   onEdit,
@@ -1028,14 +1028,20 @@ Description: ${formattedDesc}`;
                   <div className="flex gap-2">
                     <button
                       id={`car-btn-book-${car.id}`}
-                      onClick={() => { setBookingMode("book"); setIsBookingOpen(true); }}
+                      onClick={() => {
+                        setBookingMode("book");
+                        startTransition(() => setIsBookingOpen(true));
+                      }}
                       className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer bg-stone-800"
                     >
                       {t.bookNow}
                     </button>
                     <button
                       id={`car-btn-rent-${car.id}`}
-                      onClick={() => { setBookingMode("enquire"); setIsBookingOpen(true); }}
+                      onClick={() => {
+                        setBookingMode("enquire");
+                        startTransition(() => setIsBookingOpen(true));
+                      }}
                       className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
                       style={{ backgroundColor: brandPlum }}
                     >
@@ -1176,7 +1182,11 @@ Description: ${formattedDesc}`;
               ) : (
                 <button
                   id={`car-back-btn-rent-${car.id}`}
-                  onClick={(e) => { e.stopPropagation(); setBookingMode("book"); setIsBookingOpen(true); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setBookingMode("book");
+                    startTransition(() => setIsBookingOpen(true));
+                  }}
                   className="flex items-center gap-1 px-4 py-2 text-[10px] font-bold bg-rose-600 text-white rounded-lg shadow-sm hover:bg-rose-500 transition-all cursor-pointer"
                 >
                   {t.bookService}
@@ -1944,3 +1954,13 @@ Description: ${formattedDesc}`;
     </>
   );
 };
+
+export const CarCard = React.memo(CarCardComponent, (prev, next) => {
+  return (
+    prev.car.id === next.car.id &&
+    prev.isAdminMode === next.isAdminMode &&
+    prev.isLiked === next.isLiked &&
+    prev.lang === next.lang &&
+    prev.reviews === next.reviews
+  );
+});
