@@ -139,10 +139,57 @@ export const CarCard: React.FC<CarCardProps> = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [useAltImage, setUseAltImage] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // Internet Image Search states
+  const [aiColorImage, setAiColorImage] = useState<string | null>(null);
+  const [isFetchingColor, setIsFetchingColor] = useState(false);
+  const [activeColor, setActiveColor] = useState<string | null>(null);
+
+  const CAR_COLORS = [
+    { name: "White", hex: "#F8F9FA" },
+    { name: "Black", hex: "#111111" },
+    { name: "Silver", hex: "#C0C0C0" },
+    { name: "Red", hex: "#DC2626" },
+    { name: "Blue", hex: "#2563EB" },
+  ];
+
+  const fetchCarImageFromInternet = async (colorName: string) => {
+    setActiveColor(colorName);
+    setIsFetchingColor(true);
+    setAiColorImage(null);
+    try {
+      const query = `${car.name} ${colorName} car`;
+      const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=3&prop=imageinfo&iiprop=url&format=json&origin=*`;
+      const response = await fetch(url);
+      const data = await response.json();
+      const pages = data.query?.pages;
+      if (pages) {
+        let foundUrl = null;
+        for (const pageId of Object.keys(pages)) {
+           const candidate = pages[pageId].imageinfo[0].url;
+           if (candidate.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/)) {
+             foundUrl = candidate;
+             break;
+           }
+        }
+        if (!foundUrl && Object.keys(pages).length > 0) {
+            foundUrl = pages[Object.keys(pages)[0]].imageinfo[0].url;
+        }
+        if (foundUrl) {
+            setAiColorImage(foundUrl);
+        } else {
+            console.warn("No image found for this color.");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch image", error);
+    } finally {
+      setIsFetchingColor(false);
+    }
+  };
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -181,7 +228,7 @@ export const CarCard: React.FC<CarCardProps> = ({
     return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
   }, [car.photos, car.image, car.altImage]);
 
-  const currentImage = useAltImage && car.altImage ? car.altImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : car.image);
+  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : car.image);
 
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
@@ -1752,22 +1799,36 @@ Description: ${formattedDesc}`;
                     </button>
                   </div>
 
-                  {/* Interactive toggle alternate color in left picture pane */}
-                  {car.altImage && (
-                    <div className="relative p-4 z-10 select-none">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setUseAltImage(prev => !prev);
-                        }}
-                        className="bg-white/95 backdrop-blur-md hover:bg-white border border-stone-200/50 px-3.5 py-2 rounded-xl text-xs font-black text-stone-850 shadow-md transition-all flex items-center gap-1.5 cursor-pointer transform hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <Palette className="w-4 h-4 text-[#4C0027]" />
-                        {t.viewDifferentColor}
-                      </button>
+                  {/* Internet Image Color Search Palette */}
+                  <div className="relative p-4 z-10 select-none">
+                    <div className="bg-white/95 backdrop-blur-md border border-stone-200/50 p-2.5 rounded-2xl shadow-md inline-flex items-center gap-2 pointer-events-auto">
+                       <span className="flex items-center gap-1 text-[10px] font-bold text-stone-500 uppercase tracking-widest pl-1">
+                          {isFetchingColor ? <Loader2 className="w-3 h-3 animate-spin"/> : <Palette className="w-3 h-3" />}
+                          {isFetchingColor ? "Searching..." : "Web Colors"}
+                       </span>
+                       <div className="flex items-center gap-1.5 ml-1 border-l border-stone-200 pl-3">
+                         {CAR_COLORS.map(color => (
+                            <button
+                               key={color.hex}
+                               type="button"
+                               disabled={isFetchingColor}
+                               onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (activeColor === color.name) {
+                                     setActiveColor(null);
+                                     setAiColorImage(null);
+                                  } else {
+                                     fetchCarImageFromInternet(color.name);
+                                  }
+                               }}
+                               className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${activeColor === color.name ? "scale-110 border-[#4C0027] shadow-md" : "border-stone-200 hover:scale-110 shadow-sm"}`}
+                               style={{ backgroundColor: color.hex }}
+                               title={`Search for ${color.name} variant`}
+                            />
+                         ))}
+                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Right Area - Detailed Description and Specs sheet */}
