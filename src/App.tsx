@@ -546,6 +546,11 @@ export default function App() {
         }
         return newLikes;
       }
+      const car = cars.find(c => c.id === carId);
+      if (car) {
+        setBookingToast(`${car.name} added to your Wishlist!`);
+        setTimeout(() => setBookingToast(null), 3000);
+      }
       return [...prev, carId];
     });
   };
@@ -880,7 +885,7 @@ export default function App() {
                   scrollToAnchor("category-filter-container");
                 }}
                 className={`p-2 lg:p-2.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-sm scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
-                title="Favorite Cars"
+                title={(t as any).liked || "Wishlist"}
               >
                 <Heart className={`w-4 h-4 lg:w-4.5 lg:h-4.5 ${filters.likedOnly ? "fill-current" : ""}`} />
               </button>
@@ -1021,7 +1026,7 @@ export default function App() {
                       scrollToAnchor("category-filter-container");
                     }}
                     className={`p-1 sm:p-1.5 rounded-full transition-all border ${filters.likedOnly ? "bg-rose-50 text-rose-600 border-rose-200 shadow-xs scale-105" : "bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-rose-500 border-stone-200 hover:scale-105 active:scale-95"}`}
-                    title="Favorite Cars"
+                    title={(t as any).liked || "Wishlist"}
                   >
                     <Heart className={`w-3 h-3 ${filters.likedOnly ? "fill-current" : ""}`} />
                   </button>
@@ -1691,6 +1696,7 @@ export default function App() {
               }}
                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
               >
+                <Heart className={`w-3.5 h-3.5 ${filters.likedOnly ? "fill-current" : ""}`} />
                 <span>{t.liked}</span>
                 <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${filters.likedOnly ? "bg-rose-200/50 text-rose-700" : "bg-stone-100 text-stone-400"}`}>
                   {likedCars.length}
@@ -1791,10 +1797,18 @@ export default function App() {
                 ))}
               </div>
             ) : filteredCars.length === 0 ? (
-              <div className="bg-white rounded-3xl p-16 text-center border border-stone-100 shadow-xs flex flex-col items-center justify-center select-none">
-                <div className="w-16 h-16 bg-stone-50 text-stone-300 rounded-2xl flex items-center justify-center mb-4">
-                  <SlidersHorizontal className="w-7 h-7" />
-                </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-3xl p-16 text-center border border-stone-100 shadow-xs flex flex-col items-center justify-center select-none"
+              >
+                <motion.div 
+                  animate={{ rotate: [-5, 5, -5] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                  className="w-16 h-16 bg-stone-50 text-stone-300 rounded-2xl flex items-center justify-center mb-4 text-stone-400"
+                >
+                  <CarFront className="w-8 h-8 opacity-50" />
+                </motion.div>
                 <h3 className="font-extrabold text-black text-lg">
                   {t.noCarsMatch}
                 </h3>
@@ -1809,7 +1823,7 @@ export default function App() {
                 >
                   {t.clearFilters}
                 </button>
-              </div>
+              </motion.div>
             ) : (
               <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2435,12 +2449,12 @@ export default function App() {
                             <td className="px-6 py-4 font-semibold text-stone-800">
                               <div className="flex flex-col">
                                 <span>{car.name}</span>
-                                <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.brand}</span>
+                                <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
                               </div>
                             </td>
                             <td className="px-6 py-4 text-center text-stone-500">{car.category}</td>
-                            <td className="px-6 py-4 text-center font-bold text-emerald-700 bg-emerald-50/30 group-hover:bg-emerald-50">${car.pricePerMonth}</td>
-                            <td className="px-6 py-4 text-center font-bold text-stone-600 bg-stone-50/50 group-hover:bg-amber-50/30">${car.pricePerMonth}</td>
+                            <td className="px-6 py-4 text-center font-bold text-emerald-700 bg-emerald-50/30 group-hover:bg-emerald-50">${car.price}</td>
+                            <td className="px-6 py-4 text-center font-bold text-stone-600 bg-stone-50/50 group-hover:bg-amber-50/30">${car.price}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -2633,12 +2647,14 @@ export default function App() {
       <AnimatePresence>
         {showBackToTop && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, scale: 0.5, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 30 }}
+            whileHover={{ scale: 1.1, translateY: -4 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-6 right-6 z-40 p-3.5 bg-white text-stone-900 rounded-full shadow-lg border border-stone-200 transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 cursor-pointer focus:outline-none"
+            className="fixed bottom-6 right-6 z-40 p-3.5 bg-white text-stone-900 rounded-full shadow-lg border border-stone-200 transition-shadow duration-300 hover:shadow-xl cursor-pointer focus:outline-none"
             aria-label="Back to top"
           >
             <ChevronUp className="w-5 h-5" />

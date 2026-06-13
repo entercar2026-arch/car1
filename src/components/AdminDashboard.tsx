@@ -25,6 +25,7 @@ import {
   Users,
   Calendar,
   Camera,
+  Images,
   FileWarning,
   Search,
 } from "lucide-react";
@@ -106,6 +107,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formCategory, setFormCategory] = useState<Car["category"]>("Sedan");
   const [formPrice, setFormPrice] = useState<number | "">("");
   const [formImage, setFormImage] = useState("");
+  const [formPhotos, setFormPhotos] = useState("");
   const [formTransmission, setFormTransmission] =
     useState<Car["transmission"]>("Automatic");
   const [formSeats, setFormSeats] = useState(5);
@@ -142,6 +144,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormCategory("Sedan");
     setFormPrice(""); // clean monthly starting point
     setFormImage("");
+    setFormPhotos("");
     setFormTransmission("Automatic");
     setFormSeats(5);
     setFormFuel("Gasoline");
@@ -158,6 +161,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormCategory(car.category);
     setFormPrice(car.price);
     setFormImage(car.image);
+    setFormPhotos(car.photos ? car.photos.join("\n") : "");
     setFormTransmission(car.transmission);
     setFormSeats(car.seats);
     setFormFuel(car.fuelType);
@@ -195,6 +199,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         description: formDescription,
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
+        photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
       });
     } else {
       onAddCar({
@@ -208,6 +213,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         description: formDescription,
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
+        photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
       });
     }
     setIsFormOpen(false);
@@ -976,6 +982,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
+                    </div>
+                  </div>
+
+                  {/* Extra Photos for Gallery */}
+                  <div className="sm:col-span-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
+                      Vehicle Image Gallery (Optional, one URL per line)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute top-2.5 left-0 pl-3.5 flex text-stone-400">
+                        <Images className="h-4 w-4" />
+                      </span>
+                      <textarea
+                        id="input-car-photos"
+                        value={formPhotos}
+                        onChange={(e) => setFormPhotos(e.target.value)}
+                        placeholder="https://... (image 1)\nhttps://... (image 2)"
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs min-h-[60px] focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                      />
                     </div>
                   </div>
 

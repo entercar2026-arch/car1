@@ -140,6 +140,7 @@ export const CarCard: React.FC<CarCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [useAltImage, setUseAltImage] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
@@ -182,24 +183,26 @@ export const CarCard: React.FC<CarCardProps> = ({
     return car.videoUrl || "";
   }, [car.name, car.videoUrl]);
 
-  const currentImage = useAltImage && car.altImage ? car.altImage : car.image;
+  const allPhotos = useMemo(() => {
+    return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
+  }, [car.photos, car.image, car.altImage]);
+
+  const currentImage = useAltImage && car.altImage ? car.altImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : car.image);
 
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
     return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
   };
 
-  const allPhotos = useMemo(() => {
-    return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
-  }, [car.photos, car.image, car.altImage]);
-
   const hasVideo = useMemo(() => {
-    return isVideoMedia(currentImage) || isVideoMedia(effectiveVideoUrl);
-  }, [currentImage, effectiveVideoUrl]);
+    if (currentPhotoIndex === 0 && effectiveVideoUrl) return true;
+    return isVideoMedia(currentImage);
+  }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
 
   const videoSource = useMemo(() => {
-    return isVideoMedia(currentImage) ? currentImage : effectiveVideoUrl;
-  }, [currentImage, effectiveVideoUrl]);
+    if (currentPhotoIndex === 0 && effectiveVideoUrl) return effectiveVideoUrl;
+    return currentImage;
+  }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
 
   const optimizedVideoSource = useMemo(() => {
     return getOptimizedImageUrl(videoSource, windowWidth, 'cover');
@@ -313,7 +316,6 @@ export const CarCard: React.FC<CarCardProps> = ({
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [reviewAuthor, setReviewAuthor] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
@@ -741,6 +743,7 @@ Description: ${formattedDesc}`;
                     e.stopPropagation();
                     onToggleLike && onToggleLike(car.id);
                   }}
+                  title={(t as any).liked || "Wishlist"}
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm"
                 >
                   <Heart
@@ -752,6 +755,41 @@ Description: ${formattedDesc}`;
                   />
                 </button>
               </div>
+
+              {/* Gallery Navigation Controls - visible when > 1 photo */}
+              {allPhotos.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentPhotoIndex((prev) => (prev === 0 ? allPhotos.length - 1 : prev - 1));
+                    }}
+                    className="absolute top-1/2 left-2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50 z-20"
+                  >
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 ml-[1px]" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentPhotoIndex((prev) => (prev === allPhotos.length - 1 ? 0 : prev + 1));
+                    }}
+                    className="absolute top-1/2 right-2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50 z-20"
+                  >
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-[1px]" />
+                  </button>
+
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 z-20 bg-black/20 backdrop-blur-md px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    {allPhotos.map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-[5px] h-[5px] sm:w-[6px] sm:h-[6px] rounded-full transition-all duration-300 ${
+                          currentPhotoIndex === i ? "bg-white scale-125 shadow-sm" : "bg-white/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Narrative & Info */}
@@ -1683,6 +1721,41 @@ Description: ${formattedDesc}`;
                     className="absolute inset-0 w-full h-full object-cover opacity-90 transition-all duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/40 pointer-events-none" />
+
+                  {/* Inline Gallery controls for Details Modal */}
+                  {allPhotos.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentPhotoIndex((prev) => (prev === 0 ? allPhotos.length - 1 : prev - 1));
+                        }}
+                        className="absolute top-1/2 left-3 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm opacity-50 hover:opacity-100 transition-opacity hover:bg-black/60 z-20 cursor-pointer"
+                      >
+                        <ChevronLeft className="w-5 h-5 ml-[1px]" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentPhotoIndex((prev) => (prev === allPhotos.length - 1 ? 0 : prev + 1));
+                        }}
+                        className="absolute top-1/2 right-3 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm opacity-50 hover:opacity-100 transition-opacity hover:bg-black/60 z-20 cursor-pointer"
+                      >
+                        <ChevronRight className="w-5 h-5 ml-[2px]" />
+                      </button>
+                      
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full">
+                        {allPhotos.map((_, i) => (
+                          <div
+                            key={i}
+                            className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${
+                              currentPhotoIndex === i ? "bg-white scale-125 shadow-sm" : "bg-white/40"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
 
                   {/* Header metadata overlay */}
                   <div className="relative p-4 flex justify-between items-start z-10 w-full">
