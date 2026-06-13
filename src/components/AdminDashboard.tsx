@@ -30,6 +30,51 @@ import {
   Search,
 } from "lucide-react";
 
+// Optimized Form components to prevent full-dashboard synchronous re-renders on keystroke (INP fix)
+const OptimizedTextArea = ({ id, value, onChange, placeholder, className, rows }: any) => {
+  const [localVal, setLocalVal] = useState(value);
+  useEffect(() => { setLocalVal(value); }, [value]);
+  return (
+    <textarea
+      id={id}
+      value={localVal}
+      onChange={(e) => {
+        setLocalVal(e.target.value);
+        startTransition(() => {
+          onChange(e);
+        });
+      }}
+      placeholder={placeholder}
+      className={className}
+      rows={rows}
+    />
+  );
+};
+
+const OptimizedInput = ({ id, type, value, onChange, placeholder, className, required, min, max, step }: any) => {
+  const [localVal, setLocalVal] = useState(value);
+  useEffect(() => { setLocalVal(value); }, [value]);
+  return (
+    <input
+      id={id}
+      type={type}
+      required={required}
+      min={min}
+      max={max}
+      step={step}
+      value={localVal}
+      onChange={(e) => {
+        setLocalVal(e.target.value);
+        startTransition(() => {
+          onChange(e);
+        });
+      }}
+      placeholder={placeholder}
+      className={className}
+    />
+  );
+};
+
 interface AdminDashboardProps {
   cars: Car[];
   onAddCar: (car: Omit<Car, "id">) => void;
@@ -157,7 +202,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // Open edit product form preloaded with details
-  const handleOpenEdit = (car: Car) => {
+  const handleOpenEdit = React.useCallback((car: Car) => {
     setEditingCar(car);
     setFormName(car.name);
     setFormCategory(car.category);
@@ -173,7 +218,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     startTransition(() => {
       setIsFormOpen(true);
     });
-  };
+  }, []);
 
   // Submit processing
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -240,6 +285,292 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const activeBookingsCount = bookings.filter(
     (b) => b.status === "Approved",
   ).length;
+
+  const renderedCarsList = useMemo(() => {
+    return filteredCars.map((car) => (
+      <tr
+        id={`admin-row-${car.id}`}
+        key={car.id}
+        className="hover:bg-stone-50/40 transition-colors"
+      >
+        <td className="p-4 pl-6 text-center">
+          {car.thumbnail ? (
+            <img
+              id={`admin-thumb-${car.id}`}
+              src={car.thumbnail}
+              alt={car.name}
+              className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
+            />
+          ) : car.image.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || car.image.includes("video") ? (
+            <video
+              id={`admin-thumb-${car.id}`}
+              src={car.image.includes("#") ? car.image : `${car.image}#t=0.1`}
+              preload="metadata"
+              muted
+              playsInline
+              className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none bg-stone-100"
+            />
+          ) : (
+            <img
+              id={`admin-thumb-${car.id}`}
+              src={car.image}
+              alt={car.name}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+              }}
+              referrerPolicy="no-referrer"
+              className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
+            />
+          )}
+        </td>
+        <td className="p-4">
+          <span
+            id={`admin-name-${car.id}`}
+            className="font-bold text-stone-900 block text-sm"
+          >
+            {car.name}
+          </span>
+          <span className="text-[10px] text-stone-400 line-clamp-1 max-w-xs leading-none mt-1">
+            {car.description ||
+              "Premium curated vehicle asset"}
+          </span>
+        </td>
+        <td className="p-4">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-stone-100/50 text-stone-600 uppercase border border-stone-200">
+            {car.category}
+          </span>
+        </td>
+        <td className="p-4 font-mono">
+          <span
+            id={`admin-fee-${car.id}`}
+            className="font-extrabold text-stone-900 text-sm"
+          >
+            ${car.price}
+          </span>
+          <span className="text-stone-400 text-xs font-semibold">
+            {" "}
+            / month
+          </span>
+        </td>
+        <td className="p-4">
+          <div className="flex gap-2 text-[10px] font-mono text-stone-500 font-semibold uppercase">
+            <span>{car.seats} Seats</span>
+            <span>•</span>
+            <span>{car.transmission}</span>
+            <span>•</span>
+            <span>{car.fuelType}</span>
+            {car.yearModel && (
+              <>
+                <span>•</span>
+                <span className="text-amber-700 font-bold">
+                  {car.yearModel}
+                </span>
+              </>
+            )}
+          </div>
+        </td>
+        <td className="p-4 text-right pr-6">
+          <div className="flex items-center justify-end gap-2">
+            <button
+              id={`admin-row-edit-${car.id}`}
+              onClick={() => handleOpenEdit(car)}
+              title="Edit Vehicle Specs"
+              className="p-2 hover:bg-stone-100 text-stone-700 hover:text-stone-900 rounded-lg transition-all cursor-pointer"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+
+            <button
+              id={`admin-row-delete-${car.id}`}
+              onClick={() => setCarToDelete(car.id)}
+              title="Delete Vehicle Asset"
+              className="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  }, [filteredCars, handleOpenEdit]);
+
+  const renderedBookingsList = useMemo(() => {
+    return bookings.map((book) => (
+      <tr
+        key={book.id}
+        className="hover:bg-stone-50/40 transition-colors"
+      >
+        <td className="p-4 pl-6 font-mono font-black text-stone-950">
+          {book.id}
+        </td>
+        <td className="p-4">
+          <p className="font-bold text-stone-950">
+            {book.customerName}
+          </p>
+          <div className="flex flex-col gap-1.5 mt-1">
+            <span className="text-[10px] text-stone-405 font-mono font-medium">
+              Via {book.contactMethod}
+            </span>
+            <span className="text-[10px] text-stone-400 font-mono mt-1 break-words">
+              {book.message}
+            </span>
+          </div>
+        </td>
+        <td className="p-4 font-bold text-black">
+          {book.carName}
+        </td>
+        <td className="p-4">
+          <div className="flex flex-col font-mono text-stone-700 font-semibold gap-1">
+            <span>Loc: {book.location}</span>
+            <span className="text-stone-400">
+              Date: {book.pickupDate}
+            </span>
+            <span className="text-stone-400">
+              Time: {book.pickupTime}
+            </span>
+          </div>
+        </td>
+        <td className="p-4 font-mono font-extrabold text-[#4C0027] text-sm">
+          ${book.totalCost}
+        </td>
+        <td className="p-4">
+          <span
+            className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tracking-normal uppercase ${
+              book.status === "Approved"
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                : book.status === "Cancelled"
+                  ? "bg-rose-50 text-rose-800 border border-rose-100"
+                  : "bg-stone-100/70 text-stone-700 border border-stone-200 animate-pulse"
+            }`}
+          >
+            {book.status}
+          </span>
+        </td>
+        <td className="p-4 text-right pr-6">
+          <div className="flex items-center justify-end gap-1.5">
+            {book.status === "Pending" &&
+              onUpdateBookingStatus && (
+                <button
+                  id={`btn-approve-book-${book.id}`}
+                  onClick={() =>
+                    onUpdateBookingStatus(book.id, "Approved")
+                  }
+                  title="Approve Booking"
+                  className="p-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-150 shadow-2xs transition-all cursor-pointer"
+                >
+                  Approve Vouc.
+                </button>
+              )}
+
+            {book.status !== "Cancelled" &&
+              onUpdateBookingStatus && (
+                <button
+                  id={`btn-cancel-book-${book.id}`}
+                  onClick={() =>
+                    onUpdateBookingStatus(
+                      book.id,
+                      "Cancelled",
+                    )
+                  }
+                  title="Cancel Booking"
+                  className="p-1 px-2 text-stone-100 bg-stone-500 hover:bg-stone-600 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+
+            {onDeleteBooking && (
+              <button
+                id={`btn-delete-book-${book.id}`}
+                onClick={() => onDeleteBooking(book.id)}
+                title="Purge Record"
+                className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </td>
+      </tr>
+    ));
+  }, [bookings, onUpdateBookingStatus, onDeleteBooking]);
+
+  const renderedReviewsList = useMemo(() => {
+    return reviews.map((rev) => {
+      const targetCar = cars.find((c) => c.id === rev.carId);
+      return (
+        <tr
+          key={rev.id}
+          className="hover:bg-stone-50/40 transition-colors"
+        >
+          <td className="p-4 pl-6">
+            <p className="font-bold text-stone-900">
+              {rev.customerName}
+            </p>
+            {targetCar && (
+              <span className="text-[10px] text-[#4C0027] font-semibold block mt-0.5">
+                {targetCar.name}
+              </span>
+            )}
+          </td>
+          <td className="p-4">
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-3.5 h-3.5 ${i < rev.rating ? "text-amber-400 fill-amber-400" : "text-stone-200"}`}
+                />
+              ))}
+            </div>
+          </td>
+          <td className="p-4">
+            <p className="text-stone-600 italic max-w-md break-words font-sans">
+              "{rev.comment}"
+            </p>
+          </td>
+          <td className="p-4 font-mono font-medium text-stone-505">
+            {rev.createdAt}
+          </td>
+          <td className="p-4">
+            <span
+              className={`px-2 py-0.5 rounded-lg text-[9px] font-bold tracking-widest uppercase ${
+                rev.isApproved
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-amber-100 text-amber-900"
+              }`}
+            >
+              {rev.isApproved ? "PUBLISHED" : "PENDING"}
+            </span>
+          </td>
+          <td className="p-4 text-right pr-6">
+            <div className="flex items-center justify-end gap-2">
+              {!rev.isApproved && onApproveReview && (
+                <button
+                  id={`btn-approve-rev-moderator-${rev.id}`}
+                  onClick={() => onApproveReview(rev.id)}
+                  className="p-1 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-sm"
+                >
+                  Approve & Publish
+                </button>
+              )}
+
+              {onDeleteReview && (
+                <button
+                  id={`btn-delete-rev-moderator-${rev.id}`}
+                  onClick={() => onDeleteReview(rev.id)}
+                  title="Discard Review Feedback"
+                  className="p-1 px-2 bg-[#FAFAF9] hover:bg-rose-50 text-rose-600 border border-stone-205 hover:border-rose-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
+                >
+                  Purge
+                </button>
+              )}
+            </div>
+          </td>
+        </tr>
+      );
+    });
+  }, [reviews, cars, onApproveReview, onDeleteReview]);
 
   return (
     <div
@@ -403,112 +734,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
-                      {filteredCars.map((car) => (
-                        <tr
-                          id={`admin-row-${car.id}`}
-                          key={car.id}
-                          className="hover:bg-stone-50/40 transition-colors"
-                        >
-                          <td className="p-4 pl-6 text-center">
-                            {car.thumbnail ? (
-                              <img
-                                id={`admin-thumb-${car.id}`}
-                                src={car.thumbnail}
-                                alt={car.name}
-                                className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
-                              />
-                            ) : car.image.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || car.image.includes("video") ? (
-                              <video
-                                id={`admin-thumb-${car.id}`}
-                                src={car.image.includes("#") ? car.image : `${car.image}#t=0.1`}
-                                preload="metadata"
-                                muted
-                                playsInline
-                                className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none bg-stone-100"
-                              />
-                            ) : (
-                              <img
-                                id={`admin-thumb-${car.id}`}
-                                src={car.image}
-                                alt={car.name}
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src =
-                                    "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-                                }}
-                                referrerPolicy="no-referrer"
-                                className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
-                              />
-                            )}
-                          </td>
-                          <td className="p-4">
-                            <span
-                              id={`admin-name-${car.id}`}
-                              className="font-bold text-stone-900 block text-sm"
-                            >
-                              {car.name}
-                            </span>
-                            <span className="text-[10px] text-stone-400 line-clamp-1 max-w-xs leading-none mt-1">
-                              {car.description ||
-                                "Premium curated vehicle asset"}
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-stone-100/50 text-stone-600 uppercase border border-stone-200">
-                              {car.category}
-                            </span>
-                          </td>
-                          <td className="p-4 font-mono">
-                            <span
-                              id={`admin-fee-${car.id}`}
-                              className="font-extrabold text-stone-900 text-sm"
-                            >
-                              ${car.price}
-                            </span>
-                            <span className="text-stone-400 text-xs font-semibold">
-                              {" "}
-                              / month
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex gap-2 text-[10px] font-mono text-stone-500 font-semibold uppercase">
-                              <span>{car.seats} Seats</span>
-                              <span>•</span>
-                              <span>{car.transmission}</span>
-                              <span>•</span>
-                              <span>{car.fuelType}</span>
-                              {car.yearModel && (
-                                <>
-                                  <span>•</span>
-                                  <span className="text-amber-700 font-bold">
-                                    {car.yearModel}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-4 text-right pr-6">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                id={`admin-row-edit-${car.id}`}
-                                onClick={() => handleOpenEdit(car)}
-                                title="Edit Vehicle Specs"
-                                className="p-2 hover:bg-stone-100 text-stone-700 hover:text-stone-900 rounded-lg transition-all cursor-pointer"
-                              >
-                                <Edit3 className="w-4 h-4" />
-                              </button>
-
-                              <button
-                                id={`admin-row-delete-${car.id}`}
-                                onClick={() => setCarToDelete(car.id)}
-                                title="Delete Vehicle Asset"
-                                className="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {renderedCarsList}
                     </tbody>
                   </table>
                 </div>
@@ -556,104 +782,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100 text-xs">
-                      {bookings.map((book) => (
-                        <tr
-                          key={book.id}
-                          className="hover:bg-stone-50/40 transition-colors"
-                        >
-                          <td className="p-4 pl-6 font-mono font-black text-stone-950">
-                            {book.id}
-                          </td>
-                          <td className="p-4">
-                            <p className="font-bold text-stone-950">
-                              {book.customerName}
-                            </p>
-                            <div className="flex flex-col gap-1.5 mt-1">
-                              <span className="text-[10px] text-stone-405 font-mono font-medium">
-                                Via {book.contactMethod}
-                              </span>
-                              <span className="text-[10px] text-stone-400 font-mono mt-1 break-words">
-                                {book.message}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-4 font-bold text-black">
-                            {book.carName}
-                          </td>
-                          <td className="p-4">
-                            <div className="flex flex-col font-mono text-stone-700 font-semibold gap-1">
-                              <span>Loc: {book.location}</span>
-                              <span className="text-stone-400">
-                                Date: {book.pickupDate}
-                              </span>
-                              <span className="text-stone-400">
-                                Time: {book.pickupTime}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-4 font-mono font-extrabold text-[#4C0027] text-sm">
-                            ${book.totalCost}
-                          </td>
-                          <td className="p-4">
-                            <span
-                              className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tracking-normal uppercase ${
-                                book.status === "Approved"
-                                  ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                                  : book.status === "Cancelled"
-                                    ? "bg-rose-50 text-rose-800 border border-rose-100"
-                                    : "bg-stone-100/70 text-stone-700 border border-stone-200 animate-pulse"
-                              }`}
-                            >
-                              {book.status}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right pr-6">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {book.status === "Pending" &&
-                                onUpdateBookingStatus && (
-                                  <button
-                                    id={`btn-approve-book-${book.id}`}
-                                    onClick={() =>
-                                      onUpdateBookingStatus(book.id, "Approved")
-                                    }
-                                    title="Approve Booking"
-                                    className="p-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-150 shadow-2xs transition-all cursor-pointer"
-                                  >
-                                    Approve Vouc.
-                                  </button>
-                                )}
-
-                              {book.status !== "Cancelled" &&
-                                onUpdateBookingStatus && (
-                                  <button
-                                    id={`btn-cancel-book-${book.id}`}
-                                    onClick={() =>
-                                      onUpdateBookingStatus(
-                                        book.id,
-                                        "Cancelled",
-                                      )
-                                    }
-                                    title="Cancel Booking"
-                                    className="p-1 px-2 text-stone-100 bg-stone-500 hover:bg-stone-600 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
-                                  >
-                                    Cancel
-                                  </button>
-                                )}
-
-                              {onDeleteBooking && (
-                                <button
-                                  id={`btn-delete-book-${book.id}`}
-                                  onClick={() => onDeleteBooking(book.id)}
-                                  title="Purge Record"
-                                  className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {renderedBookingsList}
                     </tbody>
                   </table>
                 </div>
@@ -700,79 +829,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100 text-xs">
-                      {reviews.map((rev) => {
-                        const targetCar = cars.find((c) => c.id === rev.carId);
-                        return (
-                          <tr
-                            key={rev.id}
-                            className="hover:bg-stone-50/40 transition-colors"
-                          >
-                            <td className="p-4 pl-6">
-                              <p className="font-bold text-stone-900">
-                                {rev.customerName}
-                              </p>
-                              {targetCar && (
-                                <span className="text-[10px] text-[#4C0027] font-semibold block mt-0.5">
-                                  {targetCar.name}
-                                </span>
-                              )}
-                            </td>
-                            <td className="p-4">
-                              <div className="flex gap-0.5">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`w-3.5 h-3.5 ${i < rev.rating ? "text-amber-400 fill-amber-400" : "text-stone-200"}`}
-                                  />
-                                ))}
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <p className="text-stone-600 italic max-w-md break-words font-sans">
-                                "{rev.comment}"
-                              </p>
-                            </td>
-                            <td className="p-4 font-mono font-medium text-stone-505">
-                              {rev.createdAt}
-                            </td>
-                            <td className="p-4">
-                              <span
-                                className={`px-2 py-0.5 rounded-lg text-[9px] font-bold tracking-widest uppercase ${
-                                  rev.isApproved
-                                    ? "bg-emerald-100 text-emerald-800"
-                                    : "bg-amber-100 text-amber-900"
-                                }`}
-                              >
-                                {rev.isApproved ? "PUBLISHED" : "PENDING"}
-                              </span>
-                            </td>
-                            <td className="p-4 text-right pr-6">
-                              <div className="flex items-center justify-end gap-2">
-                                {!rev.isApproved && onApproveReview && (
-                                  <button
-                                    id={`btn-approve-rev-moderator-${rev.id}`}
-                                    onClick={() => onApproveReview(rev.id)}
-                                    className="p-1 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-sm"
-                                  >
-                                    Approve & Publish
-                                  </button>
-                                )}
-
-                                {onDeleteReview && (
-                                  <button
-                                    id={`btn-delete-rev-moderator-${rev.id}`}
-                                    onClick={() => onDeleteReview(rev.id)}
-                                    title="Discard Review Feedback"
-                                    className="p-1 px-2 bg-[#FAFAF9] hover:bg-rose-50 text-rose-600 border border-stone-205 hover:border-rose-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
-                                  >
-                                    Purge
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {renderedReviewsList}
                     </tbody>
                   </table>
                 </div>
@@ -829,12 +886,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
                       Car Name / Model Name *
                     </label>
-                    <input
+                    <OptimizedInput
                       id="input-car-name"
                       type="text"
                       required
                       value={formName}
-                      onChange={(e) => setFormName(e.target.value)}
+                      onChange={(val: any) => setFormName(val)}
                       placeholder="e.g. Ford Mustang Mach-E"
                       className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                     />
@@ -849,14 +906,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 text-xs font-mono">
                         $
                       </span>
-                      <input
+                      <OptimizedInput
                         id="input-car-price"
                         type="number"
                         required
                         min="1"
                         max="10000"
                         value={formPrice}
-                        onChange={(e) => setFormPrice(e.target.value ? Number(e.target.value) : "")}
+                        onChange={(val: any) => setFormPrice(val ? Number(val) : "")}
                         className="w-full pl-7 pr-3 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs font-mono focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
                     </div>
@@ -977,11 +1034,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <button type="button" onClick={() => setFormImage("")} className="text-rose-500 hover:text-rose-700 font-bold ml-2 shrink-0">&times;</button>
                         </div>
                       ) : (
-                        <input
+                        <OptimizedInput
                           id="input-car-image"
                           type="text"
                           value={formImage}
-                          onChange={(e) => setFormImage(e.target.value)}
+                          onChange={(val: any) => setFormImage(val)}
                           placeholder="https://... or Google Drive link"
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
@@ -998,10 +1055,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span className="absolute top-2.5 left-0 pl-3.5 flex text-stone-400">
                         <Images className="h-4 w-4" />
                       </span>
-                      <textarea
+                      <OptimizedTextArea
                         id="input-car-photos"
                         value={formPhotos}
-                        onChange={(e) => setFormPhotos(e.target.value)}
+                        onChange={(val: any) => setFormPhotos(val)}
                         placeholder="https://... (image 1)\nhttps://... (image 2)"
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs min-h-[60px] focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
@@ -1017,11 +1074,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-450 text-stone-400/80">
                         <Link2 className="h-4 w-4 text-stone-400" />
                       </span>
-                      <input
+                      <OptimizedInput
                         id="input-car-video"
                         type="text"
                         value={formVideoUrl}
-                        onChange={(e) => setFormVideoUrl(e.target.value)}
+                        onChange={(val: any) => setFormVideoUrl(val)}
                         placeholder="e.g. https://files.catbox.moe/2zvvj8.mp4 or YouTube link"
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
@@ -1039,11 +1096,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span className="absolute left-3 top-1/2 -translate-y-1/2">
                         <Link2 className="h-4 w-4 text-stone-400" />
                       </span>
-                      <input
+                      <OptimizedInput
                         id="input-car-thumbnail"
                         type="text"
                         value={formThumbnail}
-                        onChange={(e) => setFormThumbnail(e.target.value)}
+                        onChange={(val: any) => setFormThumbnail(val)}
                         placeholder="Paste a direct image URL to use as thumbnail if video capture fails"
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
@@ -1206,11 +1263,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
                       Description & Narrative Details
                     </label>
-                    <textarea
+                    <OptimizedTextArea
                       id="input-car-desc"
                       rows={2}
                       value={formDescription}
-                      onChange={(e) => setFormDescription(e.target.value)}
+                      onChange={(val: any) => setFormDescription(val)}
                       placeholder="Share what makes this vehicle magnificent..."
                       className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
                     />
