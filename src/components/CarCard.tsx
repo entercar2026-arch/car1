@@ -972,7 +972,7 @@ Description: ${formattedDesc}`;
                     id={`car-btn-details-${car.id}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsPhotosOpen(true);
+                      setIsDetailsOpen(true);
                       setCurrentPhotoIndex(0);
                     }}
                     className="flex-1 px-1 py-2 text-[11px] font-bold text-stone-700 bg-stone-100/80 hover:bg-stone-200/80 border border-stone-200/60 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
