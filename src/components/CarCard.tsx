@@ -893,22 +893,67 @@ Description: ${formattedDesc}`;
               <div>
                 {allPhotos.length > 1 && (
                   <div className="flex items-center gap-2 mb-3">
-                    {allPhotos.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentPhotoIndex(idx);
-                        }}
-                        className={`w-2.5 h-2.5 rounded-full transition-all duration-200 cursor-pointer ${
-                          idx === currentPhotoIndex
-                            ? "bg-[#4C0027] scale-125 shadow-xs"
-                            : "bg-[#4C0027]/25 hover:bg-[#4C0027]/55"
-                        }`}
-                        title={`Go to photo ${idx + 1}`}
-                      />
-                    ))}
+                    {allPhotos.map((_, idx) => {
+                      const isActive = idx === currentPhotoIndex;
+                      const activeColor = car.dotColor || "#4C0027";
+                      
+                      if (idx === 0) {
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentPhotoIndex(idx);
+                              const hasVideoAtZero = !!effectiveVideoUrl || (allPhotos[0] && isVideoMedia(allPhotos[0]));
+                              if (hasVideoAtZero) {
+                                if (isActive) {
+                                  setIsPlaying((prev) => !prev);
+                                } else {
+                                  setIsPlaying(true);
+                                }
+                              }
+                            }}
+                            className={`flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                              isActive ? "scale-125 select-none" : "hover:scale-110 opacity-45 hover:opacity-85"
+                            }`}
+                            style={{
+                              color: isActive ? activeColor : "#78716c",
+                            }}
+                            title={isActive && isPlaying ? "Pause Video" : "Play Video"}
+                          >
+                            <svg 
+                              viewBox="0 0 24 24" 
+                              className="w-3.5 h-3.5 fill-current"
+                            >
+                              {isActive && isPlaying ? (
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                              ) : (
+                                <path d="M8 5v14l11-7z" />
+                              )}
+                            </svg>
+                          </button>
+                        );
+                      }
+
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentPhotoIndex(idx);
+                          }}
+                          className={`w-2.5 h-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+                            isActive ? "scale-125 shadow-xs" : "hover:scale-110"
+                          }`}
+                          style={{
+                            backgroundColor: isActive ? activeColor : `${activeColor}40`
+                          }}
+                          title={`Go to photo ${idx + 1}`}
+                        />
+                      );
+                    })}
                   </div>
                 )}
                 <div className="flex justify-between items-baseline mb-1 w-full gap-2 flex-wrap">

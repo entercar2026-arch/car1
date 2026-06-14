@@ -173,6 +173,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formDescription, setFormDescription] = useState("");
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
+  const [formDotColor, setFormDotColor] = useState("#4C0027");
   const [captureError, setCaptureError] = useState("");
   const [hasClearedThumbnail, setHasClearedThumbnail] = useState(false);
 
@@ -222,6 +223,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormDescription("");
     setFormVideoUrl("");
     setFormThumbnail("");
+    setFormDotColor("#4C0027");
     setHasClearedThumbnail(false);
     startTransition(() => {
       setIsFormOpen(true);
@@ -243,6 +245,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormDescription(car.description || "");
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
+      setFormDotColor(car.dotColor || "#4C0027");
       setHasClearedThumbnail(false);
       setIsFormOpen(true);
     });
@@ -277,6 +280,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
         photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
+        dotColor: formDotColor,
       });
     } else {
       onAddCar({
@@ -291,6 +295,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
         photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
+        dotColor: formDotColor,
       });
     }
     setIsFormOpen(false);
@@ -1132,6 +1137,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         placeholder="Paste a direct image URL to use as thumbnail if video capture fails"
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
+                    </div>
+                  </div>
+
+                  {/* Indicator Dot Color Customization */}
+                  <div className="sm:col-span-2">
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
+                      Indicator Dot Color (for Photos Slideshow)
+                    </label>
+                    <div className="flex flex-wrap items-center gap-3 bg-stone-50 border border-stone-200 px-3.5 py-2.5 rounded-xl">
+                      <div className="flex items-center gap-2 border-r border-stone-200 pr-3.5 mr-1 shrink-0">
+                        <input
+                          id="input-picker-dot-color"
+                          type="color"
+                          value={formDotColor}
+                          onChange={(e) => setFormDotColor(e.target.value)}
+                          className="w-7 h-7 roundedCursor cursor-pointer border border-stone-300 rounded-md p-0.5 bg-white shrink-0"
+                          title="Choose custom color"
+                        />
+                        <span className="font-mono text-xs uppercase text-stone-700 font-extrabold">{formDotColor}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {[
+                          { hex: "#4C0027", name: "Plum" },
+                          { hex: "#DC2626", name: "Red" },
+                          { hex: "#2563EB", name: "Blue" },
+                          { hex: "#059669", name: "Green" },
+                          { hex: "#D97706", name: "Amber" },
+                          { hex: "#1C1917", name: "Stone" }
+                        ].map((colorObj) => (
+                          <button
+                            key={colorObj.hex}
+                            type="button"
+                            onClick={() => setFormDotColor(colorObj.hex)}
+                            className={`w-5 h-5 rounded-full border transition-all duration-150 cursor-pointer ${
+                              formDotColor.toLowerCase() === colorObj.hex.toLowerCase() ? "scale-125 border-stone-800 ring-2 ring-stone-300" : "border-transparent hover:scale-110"
+                            }`}
+                            style={{ backgroundColor: colorObj.hex }}
+                            title={colorObj.name}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
 
