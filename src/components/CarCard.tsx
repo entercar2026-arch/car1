@@ -818,7 +818,7 @@ Description: ${formattedDesc}`;
               ) : (
                 <motion.img
                   id={`car-photo-${car.id}`}
-                  src={primaryImageSrc}
+                  src={renderedImageSrc}
                   alt={car.name}
                   loading="lazy"
                   decoding="async"
