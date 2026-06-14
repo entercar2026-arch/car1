@@ -143,78 +143,6 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
-  // Internet Image Search states
-  const [aiColorImage, setAiColorImage] = useState<string | null>(null);
-  const [activeColor, setActiveColor] = useState<string | null>(null);
-  const [stagingColor, setStagingColor] = useState<{ img: string, color: string } | null>(null);
-
-  const extractAverageColor = (url: string): Promise<string> => {
-     return new Promise((resolve) => {
-         const img = new Image();
-         if (!url.startsWith("data:")) {
-             img.crossOrigin = "Anonymous";
-         }
-         img.onload = () => {
-             const canvas = document.createElement("canvas");
-             canvas.width = 1;
-             canvas.height = 1;
-             const ctx = canvas.getContext("2d");
-             if (ctx) {
-                 // sample the center 20%
-                 ctx.drawImage(img, img.width * 0.4, img.height * 0.4, img.width * 0.2, img.height * 0.2, 0, 0, 1, 1);
-                 const data = ctx.getImageData(0, 0, 1, 1).data;
-                 resolve(`rgb(${data[0]}, ${data[1]}, ${data[2]})`);
-             } else {
-                 resolve("#cccccc");
-             }
-         };
-         img.onerror = () => resolve("#cccccc");
-         img.src = url;
-     });
-  };
-
-  const handleColorPick = (colorKey: string, imageUrl: string) => {
-    setActiveColor(colorKey);
-    setAiColorImage(imageUrl);
-  };
-
-  const colorUploadRef = React.useRef<HTMLInputElement>(null);
-
-  const handlePlusClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (colorUploadRef.current) {
-        colorUploadRef.current.click();
-    }
-  };
-
-  const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    const target = e.target;
-    if (file) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            const dataUrl = reader.result as string;
-            const extractedColor = await extractAverageColor(dataUrl);
-            setStagingColor({ img: dataUrl, color: extractedColor });
-            target.value = "";
-        };
-        reader.readAsDataURL(file);
-    }
-  };
-
-  const finishColorUpload = () => {
-     if (stagingColor && onEdit) {
-         const newColors = { ...(car.customColors || {}), [stagingColor.color]: stagingColor.img };
-         onEdit({ ...car, customColors: newColors });
-         handleColorPick(stagingColor.color, stagingColor.img);
-     }
-     setStagingColor(null);
-  };
-  
-  const cancelColorUpload = () => {
-     setStagingColor(null);
-  };
-
   useEffect(() => {
     if (!videoRef.current) return;
     if (isPlaying) {
@@ -254,7 +182,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   const primaryImage = car.image || getFallbackCarThumbnail(car.name, car.category);
   const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover'), [primaryImage, windowWidth]);
-  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage);
+  const currentImage = allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage;
 
   const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover'), [currentImage, windowWidth]);
   const [renderedImageSrc, setRenderedImageSrc] = useState(targetImageSrc);
@@ -894,61 +822,15 @@ Description: ${formattedDesc}`;
                     <Share2 className="w-3.5 h-3.5 text-stone-500 hover:text-stone-700 transition-colors" />
                   </button>
                 </div>
-                <div className="mb-4">
-                  {car.description && (
-                    <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
-                      {car.description}
-                    </p>
-                  )}
-                  {/* Color Palette */}
-                  <div className="flex items-center justify-between mt-3 mb-1">
-                    <div className="flex gap-2 items-center flex-wrap">
-                      <button
-                         type="button"
-                         onClick={(e) => { e.stopPropagation(); setActiveColor(null); setAiColorImage(null); }}
-                         className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer flex items-center justify-center bg-stone-100 ${!activeColor ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
-                         title="View original"
-                      >
-                         <Play className="w-2.5 h-2.5 text-stone-600 fill-current ml-0.5" />
-                      </button>
-                      {Object.entries(car.customColors || {} as Record<string, string>).map(([colorKey, imageUrl]) => (
-                          <button
-                             key={colorKey}
-                             type="button"
-                             onClick={(e) => { e.stopPropagation(); handleColorPick(colorKey, imageUrl as string); }}
-                             className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer ${activeColor === colorKey ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
-                             style={{ backgroundColor: colorKey }}
-                             title="View variation"
-                          />
-                      ))}
-                      {stagingColor ? (
-                          <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-full border border-stone-200 shadow-sm" onClick={(e) => e.stopPropagation()}>
-                              <input type="color" value={stagingColor.color} onChange={(e) => setStagingColor({ ...stagingColor, color: e.target.value })} className="w-4 h-4 rounded-full border-0 p-0 cursor-pointer overflow-hidden bg-transparent block [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:border-none" />
-                              <button type="button" onClick={finishColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-green-600 hover:bg-stone-200 transition-all shadow-sm">
-                                  <Check className="w-2.5 h-2.5" />
-                              </button>
-                              <button type="button" onClick={cancelColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-red-600 hover:bg-stone-200 transition-all shadow-sm">
-                                  <X className="w-2.5 h-2.5" />
-                              </button>
-                          </div>
-                      ) : (isAdminMode && (
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <button type="button" onClick={handlePlusClick} className="cursor-pointer bg-stone-100 hover:bg-stone-200 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 outline-none" title="Upload new color variation">
-                             <span className="text-[12px] leading-none mb-[2px]">+</span>
-                          </button>
-                          <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
-                        </div>
-                      ))}
-                    </div>
+                  <div className="mb-4">
+                    {car.description && (
+                      <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
+                        {car.description}
+                      </p>
+                    )}
                   </div>
-                  {(Object.keys(car.customColors || {}).length > 0) && (
-                    <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
-                       {t.samplePhotoNotice}
-                    </p>
-                  )}
-                </div>
 
-                {/* Highlights Info Grid (Technical) */}
+                  {/* Highlights Info Grid (Technical) */}
                 <div
                   id={`car-specs-${car.id}`}
                   className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-3 bg-stone-100/50 rounded-xl px-1"
@@ -1022,7 +904,7 @@ Description: ${formattedDesc}`;
                 </div>
 
                 {isAdminMode ? (
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 items-center flex-wrap">
                     <button
                       id={`car-btn-edit-${car.id}`}
                       onClick={() => onEdit && onEdit(car)}
@@ -1177,7 +1059,7 @@ Description: ${formattedDesc}`;
               </div>
 
               {isAdminMode ? (
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 items-center flex-wrap">
                   <button
                     id={`car-back-btn-edit-${car.id}`}
                     onClick={(e) => { e.stopPropagation(); onEdit && onEdit(car); }}
@@ -1800,7 +1682,7 @@ Description: ${formattedDesc}`;
                 <div className="w-full flex items-center justify-between px-2 mb-2">
                   <div className="flex flex-col">
                     <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-                    <span className="text-white/60 font-mono text-xs">{aiColorImage ? "Custom Variation" : "Full Media View"}</span>
+                    <span className="text-white/60 font-mono text-xs">Full Media View</span>
                   </div>
                   <button
                     onClick={() => startTransition(() => setIsPhotosOpen(false))}
