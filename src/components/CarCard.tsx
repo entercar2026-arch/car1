@@ -38,6 +38,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Info,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -730,7 +731,7 @@ Description: ${formattedDesc}`;
         onMouseLeave={() => setIsHovered(false)}
         whileHover={{ y: -8 }}
         transition={{ duration: 0.3 }}
-        className="relative w-full h-[530px] group"
+        className="relative w-full h-[600px] group"
         style={{ perspective: 1200 }}
       >
         <motion.div
@@ -744,15 +745,14 @@ Description: ${formattedDesc}`;
               backfaceVisibility: "hidden", 
               WebkitBackfaceVisibility: "hidden" 
             }}
-            className="w-full h-full bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-300 flex flex-col justify-between absolute inset-0"
+            className="w-full h-full bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-300 flex flex-col justify-between absolute inset-0"
           >
-            {/* Visual Header & Image */}
+            {/* 1. Frame for video and photo display */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative h-48 bg-stone-50 overflow-hidden cursor-pointer"
+              className="relative h-44 bg-stone-100 overflow-hidden cursor-pointer border-b border-stone-100"
               onClick={(e) => { e.stopPropagation(); startTransition(() => setIsPhotosOpen(true)); }}
             >
-              {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               {hasVideo ? (
                 <>
                   {isVideoLoading && (!hasRealPoster || isPlaying) && (
@@ -771,7 +771,7 @@ Description: ${formattedDesc}`;
                         id={`car-video-yt-${car.id}`}
                         src={youtubeEmbedUrl}
                         title={`${car.name} Video`}
-                        className="w-full h-full border-0 select-none cursor-pointer rounded-2xl relative z-10"
+                        className="w-full h-full border-0 select-none cursor-pointer relative z-10"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-view; web-share"
                         allowFullScreen
                         onClick={(e) => e.stopPropagation()}
@@ -896,34 +896,18 @@ Description: ${formattedDesc}`;
                 />
               )}
 
-              {/* Beautiful linear cover shadow */}
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
+              {/* Linear cover overlay shadow */}
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/10 to-transparent pointer-events-none" />
 
-              {/* Video Actions overlay */}
-              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                {hasVideo && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsPlaying(prev => !prev);
-                    }}
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-white/80 backdrop-blur-sm text-stone-700 border border-stone-200 hover:bg-white shadow-sm"
-                    title={isPlaying ? "Pause Video" : "Play Video"}
-                  >
-                    {isPlaying ? (
-                      <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
-                    ) : (
-                      <Play className="w-3.5 h-3.5 fill-current text-stone-700 ml-0.5" />
-                    )}
-                  </button>
-                )}
+              {/* Top-right overlay actions */}
+              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleLike && onToggleLike(car.id);
                   }}
                   title={(t as any).liked || "Wishlist"}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-xs transition-all border border-stone-200 hover:bg-white active:scale-95 cursor-pointer shadow-xs"
                 >
                   <Heart
                     className={`w-4 h-4 transition-colors ${
@@ -936,20 +920,140 @@ Description: ${formattedDesc}`;
               </div>
             </div>
 
-            {/* Narrative & Info */}
-            <div
-              id={`car-body-${car.id}`}
-              className="p-5 flex-1 flex flex-col justify-between pt-2"
-            >
-              <div>
-                <div className="flex justify-between items-baseline mb-1 w-full gap-2 flex-wrap">
+            {/* 3. Below the frame: Play and Next Photo control buttons */}
+            <div className="px-4 pt-2 pb-1.5 bg-stone-50/80 border-b border-stone-100" onClick={(e) => e.stopPropagation()}>
+              <div className="flex flex-wrap items-center justify-between gap-1.5">
+                {/* Play & Next controls */}
+                <div className="flex items-center gap-1.5">
+                  {/* Play Video / Cover Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (effectiveVideoUrl) {
+                        setMediaType('video');
+                        setIsPlaying((prev) => !prev);
+                      } else {
+                        setMediaType('photo');
+                        setCurrentPhotoIndex(0);
+                        setIsPlaying(false);
+                      }
+                      setActiveColor(null);
+                      setAiColorImage(null);
+                    }}
+                    className={`h-8 px-3 rounded-lg border text-[10px] font-extrabold tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                      mediaType === 'video'
+                        ? "border-[#4C0027] bg-[#4C0027] text-white shadow-xs"
+                        : "border-stone-200 bg-white text-stone-700 hover:border-[#4C0027] hover:text-[#4C0027]"
+                    }`}
+                    title={isPlaying ? "Pause video cover" : "Play video cover"}
+                  >
+                    {isPlaying && mediaType === 'video' ? (
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                    ) : (
+                      <Play className="w-3 h-3 fill-current" />
+                    )}
+                    <span className="uppercase">{isPlaying && mediaType === 'video' ? "PAUSE" : "PLAY VIDEO"}</span>
+                  </button>
+
+                  {/* Next Photo Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMediaType('photo');
+                      setIsPlaying(false);
+                      setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+                      setActiveColor(null);
+                      setAiColorImage(null);
+                    }}
+                    className={`h-8 px-3 rounded-lg border text-[10px] font-extrabold tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                      mediaType === 'photo'
+                        ? "border-stone-800 bg-stone-800 text-white shadow-xs"
+                        : "border-stone-200 bg-white text-stone-700 hover:border-stone-800 hover:text-stone-900"
+                    }`}
+                    title="See next car photo"
+                  >
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                    <span className="uppercase">NEXT PHOTO</span>
+                  </button>
+
+                  {/* Add Photo Button (Admin-only) */}
+                  {isAdminMode && (
+                    <button
+                      type="button"
+                      onClick={handleGalleryUploadClick}
+                      className="h-8 px-2.5 rounded-lg border border-dashed border-stone-300 hover:border-[#4C0027] hover:bg-[#4C0027]/5 text-[10px] font-extrabold text-stone-600 transition-all duration-200 cursor-pointer flex items-center gap-1"
+                      title="Upload photo"
+                    >
+                      <Plus className="w-3 h-3 text-stone-500" />
+                      <span className="uppercase">ADD PHOTO</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Micro Indicators & Thumbnails List */}
+                <div className="flex items-center gap-1 overflow-x-auto max-w-[150px] scrollbar-none py-0.5">
+                  {allPhotos.map((photoUrl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMediaType('photo');
+                        setCurrentPhotoIndex(idx);
+                        setActiveColor(null);
+                        setAiColorImage(null);
+                        setIsPlaying(false);
+                      }}
+                      className={`relative w-7 h-7 rounded-md overflow-hidden border transition-all duration-200 cursor-pointer shrink-0 ${
+                        mediaType === 'photo' && currentPhotoIndex === idx && !aiColorImage
+                          ? "border-[#4C0027] ring-1 ring-[#4C0027] scale-105 shadow-xs"
+                          : "border-stone-200 hover:border-[#4C0027]"
+                      }`}
+                    >
+                      <img
+                        src={photoUrl}
+                        alt="Photo thumbnail"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Photo triggers */}
+              <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+              <input ref={galleryUploadRef} type="file" accept="image/*" className="hidden" onChange={handleGalleryImageUpload} />
+            </div>
+
+            {/* 4. Disclaimer Alert Box */}
+            <div className="px-4 pt-1.5 pb-0.5" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-[#4C0027]/5 border border-[#4C0027]/10 p-2 rounded-xl flex items-start gap-2 text-[10px] text-[#4C0027] font-semibold tracking-wide">
+                <Info className="w-4 h-4 shrink-0 text-[#4C0027] mt-0.5" />
+                <span className="leading-snug">{t.samplePhotoNotice}</span>
+              </div>
+            </div>
+
+            {/* Main scrollable body to hold details tightly and beautifully */}
+            <div id={`car-body-${car.id}`} className="px-4 py-1.5 flex-1 flex flex-col justify-between overflow-y-auto scrollbar-none">
+              
+              {/* 5. Car Detail specifications & notes */}
+              <div className="space-y-2">
+                {/* Title & Brand Icon Details */}
+                <div className="flex justify-between items-center w-full gap-2 pt-0.5">
                   <h3
                     id={`car-title-${car.id}`}
-                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-2"
+                    className="font-sans font-extrabold text-stone-900 text-base tracking-tight hover:text-[#4C0027] transition-colors leading-tight flex items-center gap-1.5"
                   >
-                    <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
-                    {car.name}
+                    <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0 text-[#4C0027]" />
+                    <span>{car.name}</span>
                   </h3>
+                  
+                  {/* Share component */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -968,270 +1072,197 @@ Description: ${formattedDesc}`;
                         alert("Link & details copied to clipboard!");
                       }
                     }}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm -mt-1"
-                    title="Share"
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-[#4C0027]/5 text-stone-500 hover:text-[#4C0027] transition-all border border-stone-200 cursor-pointer shadow-xs"
+                    title="Share details"
                   >
-                    <Share2 className="w-3.5 h-3.5 text-stone-500 hover:text-stone-700 transition-colors" />
+                    <Share2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <div className="mb-4">
-                  {car.description && (
-                    <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
-                      {car.description}
-                    </p>
-                  )}
-                  {/* Color Palette */}
-                  {(Object.keys(car.customColors || {}).length > 0 || stagingColor) && (
-                    <>
-                      <div className="flex items-center justify-between mt-3 mb-1">
-                        <div className="flex gap-2 items-center flex-wrap">
-                          <button
-                             type="button"
-                             onClick={(e) => { e.stopPropagation(); setActiveColor(null); setAiColorImage(null); }}
-                             className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer flex items-center justify-center bg-stone-100 ${!activeColor ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
-                             title="View original"
-                          >
-                             <Play className="w-2.5 h-2.5 text-stone-600 fill-current ml-0.5" />
-                          </button>
-                          {Object.entries(car.customColors || {} as Record<string, string>).map(([colorKey, imageUrl]) => (
-                              <button
-                                 key={colorKey}
-                                 type="button"
-                                 onClick={(e) => { e.stopPropagation(); handleColorPick(colorKey, imageUrl as string); }}
-                                 className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer ${activeColor === colorKey ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
-                                 style={{ backgroundColor: colorKey }}
-                                 title="View variation"
-                              />
-                          ))}
-                          {stagingColor && (
-                              <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-full border border-stone-200 shadow-sm" onClick={(e) => e.stopPropagation()}>
-                                  <input type="color" value={stagingColor.color} onChange={(e) => setStagingColor({ ...stagingColor, color: e.target.value })} className="w-4 h-4 rounded-full border-0 p-0 cursor-pointer overflow-hidden bg-transparent block [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:border-none" />
-                                  <button type="button" onClick={finishColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-green-600 hover:bg-stone-200 transition-all shadow-sm">
-                                      <Check className="w-2.5 h-2.5" />
-                                  </button>
-                                  <button type="button" onClick={cancelColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-red-600 hover:bg-stone-200 transition-all shadow-sm">
-                                      <X className="w-2.5 h-2.5" />
-                                  </button>
-                              </div>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
-                     {t.samplePhotoNotice}
-                  </p>                  {/* Photo Gallery Thumbnails & Upload Button */}
-                  <div className="mt-2 mb-3" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
-                      {/* View Original / Reset Button */}
+
+                {/* Description text */}
+                {car.description && (
+                  <p className="text-[11px] text-stone-500 leading-normal line-clamp-2" title={car.description}>
+                    {car.description}
+                  </p>
+                )}
+
+                {/* Color Palette (if available) */}
+                {(Object.keys(car.customColors || {}).length > 0 || stagingColor) && (
+                  <div className="flex items-center gap-1.5 py-0.5" onClick={(e) => e.stopPropagation()}>
+                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider">{t.viewDifferentColor || "Colors"}:</span>
+                    <div className="flex gap-1.5 items-center flex-wrap">
                       <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (effectiveVideoUrl) {
-                            if (mediaType === 'video') {
-                              setIsPlaying((prev) => !prev);
-                            } else {
-                              setMediaType('video');
-                              setIsPlaying(true);
-                            }
-                          } else {
-                            setMediaType('photo');
-                            setCurrentPhotoIndex(0);
-                            setIsPlaying(false);
-                          }
-                          setActiveColor(null);
-                          setAiColorImage(null);
-                        }}
-                        className={`relative w-10 h-10 rounded-lg border-2 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center bg-stone-50 ${
-                          mediaType === 'video'
-                            ? "border-[#4C0027] scale-105 shadow-md bg-stone-100"
-                            : "border-stone-200 hover:border-[#4C0027] hover:bg-stone-100"
-                        }`}
-                        title="Play default cover video"
+                         type="button"
+                         onClick={(e) => { e.stopPropagation(); setActiveColor(null); setAiColorImage(null); }}
+                         className={`w-4 h-4 rounded-full border shadow-xs transition-all cursor-pointer flex items-center justify-center bg-stone-100 ${!activeColor ? 'border-[#4C0027] scale-110 ring-1 ring-[#4C0027]' : 'border-stone-200 hover:scale-105'}`}
+                         title="Original"
                       >
-                        <span className="text-[9px] font-black text-stone-700 tracking-tight leading-none">COVER</span>
-                        {effectiveVideoUrl && (
-                          <div className="absolute bottom-0.5 right-0.5 bg-[#4C0027]/10 rounded-full p-0.5">
-                            <Play className="w-2 h-2 text-[#4C0027] fill-current" />
-                          </div>
-                        )}
+                         <Play className="w-2 h-2 text-stone-600 fill-current ml-0.5" />
                       </button>
-
-                      {/* Other Photos in Gallery */}
-                      {allPhotos.map((photoUrl, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMediaType('photo');
-                            setCurrentPhotoIndex(idx);
-                            setActiveColor(null);
-                            setAiColorImage(null);
-                            setIsPlaying(false);
-                          }}
-                          className={`relative w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
-                            mediaType === 'photo' && currentPhotoIndex === idx && !aiColorImage
-                              ? "border-[#4C0027] scale-105 shadow-md"
-                              : "border-stone-200 hover:border-stone-450"
-                          }`}
-                        >
-                          <img
-                            src={photoUrl}
-                            alt={`${car.name} Gallery ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
+                      {Object.entries(car.customColors || {} as Record<string, string>).map(([colorKey, imageUrl]) => (
+                          <button
+                             key={colorKey}
+                             type="button; "
+                             onClick={(e) => { e.stopPropagation(); handleColorPick(colorKey, imageUrl as string); }}
+                             className={`w-4 h-4 rounded-full border shadow-xs transition-all cursor-pointer ${activeColor === colorKey ? 'border-[#4C0027] scale-110 ring-1 ring-[#4C0027]' : 'border-stone-200 hover:scale-105'}`}
+                             style={{ backgroundColor: colorKey }}
+                             title="Variation"
                           />
-                        </button>
                       ))}
-
-                      {/* Explicit Interactive "Upload Photo" Button (Only Shown to Admins) */}
-                      {isAdminMode && (
-                        <button
-                          type="button"
-                          onClick={handleGalleryUploadClick}
-                          className="w-10 h-10 rounded-lg border-2 border-dashed border-stone-300 hover:border-[#4C0027] hover:bg-stone-50 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center flex-shrink-0"
-                          title="Upload a new photo to the car card"
-                        >
-                          <Plus className="w-3.5 h-3.5 text-stone-500" />
-                          <span className="text-[7px] font-bold font-mono text-stone-500 uppercase leading-none mt-0.5">Photo</span>
-                        </button>
+                      {stagingColor && (
+                          <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-full border border-stone-200 shadow-xs" onClick={(e) => e.stopPropagation()}>
+                              <input type="color" value={stagingColor.color} onChange={(e) => setStagingColor({ ...stagingColor, color: e.target.value })} className="w-3 h-3 rounded-full border-0 p-0 cursor-pointer overflow-hidden bg-transparent block" />
+                              <button type="button" onClick={finishColorUpload} className="w-3.5 h-3.5 flex items-center justify-center bg-white rounded-full text-green-600 hover:bg-stone-200 transition-all">
+                                  <Check className="w-2.5 h-2.5" />
+                              </button>
+                              <button type="button" onClick={cancelColorUpload} className="w-3.5 h-3.5 flex items-center justify-center bg-white rounded-full text-red-600 hover:bg-stone-200 transition-all">
+                                  <X className="w-2.5 h-2.5" />
+                              </button>
+                          </div>
                       )}
                     </div>
                   </div>
-                </div>
-                <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
-                <input ref={galleryUploadRef} type="file" accept="image/*" className="hidden" onChange={handleGalleryImageUpload} />
-                  
-                {/* Highlights Info Grid (Technical) */}
+                )}
+
+                {/* Highlights Specs Info Grid */}
                 <div
                   id={`car-specs-${car.id}`}
-                  className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-3 bg-stone-100/50 rounded-xl px-1"
+                  className="grid grid-cols-4 gap-1 py-2 border-y border-stone-150 bg-stone-50/50 rounded-xl px-1"
                 >
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
-                    <CarIcon className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-150 cursor-pointer hover:bg-stone-100/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
+                    <CarIcon className="w-3.5 h-3.5 text-[#4C0027] mb-0.5" />
+                    <span className="text-[9px] font-mono font-semibold text-stone-800 truncate max-w-full text-center">
                       {car.category === 'Sedan' ? t.sedan : car.category === 'SUV' ? t.suv : car.category === 'MPV' ? t.mpv : car.category === 'Pickup' ? t.pickup : car.category === 'Truck' ? t.truck : car.category}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('seats', car.seats); }}>
-                    <Users className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[10px] font-mono text-stone-900 font-extrabold">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-150 cursor-pointer hover:bg-stone-100/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('seats', car.seats); }}>
+                    <Users className="w-3.5 h-3.5 text-[#4C0027] mb-0.5" />
+                    <span className="text-[9px] font-mono font-semibold text-stone-800">
                        {t.formatSeats(car.seats.toString())}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('transmission', car.transmission); }}>
-                    <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-150 cursor-pointer hover:bg-stone-100/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('transmission', car.transmission); }}>
+                    <Settings2 className="w-3.5 h-3.5 text-[#4C0027] mb-0.5" />
+                    <span className="text-[9px] font-mono font-semibold text-stone-800 truncate max-w-full text-center">
                       {car.transmission === 'Automatic' ? t.automatic : car.transmission === 'Manual' ? t.manual : car.transmission}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('fuelType', car.fuelType); }}>
-                    <Fuel className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                  <div className="flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-stone-100/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('fuelType', car.fuelType); }}>
+                    <Fuel className="w-3.5 h-3.5 text-[#4C0027] mb-0.5" />
+                    <span className="text-[9px] font-mono font-semibold text-stone-800 truncate max-w-full text-center">
                       {car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType}
                     </span>
                   </div>
                 </div>
 
-                {/* Additional Technical Specifications Grid */}
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.engine}</span>
-                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.engine}</span>
+                {/* Additional Specifications */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  <div className="bg-stone-50/75 border border-stone-100 py-1.5 px-1 rounded-lg flex flex-col items-center justify-center">
+                    <span className="text-[8px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.engine}</span>
+                    <span className="text-[10px] font-bold text-stone-700 truncate w-full text-center">{specsDetails.engine}</span>
                   </div>
-                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.horsepower}</span>
-                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.power}</span>
+                  <div className="bg-stone-50/75 border border-stone-100 py-1.5 px-1 rounded-lg flex flex-col items-center justify-center">
+                    <span className="text-[8px] text-stone-400 uppercase font-mono font-bold tracking-wider">{t.horsepower}</span>
+                    <span className="text-[10px] font-bold text-stone-700 truncate w-full text-center">{specsDetails.power}</span>
                   </div>
-                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
-                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.accel}</span>
+                  <div className="bg-stone-50/75 border border-stone-100 py-1.5 px-1 rounded-lg flex flex-col items-center justify-center">
+                    <span className="text-[8px] text-stone-400 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
+                    <span className="text-[10px] font-bold text-stone-700 truncate w-full text-center">{specsDetails.accel}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Booking or Editing CTA Foot */}
-              <div
-                id={`car-footer-${car.id}`}
-                className="flex items-center justify-between mt-2 pt-2 gap-2"
-              >
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-0.5 mt-1">
-                    <span
-                      id={`car-price-${car.id}`}
-                      className="text-2xl font-black text-red-600"
-                    >
-                      ${car.price.toLocaleString()}
+              {/* 6. Price & 7. Book now and enquiry */}
+              <div className="mt-4 pt-2 border-t border-stone-150 space-y-2">
+                
+                {/* Monthly Rate & Contract Terms */}
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] text-stone-400 uppercase tracking-widest font-bold tracking-wider font-mono">{t.ratePlan || "RENTAL RATE"}</span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span
+                        id={`car-price-${car.id}`}
+                        className="text-2xl font-black text-red-600 leading-none"
+                      >
+                        ${car.price.toLocaleString()}
+                      </span>
+                      <span className="text-stone-400 text-xs font-semibold">
+                        /{t.perMonth}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9px] text-[#4C0027] bg-[#4C0027]/5 px-2 py-0.5 rounded-md font-bold block">
+                      {t.sixMonthTerm}
                     </span>
-                    <span className="text-stone-400 text-xs font-semibold flex items-center gap-1">
-                      /{t.perMonth}
+                    <span className="text-[10px] text-stone-400 mt-0.5 block leading-none">
+                      {(t as any).standardPriceNotice}
                     </span>
                   </div>
-                  <span className="text-[9px] text-stone-400 mt-0.5 font-sans leading-none">
-                    {(t as any).standardPriceNotice}
-                  </span>
                 </div>
 
-                {isAdminMode ? (
-                  <div className="flex gap-1.5 items-center flex-wrap">
-                    <button
-                      id={`car-btn-edit-${car.id}`}
-                      onClick={() => onEdit && onEdit(car)}
-                      className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={handlePlusClick}
-                      className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer whitespace-nowrap"
-                    >
-                      + Color
-                    </button>
-                    <button
-                      onClick={handleGalleryUploadClick}
-                      className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer whitespace-nowrap"
-                    >
-                      + Photo
-                    </button>
-                    <button
-                      id={`car-btn-delete-${car.id}`}
-                      onClick={() => onDelete && onDelete(car.id)}
-                      className="px-3 py-2 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all border border-rose-100 cursor-pointer"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <button
-                      id={`car-btn-book-${car.id}`}
-                      onClick={() => {
-                        setBookingMode("book");
-                        startTransition(() => setIsBookingOpen(true));
-                      }}
-                      className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer bg-stone-800"
-                    >
-                      {t.bookNow}
-                    </button>
-                    <button
-                      id={`car-btn-rent-${car.id}`}
-                      onClick={() => {
-                        setBookingMode("enquire");
-                        startTransition(() => setIsBookingOpen(true));
-                      }}
-                      className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
-                      style={{ backgroundColor: brandPlum }}
-                    >
-                      {t.enquire}
-                      <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-                    </button>
-                  </div>
-                )}
+                {/* Book now / Enquiry / Admin CTAs */}
+                <div>
+                  {isAdminMode ? (
+                    <div className="flex gap-1 items-center justify-end flex-wrap pt-0.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        id={`car-btn-edit-${car.id}`}
+                        onClick={() => onEdit && onEdit(car)}
+                        className="px-2.5 py-1.5 text-[10px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-all cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={handlePlusClick}
+                        className="px-2.5 py-1.5 text-[10px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                      >
+                        + Color
+                      </button>
+                      <button
+                        onClick={handleGalleryUploadClick}
+                        className="px-2.5 py-1.5 text-[10px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                      >
+                        + Photo
+                      </button>
+                      <button
+                        id={`car-btn-delete-${car.id}`}
+                        onClick={() => onDelete && onDelete(car.id)}
+                        className="px-2.5 py-1.5 text-[10px] font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-all border border-rose-100 cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 pt-0.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        id={`car-btn-book-${car.id}`}
+                        onClick={() => {
+                          setBookingMode("book");
+                          startTransition(() => setIsBookingOpen(true));
+                        }}
+                        className="flex items-center justify-center gap-1 px-3 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all duration-350 cursor-pointer bg-stone-850 hover:bg-black"
+                      >
+                        {t.bookNow}
+                      </button>
+                      <button
+                        id={`car-btn-rent-${car.id}`}
+                        onClick={() => {
+                          setBookingMode("enquire");
+                          startTransition(() => setIsBookingOpen(true));
+                        }}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-sm active:scale-95 transition-all duration-350 cursor-pointer"
+                        style={{ backgroundColor: brandPlum }}
+                      >
+                        <span>{t.enquire}</span>
+                        <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
           </div>
