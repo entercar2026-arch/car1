@@ -174,6 +174,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
   const [captureError, setCaptureError] = useState("");
+  const [hasClearedThumbnail, setHasClearedThumbnail] = useState(false);
+
+  // Track changes in video source to reset auto-capture
+  const isVideoMediaUrl = (url: string) => 
+    !!(url.match(/\.(mp4|webm|ogg|avi|mov|mkv)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
+
+  const detectedVideoSource = isVideoMediaUrl(formImage) ? formImage : (isVideoMediaUrl(formVideoUrl) ? formVideoUrl : "");
+
+  useEffect(() => {
+    if (detectedVideoSource) {
+      setHasClearedThumbnail(false);
+    }
+  }, [detectedVideoSource]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -209,6 +222,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormDescription("");
     setFormVideoUrl("");
     setFormThumbnail("");
+    setHasClearedThumbnail(false);
     startTransition(() => {
       setIsFormOpen(true);
     });
@@ -229,6 +243,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormDescription(car.description || "");
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
+      setHasClearedThumbnail(false);
       setIsFormOpen(true);
     });
   }, []);
@@ -1159,6 +1174,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               playsInline
                               crossOrigin="anonymous"
                               className="w-full h-36 object-cover rounded-xl border border-stone-200 bg-stone-950"
+                              onLoadedData={(e) => {
+                                const video = e.currentTarget;
+                                if (!formThumbnail && !hasClearedThumbnail) {
+                                  video.currentTime = 0.5;
+                                }
+                              }}
+                              onSeeked={(e) => {
+                                const video = e.currentTarget;
+                                if (!formThumbnail && !hasClearedThumbnail) {
+                                  try {
+                                    const canvas = document.createElement("canvas");
+                                    canvas.width = video.videoWidth || 640;
+                                    canvas.height = video.videoHeight || 360;
+                                    const ctx = canvas.getContext("2d");
+                                    if (ctx) {
+                                      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+                                      setFormThumbnail(dataUrl);
+                                      setCaptureError("");
+                                    }
+                                  } catch (err) {
+                                    console.warn("Auto frame capture blocked by CORS on video load");
+                                  }
+                                }
+                              }}
                             />
                             <div className="flex gap-2 mt-2">
                               <button
@@ -1237,7 +1277,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   />
                                   <button
                                     type="button"
-                                    onClick={() => setFormThumbnail("")}
+                                    onClick={() => {
+                                      setFormThumbnail("");
+                                      setHasClearedThumbnail(true);
+                                    }}
                                     className="absolute top-2 right-2 bg-stone-900/80 hover:bg-black text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] transition-all shadow-md cursor-pointer select-none"
                                     title="Remove captured thumbnail"
                                   >
