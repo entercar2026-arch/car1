@@ -176,6 +176,14 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return car.videoUrl || "";
   }, [car.videoUrl]);
 
+  const isSamplePhoto = useMemo(() => {
+    if (car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com"))) {
+      if (car.photos && car.photos.length > 0) return false;
+      return true;
+    }
+    return false;
+  }, [car.image, car.photos]);
+
   const allPhotos = useMemo(() => {
     if (!car.image) {
       return car.photos?.length ? car.photos : [];
@@ -185,6 +193,12 @@ const CarCardComponent: React.FC<CarCardProps> = ({
       const cleanUrl = (u: string) => u.split('?')[0].trim();
       const targetClean = cleanUrl(car.image);
       const firstPhotoClean = cleanUrl(car.photos[0]);
+      
+      // If the main image is an Unsplash sample placeholder, and we have custom photos,
+      // skip prepending the sample image so we only show the actual car photos.
+      if (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com")) {
+        return car.photos;
+      }
       
       if (targetClean !== firstPhotoClean) {
         const cleanedPhotos = car.photos.map(p => cleanUrl(p));
@@ -203,7 +217,12 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return [car.image, car.altImage].filter(Boolean) as string[];
   }, [car.photos, car.image, car.altImage]);
 
-  const primaryImage = car.image || getFallbackCarThumbnail(car.name, car.category);
+  const primaryImage = useMemo(() => {
+    if (car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com")) && car.photos?.length) {
+      return car.photos[0];
+    }
+    return car.image || getFallbackCarThumbnail(car.name, car.category);
+  }, [car.image, car.photos, car.name, car.category]);
   const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover'), [primaryImage, windowWidth]);
   const currentImage = allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage;
 
@@ -788,7 +807,7 @@ Description: ${formattedDesc}`;
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
 
               {/* Sample Photo Disclaimer Overlay */}
-              {!isPlaying && (
+              {!isPlaying && isSamplePhoto && (
                 <div 
                   id={`car-image-disclaimer-${car.id}`}
                   className="absolute bottom-2 left-2 right-2 bg-stone-900/80 backdrop-blur-xs text-[9px] text-stone-200 px-2.5 py-1.5 rounded-lg select-none leading-normal z-10 font-sans pointer-events-none"
