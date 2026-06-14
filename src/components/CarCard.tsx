@@ -178,7 +178,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     startTransition(() => setIsPhotosOpen(true));
   };
 
-  const colorUploadRef = useRef<HTMLInputElement>(null);
+  const colorUploadRef = React.useRef<HTMLInputElement>(null);
 
   const handlePlusClick = (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -2029,7 +2029,6 @@ export default function App() {
                         <CarCard
                           car={car}
                           isAdminMode={isAdminAuthenticated}
-                          onEdit={handleUpdateCar}
                           onBookSuccess={handleBookingToast}
                           reviews={reviews}
                           onAddReview={handleAddReview}
