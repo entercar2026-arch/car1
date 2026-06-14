@@ -174,6 +174,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
   const [formDotColor, setFormDotColor] = useState("#4C0027");
+  const [formDotColors, setFormDotColors] = useState<string[]>([]);
+
+  const estimatedDotCount = useMemo(() => {
+    const photosArr = formPhotos.split("\n").map(l => l.trim()).filter(Boolean);
+    const mainImg = formImage.trim();
+    if (!mainImg) {
+      return photosArr.length;
+    }
+    if (photosArr.length) {
+      if (mainImg.includes("unsplash.com") || mainImg.includes("images.unsplash.com")) {
+        return photosArr.length;
+      }
+      const cleanUrl = (u: string) => u.split('?')[0].trim();
+      const targetClean = cleanUrl(mainImg);
+      const firstPhotoClean = cleanUrl(photosArr[0]);
+      if (targetClean !== firstPhotoClean) {
+        const cleanedPhotos = photosArr.map(p => cleanUrl(p));
+        const indexInPhotos = cleanedPhotos.indexOf(targetClean);
+        if (indexInPhotos > -1) {
+          return photosArr.length;
+        } else {
+          return 1 + photosArr.length;
+        }
+      }
+      return photosArr.length;
+    }
+    return mainImg ? 1 : 0;
+  }, [formPhotos, formImage]);
+
   const [captureError, setCaptureError] = useState("");
   const [hasClearedThumbnail, setHasClearedThumbnail] = useState(false);
 
@@ -224,6 +253,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormVideoUrl("");
     setFormThumbnail("");
     setFormDotColor("#4C0027");
+    setFormDotColors([]);
     setHasClearedThumbnail(false);
     startTransition(() => {
       setIsFormOpen(true);
@@ -246,6 +276,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
       setFormDotColor(car.dotColor || "#4C0027");
+      setFormDotColors(car.dotColors || []);
       setHasClearedThumbnail(false);
       setIsFormOpen(true);
     });
@@ -281,6 +312,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         thumbnail: formThumbnail || undefined,
         photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
         dotColor: formDotColor,
+        dotColors: formDotColors,
       });
     } else {
       onAddCar({
@@ -296,6 +328,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         thumbnail: formThumbnail || undefined,
         photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
         dotColor: formDotColor,
+        dotColors: formDotColors,
       });
     }
     setIsFormOpen(false);
@@ -1141,44 +1174,134 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
 
                   {/* Indicator Dot Color Customization */}
-                  <div className="sm:col-span-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                      Indicator Dot Color (for Photos Slideshow)
-                    </label>
-                    <div className="flex flex-wrap items-center gap-3 bg-stone-50 border border-stone-200 px-3.5 py-2.5 rounded-xl">
-                      <div className="flex items-center gap-2 border-r border-stone-200 pr-3.5 mr-1 shrink-0">
-                        <input
-                          id="input-picker-dot-color"
-                          type="color"
-                          value={formDotColor}
-                          onChange={(e) => setFormDotColor(e.target.value)}
-                          className="w-7 h-7 roundedCursor cursor-pointer border border-stone-300 rounded-md p-0.5 bg-white shrink-0"
-                          title="Choose custom color"
-                        />
-                        <span className="font-mono text-xs uppercase text-stone-700 font-extrabold">{formDotColor}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {[
-                          { hex: "#4C0027", name: "Plum" },
-                          { hex: "#DC2626", name: "Red" },
-                          { hex: "#2563EB", name: "Blue" },
-                          { hex: "#059669", name: "Green" },
-                          { hex: "#D97706", name: "Amber" },
-                          { hex: "#1C1917", name: "Stone" }
-                        ].map((colorObj) => (
-                          <button
-                            key={colorObj.hex}
-                            type="button"
-                            onClick={() => setFormDotColor(colorObj.hex)}
-                            className={`w-5 h-5 rounded-full border transition-all duration-150 cursor-pointer ${
-                              formDotColor.toLowerCase() === colorObj.hex.toLowerCase() ? "scale-125 border-stone-800 ring-2 ring-stone-300" : "border-transparent hover:scale-110"
-                            }`}
-                            style={{ backgroundColor: colorObj.hex }}
-                            title={colorObj.name}
+                  <div className="sm:col-span-2 space-y-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
+                        Default Indicator Dot Color
+                      </label>
+                      <div className="flex flex-wrap items-center gap-3 bg-stone-50 border border-stone-200 px-3.5 py-2.5 rounded-xl">
+                        <div className="flex items-center gap-2 border-r border-stone-200 pr-3.5 mr-1 shrink-0">
+                          <input
+                            id="input-picker-dot-color"
+                            type="color"
+                            value={formDotColor}
+                            onChange={(e) => setFormDotColor(e.target.value)}
+                            className="w-7 h-7 roundedCursor cursor-pointer border border-stone-300 rounded-md p-0.5 bg-white shrink-0"
+                            title="Choose custom default color"
                           />
-                        ))}
+                          <span className="font-mono text-xs uppercase text-stone-700 font-extrabold">{formDotColor}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {[
+                            { hex: "#4C0027", name: "Plum" },
+                            { hex: "#DC2626", name: "Red" },
+                            { hex: "#2563EB", name: "Blue" },
+                            { hex: "#059669", name: "Green" },
+                            { hex: "#D97706", name: "Amber" },
+                            { hex: "#1C1917", name: "Stone" }
+                          ].map((colorObj) => (
+                            <button
+                              key={colorObj.hex}
+                              type="button"
+                              onClick={() => setFormDotColor(colorObj.hex)}
+                              className={`w-5 h-5 rounded-full border transition-all duration-150 cursor-pointer ${
+                                formDotColor.toLowerCase() === colorObj.hex.toLowerCase() ? "scale-125 border-stone-800 ring-2 ring-stone-300" : "border-transparent hover:scale-110"
+                              }`}
+                              style={{ backgroundColor: colorObj.hex }}
+                              title={colorObj.name}
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
+
+                    {estimatedDotCount > 1 && (
+                      <div className="space-y-3 bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                        <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
+                          Customize Individual Dots ({estimatedDotCount} total dots detected)
+                        </span>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {Array.from({ length: estimatedDotCount }).map((_, idx) => {
+                            const currentVal = formDotColors[idx] || formDotColor || "#4C0027";
+                            const isFirst = idx === 0;
+                            
+                            return (
+                              <div 
+                                key={idx} 
+                                className="flex flex-col gap-1.5 p-2 bg-white border border-stone-150 rounded-lg shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-semibold text-stone-700 flex items-center gap-1">
+                                    {isFirst ? (
+                                      <>
+                                        <span className="inline-block p-1 bg-stone-100 rounded text-[10px] text-stone-600">Slide {idx + 1}</span>
+                                        <span>First Dot (Play Video / Photo 1)</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="inline-block p-1 bg-stone-100 rounded text-[10px] text-stone-600">Slide {idx + 1}</span>
+                                        <span>Dot {idx + 1}</span>
+                                      </>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="color"
+                                    value={currentVal}
+                                    onChange={(e) => {
+                                      const updated = [...formDotColors];
+                                      for (let k = 0; k <= idx; k++) {
+                                        if (updated[k] === undefined) {
+                                          updated[k] = formDotColor || "#4C0027";
+                                        }
+                                      }
+                                      updated[idx] = e.target.value;
+                                      setFormDotColors(updated);
+                                    }}
+                                    className="w-8 h-8 cursor-pointer border border-stone-300 rounded-md p-0.5 bg-white shrink-0"
+                                    title={`Choose color for dot ${idx + 1}`}
+                                  />
+                                  <span className="font-mono text-xs uppercase text-stone-500 font-extrabold flex-1">{currentVal}</span>
+                                  
+                                  {/* Quick colors for this specific dot */}
+                                  <div className="flex items-center gap-1 bg-stone-50 p-1 rounded-md border border-stone-100">
+                                    {[
+                                      "#4C0027",
+                                      "#DC2626",
+                                      "#2563EB",
+                                      "#059669",
+                                      "#D97706",
+                                      "#1C1917"
+                                    ].map((hex) => (
+                                      <button
+                                        key={hex}
+                                        type="button"
+                                        onClick={() => {
+                                          const updated = [...formDotColors];
+                                          for (let k = 0; k <= idx; k++) {
+                                            if (updated[k] === undefined) {
+                                              updated[k] = formDotColor || "#4C0027";
+                                            }
+                                          }
+                                          updated[idx] = hex;
+                                          setFormDotColors(updated);
+                                        }}
+                                        className={`w-3.5 h-3.5 rounded-full border transition-all duration-100 cursor-pointer ${
+                                          currentVal.toLowerCase() === hex.toLowerCase() ? "scale-110 border-stone-700 ring-1 ring-stone-200" : "border-transparent hover:scale-105"
+                                        }`}
+                                        style={{ backgroundColor: hex }}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Video Thumbnail Studio */}

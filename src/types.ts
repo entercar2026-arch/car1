@@ -25,6 +25,7 @@ export interface Car {
     ownerNotes?: string;
   };
   dotColor?: string;
+  dotColors?: string[];
 }
 
 export type ViewMode = "customer" | "admin" | "login";

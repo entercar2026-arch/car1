@@ -895,7 +895,7 @@ Description: ${formattedDesc}`;
                   <div className="flex items-center gap-2 mb-3">
                     {allPhotos.map((_, idx) => {
                       const isActive = idx === currentPhotoIndex;
-                      const activeColor = car.dotColor || "#4C0027";
+                      const activeColor = (car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027";
                       
                       if (idx === 0) {
                         return (
