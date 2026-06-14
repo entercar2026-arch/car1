@@ -1059,67 +1059,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
                   </div>
 
-                  {/* Extra Photos for Gallery */}
-                  <div className="sm:col-span-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                      Vehicle Image Gallery (Optional, one URL per line)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute top-2.5 left-0 pl-3.5 flex text-stone-400">
-                        <Images className="h-4 w-4" />
-                      </span>
-                      <OptimizedTextArea
-                        id="input-car-photos"
-                        value={formPhotos}
-                        onChange={(val: any) => setFormPhotos(val)}
-                        placeholder="https://... (image 1)\nhttps://... (image 2)"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs min-h-[60px] focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Video URL Field */}
-                  <div className="sm:col-span-2">
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                      Car Video URL (Optional)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-450 text-stone-400/80">
-                        <Link2 className="h-4 w-4 text-stone-400" />
-                      </span>
-                      <OptimizedInput
-                        id="input-car-video"
-                        type="text"
-                        value={formVideoUrl}
-                        onChange={(val: any) => setFormVideoUrl(val)}
-                        placeholder="e.g. https://files.catbox.moe/2zvvj8.mp4 or YouTube link"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label
-                      htmlFor="input-car-thumbnail"
-                      className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1"
-                    >
-                      Custom Thumbnail URL (Optional)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
-                        <Link2 className="h-4 w-4 text-stone-400" />
-                      </span>
-                      <OptimizedInput
-                        id="input-car-thumbnail"
-                        type="text"
-                        value={formThumbnail}
-                        onChange={(val: any) => setFormThumbnail(val)}
-                        placeholder="Paste a direct image URL to use as thumbnail if video capture fails"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
-                      />
-                    </div>
-                  </div>
-
                   {/* Video Thumbnail Studio */}
                   {(() => {
                     const isVideoMedia = (url: string) => 
