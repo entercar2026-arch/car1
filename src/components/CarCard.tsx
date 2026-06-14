@@ -147,36 +147,44 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [aiColorImage, setAiColorImage] = useState<string | null>(null);
   const [activeColor, setActiveColor] = useState<string | null>(null);
 
-  const CAR_COLORS = [
-    { name: "White", hex: "#F8F9FA" },
-    { name: "Black", hex: "#111111" },
-    { name: "Silver", hex: "#C0C0C0" },
-    { name: "Red", hex: "#DC2626" },
-    { name: "Blue", hex: "#2563EB" },
-  ];
+  const extractAverageColor = (url: string): Promise<string> => {
+     return new Promise((resolve) => {
+         const img = new Image();
+         img.crossOrigin = "Anonymous";
+         img.onload = () => {
+             const canvas = document.createElement("canvas");
+             canvas.width = 1;
+             canvas.height = 1;
+             const ctx = canvas.getContext("2d");
+             if (ctx) {
+                 // sample the center 20%
+                 ctx.drawImage(img, img.width * 0.4, img.height * 0.4, img.width * 0.2, img.height * 0.2, 0, 0, 1, 1);
+                 const data = ctx.getImageData(0, 0, 1, 1).data;
+                 resolve(`rgb(${data[0]}, ${data[1]}, ${data[2]})`);
+             } else {
+                 resolve("#cccccc");
+             }
+         };
+         img.onerror = () => resolve("#cccccc");
+         img.src = url;
+     });
+  };
 
-  const handleColorPick = (colorHex: string, colorName: string) => {
-    setActiveColor(colorName);
-    // If we have a custom image for this color, set it
-    if (car.customColors && car.customColors[colorName]) {
-       setAiColorImage(car.customColors[colorName]);
-    } else {
-       // if not, reset
-       setAiColorImage(null);
-    }
+  const handleColorPick = (colorKey: string, imageUrl: string) => {
+    setActiveColor(colorKey);
+    setAiColorImage(imageUrl);
+    startTransition(() => setIsPhotosOpen(true));
   };
 
   const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!activeColor) return;
     const file = e.target.files?.[0];
     if (file) {
         const reader = new FileReader();
-        reader.onloadend = () => {
+        reader.onloadend = async () => {
             const dataUrl = reader.result as string;
-            const newColors = { ...(car.customColors || {}), [activeColor]: dataUrl };
-            setAiColorImage(dataUrl);
+            const extractedColor = await extractAverageColor(dataUrl);
+            const newColors = { ...(car.customColors || {}), [extractedColor]: dataUrl };
             
-            // save immediately via onEdit if available
             if (onEdit) {
                 onEdit({ ...car, customColors: newColors });
             }
@@ -222,7 +230,9 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
   }, [car.photos, car.image, car.altImage]);
 
-  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : (car.image || getFallbackCarThumbnail(car.name, car.category)));
+  const primaryImage = car.image || getFallbackCarThumbnail(car.name, car.category);
+  const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover'), [primaryImage, windowWidth]);
+  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage);
 
   const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover'), [currentImage, windowWidth]);
   const [renderedImageSrc, setRenderedImageSrc] = useState(targetImageSrc);
@@ -758,7 +768,7 @@ Description: ${formattedDesc}`;
               ) : (
                 <motion.img
                   id={`car-photo-${car.id}`}
-                  src={renderedImageSrc}
+                  src={primaryImageSrc}
                   alt={car.name}
                   loading="lazy"
                   decoding="async"
@@ -821,41 +831,6 @@ Description: ${formattedDesc}`;
                   />
                 </button>
               </div>
-
-              {/* Gallery Navigation Controls - visible when > 1 photo */}
-              {allPhotos.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentPhotoIndex((prev) => (prev === 0 ? allPhotos.length - 1 : prev - 1));
-                    }}
-                    className="absolute top-1/2 left-2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50 z-20"
-                  >
-                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 ml-[1px]" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentPhotoIndex((prev) => (prev === allPhotos.length - 1 ? 0 : prev + 1));
-                    }}
-                    className="absolute top-1/2 right-2 -translate-y-1/2 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/50 z-20"
-                  >
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 ml-[1px]" />
-                  </button>
-
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 z-20 bg-black/20 backdrop-blur-md px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    {allPhotos.map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-[5px] h-[5px] sm:w-[6px] sm:h-[6px] rounded-full transition-all duration-300 ${
-                          currentPhotoIndex === i ? "bg-white scale-125 shadow-sm" : "bg-white/40"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
 
             {/* Narrative & Info */}
@@ -904,28 +879,30 @@ Description: ${formattedDesc}`;
                   )}
                   {/* Color Palette */}
                   <div className="flex items-center justify-between mt-3 mb-1">
-                    <div className="flex gap-2 items-center">
-                      {CAR_COLORS.map(color => (
+                    <div className="flex gap-2 items-center flex-wrap">
+                      {Object.entries(car.customColors || {}).map(([colorKey, imageUrl]) => (
                           <button
-                             key={color.name}
+                             key={colorKey}
                              type="button"
-                             onClick={(e) => { e.stopPropagation(); handleColorPick(color.hex, color.name); }}
-                             className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer ${activeColor === color.name ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
-                             style={{ backgroundColor: color.hex }}
-                             title={color.name}
+                             onClick={(e) => { e.stopPropagation(); handleColorPick(colorKey, imageUrl); }}
+                             className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer ${activeColor === colorKey ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
+                             style={{ backgroundColor: colorKey }}
+                             title="View variation"
                           />
                       ))}
+                      {isAdminMode && (
+                        <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 px-2 py-1 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 ml-1" title="Upload new color variation">
+                           +
+                           <input type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+                        </label>
+                      )}
                     </div>
-                    {activeColor && (
-                       <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 px-2 py-1.5 flex items-center gap-1 rounded-md text-stone-700 font-bold transition-all border border-stone-200">
-                          <Upload className="w-3 h-3"/> {activeColor} Photo
-                          <input type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
-                       </label>
-                    )}
                   </div>
-                  <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
-                    {t.samplePhotoNotice}
-                  </p>
+                  {(Object.keys(car.customColors || {}).length > 0 || isAdminMode) && (
+                    <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
+                       {t.samplePhotoNotice}
+                    </p>
+                  )}
                 </div>
 
                 {/* Highlights Info Grid (Technical) */}
@@ -1780,7 +1757,7 @@ Description: ${formattedDesc}`;
                 <div className="w-full flex items-center justify-between px-2 mb-2">
                   <div className="flex flex-col">
                     <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-                    <span className="text-white/60 font-mono text-xs">{aiColorImage ? activeColor : `${currentPhotoIndex + 1} / ${allPhotos.length}`}</span>
+                    <span className="text-white/60 font-mono text-xs">{aiColorImage ? "Custom Variation" : `${currentPhotoIndex + 1} / ${allPhotos.length}`}</span>
                   </div>
                   <button
                     onClick={() => startTransition(() => setIsPhotosOpen(false))}
