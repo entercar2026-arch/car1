@@ -782,6 +782,44 @@ Description: ${formattedDesc}`;
                   />
                 </button>
               </div>
+
+              {/* Photo Navigation */}
+              {allPhotos.length > 1 && (
+                <>
+                  <div className="absolute inset-y-0 left-0 flex items-center px-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentPhotoIndex((prev) => (prev > 0 ? prev - 1 : allPhotos.length - 1));
+                      }}
+                      className="w-6 h-6 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm text-stone-700 shadow-sm border border-stone-200 hover:bg-white cursor-pointer pointer-events-auto"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5 ml-[-1px]" />
+                    </button>
+                  </div>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentPhotoIndex((prev) => (prev < allPhotos.length - 1 ? prev + 1 : 0));
+                      }}
+                      className="w-6 h-6 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm text-stone-700 shadow-sm border border-stone-200 hover:bg-white cursor-pointer pointer-events-auto"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 mr-[-1px]" />
+                    </button>
+                  </div>
+                  <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1.5 z-10">
+                    {allPhotos.map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-1.5 h-1.5 rounded-full shadow-sm transition-all ${
+                          i === currentPhotoIndex ? "bg-white scale-110" : "bg-white/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Narrative & Info */}
@@ -1693,9 +1731,37 @@ Description: ${formattedDesc}`;
                 </div>
                 
                 <div className="relative w-full group flex justify-center">
+                  {/* Photo Navigation (Arrows) */}
+                  {allPhotos.length > 1 && (
+                    <>
+                      <div className="absolute inset-y-0 left-0 md:left-4 flex items-center px-1.5 transition-opacity z-20">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentPhotoIndex((prev) => (prev > 0 ? prev - 1 : allPhotos.length - 1));
+                          }}
+                          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-black/50 text-white shadow-xl hover:bg-black/70 hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-sm border border-white/10"
+                        >
+                          <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 ml-[-2px]" />
+                        </button>
+                      </div>
+                      <div className="absolute inset-y-0 right-0 md:right-4 flex items-center px-1.5 transition-opacity z-20">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentPhotoIndex((prev) => (prev < allPhotos.length - 1 ? prev + 1 : 0));
+                          }}
+                          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-black/50 text-white shadow-xl hover:bg-black/70 hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-sm border border-white/10"
+                        >
+                          <ChevronRight className="w-6 h-6 md:w-8 md:h-8 mr-[-2px]" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+
                   {hasVideo ? (
                     <motion.video
-                      key={`video-${renderedImageSrc}`}
+                      key={`video-${renderedImageSrc}-${currentPhotoIndex}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -1708,7 +1774,7 @@ Description: ${formattedDesc}`;
                     />
                   ) : imageError && isGoogleDrive && driveId ? (
                     <motion.iframe
-                      key={`iframe-${renderedImageSrc}`}
+                      key={`iframe-${renderedImageSrc}-${currentPhotoIndex}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -1719,7 +1785,7 @@ Description: ${formattedDesc}`;
                     />
                   ) : (
                     <motion.img
-                      key={`img-${renderedImageSrc}`}
+                      key={`img-${renderedImageSrc}-${currentPhotoIndex}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -1737,6 +1803,21 @@ Description: ${formattedDesc}`;
                     />
                   )}
                 </div>
+
+                {/* Dots indicator for modal */}
+                {allPhotos.length > 1 && (
+                  <div className="flex flex-wrap justify-center gap-1.5 mt-2">
+                    {allPhotos.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={(e) => { e.stopPropagation(); setCurrentPhotoIndex(i); }}
+                        className={`w-2 h-2 rounded-full shadow-sm transition-all cursor-pointer ${
+                          i === currentPhotoIndex ? "bg-white scale-125" : "bg-white/40 hover:bg-white/60"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </motion.div>
             </div>
           )}
