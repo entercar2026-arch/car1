@@ -747,6 +747,16 @@ Description: ${formattedDesc}`;
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
 
+              {/* Sample Photo Disclaimer Overlay */}
+              {!isPlaying && (
+                <div 
+                  id={`car-image-disclaimer-${car.id}`}
+                  className="absolute bottom-2 left-2 right-2 bg-stone-900/80 backdrop-blur-xs text-[9px] text-stone-200 px-2.5 py-1.5 rounded-lg select-none leading-normal z-10 font-sans pointer-events-none"
+                >
+                  {t.samplePhotoNotice}
+                </div>
+              )}
+
               {/* Video Actions overlay */}
               <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                 {hasVideo && (
@@ -912,13 +922,6 @@ Description: ${formattedDesc}`;
                     >
                       Edit
                     </button>
-                    <button
-                      id={`car-btn-delete-${car.id}`}
-                      onClick={() => onDelete && onDelete(car.id)}
-                      className="px-3 py-2 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all border border-rose-100 cursor-pointer"
-                    >
-                      Delete
-                    </button>
                   </div>
                 ) : (
                   <div className="flex gap-2">
@@ -1066,13 +1069,6 @@ Description: ${formattedDesc}`;
                     className="px-3 py-1.5 text-[10px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition-all cursor-pointer border border-stone-700"
                   >
                     Edit
-                  </button>
-                  <button
-                    id={`car-back-btn-delete-${car.id}`}
-                    onClick={(e) => { e.stopPropagation(); onDelete && onDelete(car.id); }}
-                    className="px-3 py-1.5 text-[10px] font-bold bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 rounded-lg transition-all border border-rose-900/30 cursor-pointer"
-                  >
-                    Delete
                   </button>
                 </div>
               ) : (
