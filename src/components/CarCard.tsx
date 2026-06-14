@@ -668,8 +668,13 @@ Description: ${formattedDesc}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative h-48 bg-stone-50 overflow-hidden cursor-pointer"
-              onClick={(e) => { e.stopPropagation(); setCurrentPhotoIndex(0); startTransition(() => setIsPhotosOpen(true)); }}
+              className="relative h-48 bg-stone-50 overflow-hidden cursor-pointer group/media"
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                if (allPhotos.length > 1) {
+                  setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+                }
+              }}
             >
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               {hasVideo ? (
@@ -778,7 +783,8 @@ Description: ${formattedDesc}`;
               ) : (
                 <motion.img
                   id={`car-photo-${car.id}`}
-                  src={primaryImageSrc}
+                  key={`inline-img-${renderedImageSrc}-${currentPhotoIndex}`}
+                  src={renderedImageSrc}
                   alt={car.name}
                   loading="lazy"
                   decoding="async"
@@ -790,21 +796,64 @@ Description: ${formattedDesc}`;
                         "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
                     }
                   }}
-                  initial={{ scale: 0.94, y: 15 }}
+                  initial={{ scale: 0.96, opacity: 0.4 }}
                   animate={{
-                    scale: isHovered ? 1.15 : 1.01,
-                    x: isHovered ? 8 : 0,
-                    y: isHovered ? -4 : 0,
-                    rotate: isHovered ? -0.8 : 0,
+                    scale: isHovered ? 1.08 : 1,
+                    opacity: 1,
                   }}
-                  transition={{ duration: 0.55, ease: "easeOut" }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover select-none bg-stone-100"
                 />
               )}
 
               {/* Beautiful linear cover shadow */}
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/25 via-transparent to-transparent pointer-events-none" />
+
+              {/* Inline Gallery Navigation Controls */}
+              {allPhotos.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+                    }}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto"
+                    title="Previous Photo"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-white" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto"
+                    title="Next Photo"
+                  >
+                    <ChevronRight className="w-4 h-4 text-white" />
+                  </button>
+                  
+                  {/* Miniature Dots Indicator */}
+                  <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 bg-black/35 px-2.5 py-1 rounded-full backdrop-blur-[2px] pointer-events-auto shadow-xs">
+                    {allPhotos.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentPhotoIndex(idx);
+                        }}
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
+                          idx === currentPhotoIndex ? "bg-white scale-125 shadow-xs" : "bg-white/45 hover:bg-white/80"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
 
               {/* Sample Photo Disclaimer Overlay */}
               {!isPlaying && isSamplePhoto && (
@@ -866,13 +915,12 @@ Description: ${formattedDesc}`;
                       id={`car-image-gallery-badge-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setCurrentPhotoIndex(0);
-                        startTransition(() => setIsPhotosOpen(true));
+                        setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
                       }}
                       className="bg-[#4C0027]/10 hover:bg-[#4C0027] hover:text-white text-[#4C0027] px-2.5 py-1 rounded-full text-[10px] flex items-center gap-1.5 font-sans font-extrabold transition-all duration-200 cursor-pointer shadow-xs border border-[#4C0027]/15"
                     >
                       <Images className="w-3.5 h-3.5 shrink-0" />
-                      <span>{allPhotos.length} Photos</span>
+                      <span>{currentPhotoIndex + 1} / {allPhotos.length} Photos</span>
                     </button>
                   </div>
                 )}
