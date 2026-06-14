@@ -383,7 +383,6 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   // Reviews flow states
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
   const [reviewAuthor, setReviewAuthor] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
@@ -619,16 +618,15 @@ Description: ${formattedDesc}`;
       if (e.key === "Escape") {
         handleCloseBookingModal();
         setIsReviewsOpen(false);
-        setIsDetailsOpen(false);
         setIsPhotosOpen(false);
       }
     };
 
-    if (isBookingOpen || isReviewsOpen || isDetailsOpen || isPhotosOpen) {
+    if (isBookingOpen || isReviewsOpen || isPhotosOpen) {
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isBookingOpen, isReviewsOpen, isDetailsOpen, isPhotosOpen]);
+  }, [isBookingOpen, isReviewsOpen, isPhotosOpen]);
 
   return (
     <>
@@ -963,25 +961,6 @@ Description: ${formattedDesc}`;
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
                     <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.accel}</span>
                   </div>
-                </div>
-
-                {/* Advanced Quick Actions Panel */}
-                <div className="flex items-center gap-2 mt-2 mb-1">
-                  <button
-                    type="button"
-                    id={`car-btn-details-${car.id}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startTransition(() => {
-                        setIsDetailsOpen(true);
-                        setCurrentPhotoIndex(0);
-                      });
-                    }}
-                    className="flex-1 px-1 py-2 text-[11px] font-bold text-stone-700 bg-stone-100/80 hover:bg-stone-200/80 border border-stone-200/60 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#4C0027] shrink-0" />
-                    <span className="truncate">{t.viewDetails}</span>
-                  </button>
                 </div>
               </div>
 
@@ -1764,98 +1743,6 @@ Description: ${formattedDesc}`;
             </motion.div>
           </div>
         )}
-        </AnimatePresence>,
-        document.body
-      )}
-
-      {/* Elegant Vehicle Extended details & Specs Modal */}
-      {createPortal(
-        <AnimatePresence>
-          {isDetailsOpen && (
-            <div
-              id={`details-modal-${car.id}`}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs select-none"
-              onClick={() => startTransition(() => setIsDetailsOpen(false))}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                className="bg-stone-900 rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl relative flex flex-col max-h-[90vh] md:max-h-[85vh]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Left/Top Area - Hero Media Screen */}
-                <div className="relative w-full h-[60vh] md:h-[80vh] flex flex-col justify-between overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsPhotosOpen(true); }}>
-                  <img
-                    src={renderedImageSrc}
-                    alt={car.name}
-                    className="absolute inset-0 w-full h-full object-cover opacity-90 hover:opacity-100 transition-all duration-500 hover:scale-[1.02]"
-                  />
-                  {(isPreloading || isFetchingColor) && (
-                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-stone-900/40 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
-                      <Loader2 className="w-6 h-6 text-stone-200 animate-spin opacity-70" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 z-10 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/40 pointer-events-none" />
-
-                  {/* Inline Gallery controls for Details Modal */}
-                  {allPhotos.length > 1 && (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentPhotoIndex((prev) => (prev === 0 ? allPhotos.length - 1 : prev - 1));
-                        }}
-                        className="absolute top-1/2 left-3 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm opacity-50 hover:opacity-100 transition-opacity hover:bg-black/60 z-20 cursor-pointer"
-                      >
-                        <ChevronLeft className="w-5 h-5 ml-[1px]" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentPhotoIndex((prev) => (prev === allPhotos.length - 1 ? 0 : prev + 1));
-                        }}
-                        className="absolute top-1/2 right-3 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm opacity-50 hover:opacity-100 transition-opacity hover:bg-black/60 z-20 cursor-pointer"
-                      >
-                        <ChevronRight className="w-5 h-5 ml-[2px]" />
-                      </button>
-                      
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full">
-                        {allPhotos.map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${
-                              currentPhotoIndex === i ? "bg-white scale-125 shadow-sm" : "bg-white/40"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Header metadata overlay */}
-                  <div className="relative p-4 flex justify-between items-start z-10 w-full">
-                    <span className="text-[10px] font-extrabold uppercase bg-amber-400 text-stone-950 px-2.5 py-1 rounded-lg tracking-wider shadow-sm font-mono flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-stone-950 animate-pulse" />
-                      {car.category === 'Sedan' ? t.sedan : car.category === 'SUV' ? t.suv : car.category === 'MPV' ? t.mpv : car.category === 'Pickup' ? t.pickup : car.category === 'Truck' ? t.truck : car.category}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); startTransition(() => setIsDetailsOpen(false)); }}
-                      className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-
-
-                </div>
-
-
-              </motion.div>
-            </div>
-          )}
         </AnimatePresence>,
         document.body
       )}

@@ -560,7 +560,6 @@ export default function App() {
         }
         setIsMobileMenuOpen(false);
         setShowClearConfirm(false);
-        setIsContractModalOpen(false);
       }
     };
 

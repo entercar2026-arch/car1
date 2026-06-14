@@ -216,19 +216,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Open edit product form preloaded with details
   const handleOpenEdit = React.useCallback((car: Car) => {
-    setEditingCar(car);
-    setFormName(car.name);
-    setFormCategory(car.category);
-    setFormPrice(car.price);
-    setFormImage(car.image);
-    setFormPhotos(car.photos ? car.photos.join("\n") : "");
-    setFormTransmission(car.transmission);
-    setFormSeats(car.seats);
-    setFormFuel(car.fuelType);
-    setFormDescription(car.description || "");
-    setFormVideoUrl(car.videoUrl || "");
-    setFormThumbnail(car.thumbnail || "");
     startTransition(() => {
+      setEditingCar(car);
+      setFormName(car.name);
+      setFormCategory(car.category);
+      setFormPrice(car.price);
+      setFormImage(car.image);
+      setFormPhotos(car.photos ? car.photos.join("\n") : "");
+      setFormTransmission(car.transmission);
+      setFormSeats(car.seats);
+      setFormFuel(car.fuelType);
+      setFormDescription(car.description || "");
+      setFormVideoUrl(car.videoUrl || "");
+      setFormThumbnail(car.thumbnail || "");
       setIsFormOpen(true);
     });
   }, []);
@@ -396,7 +396,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <button
               id={`admin-row-delete-${car.id}`}
-              onClick={() => setCarToDelete(car.id)}
+              onClick={() => startTransition(() => setCarToDelete(car.id))}
               title="Delete Vehicle Asset"
               className="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
             >
