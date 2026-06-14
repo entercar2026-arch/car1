@@ -977,9 +977,14 @@ Description: ${formattedDesc}`;
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setCurrentPhotoIndex(0);
-                          setActiveColor(null);
-                          setAiColorImage(null);
+                          if (currentPhotoIndex === 0 && !activeColor && !aiColorImage) {
+                            setIsPlaying((prev) => !prev);
+                          } else {
+                            setCurrentPhotoIndex(0);
+                            setActiveColor(null);
+                            setAiColorImage(null);
+                            setIsPlaying(true);
+                          }
                         }}
                         className={`relative w-10 h-10 rounded-lg border-2 transition-all duration-200 cursor-pointer flex flex-shrink-0 items-center justify-center bg-stone-50 ${
                           currentPhotoIndex === 0 && !activeColor && !aiColorImage
@@ -1001,6 +1006,7 @@ Description: ${formattedDesc}`;
                             setCurrentPhotoIndex(idx);
                             setActiveColor(null);
                             setAiColorImage(null);
+                            setIsPlaying(false);
                           }}
                           className={`relative w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
                             currentPhotoIndex === idx && !aiColorImage
