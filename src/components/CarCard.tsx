@@ -150,7 +150,9 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const extractAverageColor = (url: string): Promise<string> => {
      return new Promise((resolve) => {
          const img = new Image();
-         img.crossOrigin = "Anonymous";
+         if (!url.startsWith("data:")) {
+             img.crossOrigin = "Anonymous";
+         }
          img.onload = () => {
              const canvas = document.createElement("canvas");
              canvas.width = 1;
@@ -174,6 +176,15 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     setActiveColor(colorKey);
     setAiColorImage(imageUrl);
     startTransition(() => setIsPhotosOpen(true));
+  };
+
+  const colorUploadRef = useRef<HTMLInputElement>(null);
+
+  const handlePlusClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (colorUploadRef.current) {
+        colorUploadRef.current.click();
+    }
   };
 
   const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -898,10 +909,14 @@ Description: ${formattedDesc}`;
                              title="View variation"
                           />
                       ))}
-                      <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 ml-1 relative overflow-hidden" title="Upload new color variation">
-                         +
-                         <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={handleColorImageUpload} />
-                      </label>
+                      {isAdminMode && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <button type="button" onClick={handlePlusClick} className="cursor-pointer bg-stone-100 hover:bg-stone-200 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-6 h-6 outline-none" title="Upload new color variation">
+                             <span className="text-[14px] leading-none mb-[2px]">+</span>
+                          </button>
+                          <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+                        </div>
+                      )}
                     </div>
                   </div>
                   {(Object.keys(car.customColors || {}).length > 0) && (
@@ -1830,7 +1845,7 @@ Description: ${formattedDesc}`;
 
 export const CarCard = React.memo(CarCardComponent, (prev, next) => {
   return (
-    prev.car.id === next.car.id &&
+    JSON.stringify(prev.car) === JSON.stringify(next.car) &&
     prev.isAdminMode === next.isAdminMode &&
     prev.isLiked === next.isLiked &&
     prev.lang === next.lang &&
