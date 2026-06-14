@@ -307,7 +307,7 @@ export default function App() {
             const saved = safeStorage.getItem("enter_cars");
             const localCars: Car[] = saved ? JSON.parse(saved) : [];
             return dbCars.map(dbCar => {
-              const local = localCars.find(c => c.id === dbCar.id);
+              const local = localCars.find(c => c.id === dbCar.id || c.name === dbCar.name);
               if (local) {
                 // Merge dbCar onto localCar to keep unsupported fields (customColors, photos, etc)
                 return { ...local, ...dbCar };

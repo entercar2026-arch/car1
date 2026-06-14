@@ -37,6 +37,7 @@ import {
   Images,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
@@ -179,11 +180,37 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   };
 
   const colorUploadRef = React.useRef<HTMLInputElement>(null);
+  const galleryUploadRef = React.useRef<HTMLInputElement>(null);
 
   const handlePlusClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (colorUploadRef.current) {
         colorUploadRef.current.click();
+    }
+  };
+
+  const handleGalleryUploadClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (galleryUploadRef.current) {
+        galleryUploadRef.current.click();
+    }
+  };
+
+  const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const target = e.target;
+    if (file && onEdit) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            const updatedPhotos = [...(car.photos || []), dataUrl];
+            onEdit({ ...car, photos: updatedPhotos });
+            setCurrentPhotoIndex(updatedPhotos.length - 1);
+            setActiveColor(null);
+            setAiColorImage(null);
+            target.value = "";
+        };
+        reader.readAsDataURL(file);
     }
   };
 
@@ -941,8 +968,70 @@ Description: ${formattedDesc}`;
                   <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
                      {t.samplePhotoNotice}
                   </p>
+
+                  {/* Photo Gallery Thumbnails & Upload Button */}
+                  <div className="mt-2 mb-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
+                      {/* View Original / Reset Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentPhotoIndex(0);
+                          setActiveColor(null);
+                          setAiColorImage(null);
+                        }}
+                        className={`relative w-10 h-10 rounded-lg border-2 transition-all duration-200 cursor-pointer flex flex-shrink-0 items-center justify-center bg-stone-50 ${
+                          currentPhotoIndex === 0 && !activeColor && !aiColorImage
+                            ? "border-[#4C0027] scale-105 shadow-md bg-stone-100"
+                            : "border-stone-200 hover:border-stone-450 hover:bg-stone-100"
+                        }`}
+                        title="View original cover image"
+                      >
+                        <Play className="w-3 h-3 text-stone-600 fill-current ml-0.5" />
+                      </button>
+
+                      {/* Other Photos in Gallery */}
+                      {allPhotos.map((photoUrl, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentPhotoIndex(idx);
+                            setActiveColor(null);
+                            setAiColorImage(null);
+                          }}
+                          className={`relative w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
+                            currentPhotoIndex === idx && !aiColorImage
+                              ? "border-[#4C0027] scale-105 shadow-md"
+                              : "border-stone-200 hover:border-stone-400"
+                          }`}
+                        >
+                          <img
+                            src={photoUrl}
+                            alt={`${car.name} Gallery ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </button>
+                      ))}
+
+                      {/* Explicit Interactive "Upload Photo" Button */}
+                      <button
+                        type="button"
+                        onClick={handleGalleryUploadClick}
+                        className="w-10 h-10 rounded-lg border-2 border-dashed border-stone-300 hover:border-[#4C0027] hover:bg-stone-50 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center flex-shrink-0"
+                        title="Upload a new photo to the car card"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-stone-500" />
+                        <span className="text-[7px] font-bold font-mono text-stone-500 uppercase leading-none mt-0.5">Photo</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+                <input ref={galleryUploadRef} type="file" accept="image/*" className="hidden" onChange={handleGalleryImageUpload} />
                   
                 {/* Highlights Info Grid (Technical) */}
                 <div
@@ -1031,6 +1120,12 @@ Description: ${formattedDesc}`;
                       className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer whitespace-nowrap"
                     >
                       + Color
+                    </button>
+                    <button
+                      onClick={handleGalleryUploadClick}
+                      className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      + Photo
                     </button>
                     <button
                       id={`car-btn-delete-${car.id}`}
@@ -1192,6 +1287,12 @@ Description: ${formattedDesc}`;
                     className="px-3 py-1.5 text-[10px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition-all cursor-pointer border border-stone-700 whitespace-nowrap"
                   >
                     + Color
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleGalleryUploadClick(e); }}
+                    className="px-3 py-1.5 text-[10px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition-all cursor-pointer border border-stone-700 whitespace-nowrap"
+                  >
+                    + Photo
                   </button>
                   <button
                     id={`car-back-btn-delete-${car.id}`}
