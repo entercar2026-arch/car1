@@ -914,17 +914,18 @@ Description: ${formattedDesc}`;
                                 }
                               }
                             }}
-                            className={`flex items-center justify-center transition-all duration-200 cursor-pointer ${
-                              isActive ? "scale-125 select-none" : "hover:scale-110 opacity-45 hover:opacity-85"
+                            className={`w-3.5 h-3.5 rounded-none border border-black flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                              isActive ? "scale-110 select-none shadow-xs" : "opacity-60 hover:opacity-100"
                             }`}
                             style={{
-                              color: isActive ? activeColor : "#78716c",
+                              backgroundColor: isActive ? activeColor : `${activeColor}40`,
+                              color: isActive ? "#ffffff" : "#1c1917",
                             }}
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
                             <svg 
                               viewBox="0 0 24 24" 
-                              className="w-3.5 h-3.5 fill-current"
+                              className="w-2.5 h-2.5 fill-current"
                             >
                               {isActive && isPlaying ? (
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
@@ -944,8 +945,8 @@ Description: ${formattedDesc}`;
                             e.stopPropagation();
                             setCurrentPhotoIndex(idx);
                           }}
-                          className={`w-2.5 h-2.5 rounded-full transition-all duration-200 cursor-pointer ${
-                            isActive ? "scale-125 shadow-xs" : "hover:scale-110"
+                          className={`w-3.5 h-3.5 rounded-none border border-black transition-all duration-200 cursor-pointer ${
+                            isActive ? "scale-110 shadow-xs" : "opacity-60 hover:opacity-100"
                           }`}
                           style={{
                             backgroundColor: isActive ? activeColor : `${activeColor}40`
