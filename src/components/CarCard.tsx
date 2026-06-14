@@ -659,7 +659,8 @@ Description: ${formattedDesc}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative h-48 bg-stone-50 overflow-hidden"
+              className="relative h-48 bg-stone-50 overflow-hidden cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); startTransition(() => setIsPhotosOpen(true)); }}
             >
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               {hasVideo ? (
@@ -880,25 +881,23 @@ Description: ${formattedDesc}`;
                   {/* Color Palette */}
                   <div className="flex items-center justify-between mt-3 mb-1">
                     <div className="flex gap-2 items-center flex-wrap">
-                      {Object.entries(car.customColors || {}).map(([colorKey, imageUrl]) => (
+                      {Object.entries(car.customColors || {} as Record<string, string>).map(([colorKey, imageUrl]) => (
                           <button
                              key={colorKey}
                              type="button"
-                             onClick={(e) => { e.stopPropagation(); handleColorPick(colorKey, imageUrl); }}
+                             onClick={(e) => { e.stopPropagation(); handleColorPick(colorKey, imageUrl as string); }}
                              className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer ${activeColor === colorKey ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
                              style={{ backgroundColor: colorKey }}
                              title="View variation"
                           />
                       ))}
-                      {isAdminMode && (
-                        <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 px-2 py-1 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 ml-1" title="Upload new color variation">
-                           +
-                           <input type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
-                        </label>
-                      )}
+                      <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 px-2 py-1 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 ml-1" title="Upload new color variation">
+                         +
+                         <input type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+                      </label>
                     </div>
                   </div>
-                  {(Object.keys(car.customColors || {}).length > 0 || isAdminMode) && (
+                  {(Object.keys(car.customColors || {}).length > 0) && (
                     <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
                        {t.samplePhotoNotice}
                     </p>
@@ -1757,7 +1756,7 @@ Description: ${formattedDesc}`;
                 <div className="w-full flex items-center justify-between px-2 mb-2">
                   <div className="flex flex-col">
                     <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-                    <span className="text-white/60 font-mono text-xs">{aiColorImage ? "Custom Variation" : `${currentPhotoIndex + 1} / ${allPhotos.length}`}</span>
+                    <span className="text-white/60 font-mono text-xs">{aiColorImage ? "Custom Variation" : "Full Media View"}</span>
                   </div>
                   <button
                     onClick={() => startTransition(() => setIsPhotosOpen(false))}
@@ -1810,31 +1809,6 @@ Description: ${formattedDesc}`;
                       }}
                       className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                     />
-                  )}
-                  
-                  {!aiColorImage && allPhotos.length > 1 && (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
-                        }}
-                        className="absolute top-1/2 left-4 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm text-white/80 hover:text-white transition-colors cursor-pointer border border-white/10 opacity-0 group-hover:opacity-100"
-                        title="Previous Photo"
-                      >
-                        <ChevronLeft className="w-8 h-8" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
-                        }}
-                        className="absolute top-1/2 right-4 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm text-white/80 hover:text-white transition-colors cursor-pointer border border-white/10 opacity-0 group-hover:opacity-100"
-                        title="Next Photo"
-                      >
-                        <ChevronRight className="w-8 h-8" />
-                      </button>
-                    </>
                   )}
                 </div>
               </motion.div>
