@@ -2,20 +2,51 @@ import { supabase } from './supabase';
 import { Car, Booking, Review } from '../types';
 
 // Utility to convert DB snake_case to JS camelCase
-const dbToCar = (dbCar: any): Car => ({
-  id: dbCar.id,
-  name: dbCar.name,
-  category: dbCar.category,
-  price: Number(dbCar.price),
-  image: dbCar.image,
-  transmission: dbCar.transmission,
-  seats: dbCar.seats,
-  fuelType: dbCar.fuel_type,
-  description: dbCar.description,
-  videoUrl: dbCar.video_url || dbCar.videoUrl || "",
-});
+const dbToCar = (dbCar: any): Car => {
+  let description = dbCar.description || "";
+  let photos: string[] | undefined = undefined;
+  let videoUrl = dbCar.video_url || dbCar.videoUrl || "";
+  let thumbnail = dbCar.thumbnail || "";
+
+  // Parse metadata from description if present
+  if (description.includes("|||META:")) {
+    const parts = description.split("|||META:");
+    description = parts[0].trim();
+    try {
+      const meta = JSON.parse(parts[1]);
+      if (meta.photos) photos = meta.photos;
+      if (meta.videoUrl) videoUrl = meta.videoUrl;
+      if (meta.thumbnail) thumbnail = meta.thumbnail;
+    } catch (e) {
+      console.error("Failed to parse car metadata", e);
+    }
+  }
+
+  return {
+    id: dbCar.id,
+    name: dbCar.name,
+    category: dbCar.category,
+    price: Number(dbCar.price),
+    image: dbCar.image,
+    transmission: dbCar.transmission,
+    seats: dbCar.seats,
+    fuelType: dbCar.fuel_type,
+    description: description,
+    videoUrl: videoUrl,
+    thumbnail: thumbnail || undefined,
+    photos: photos,
+  };
+};
 
 const carToDb = (car: Omit<Car, 'id'>) => {
+  const meta: any = {};
+  if (car.photos) meta.photos = car.photos;
+  if (car.videoUrl) meta.videoUrl = car.videoUrl;
+  if (car.thumbnail) meta.thumbnail = car.thumbnail;
+
+  const descSuffix = ` |||META:${JSON.stringify(meta)}`;
+  const fullDescription = (car.description || "") + descSuffix;
+
   const payload: any = {
     name: car.name,
     category: car.category,
@@ -24,11 +55,9 @@ const carToDb = (car: Omit<Car, 'id'>) => {
     transmission: car.transmission,
     seats: car.seats,
     fuel_type: car.fuelType,
-    description: car.description,
+    description: fullDescription,
     year_model: 2024,
   };
-  // Temporarily omit video_url to prevent sync errors until column is added in Supabase
-  // if (car.videoUrl) payload.video_url = car.videoUrl;
   return payload;
 };
 
@@ -57,8 +86,16 @@ export const db = {
       if (car.transmission) payload.transmission = car.transmission;
       if (car.seats) payload.seats = car.seats;
       if (car.fuelType) payload.fuel_type = car.fuelType;
-      if (car.description !== undefined) payload.description = car.description;
-      // if (car.videoUrl !== undefined) payload.video_url = car.videoUrl; // Excluded until schema is updated
+
+      if (car.description !== undefined || car.photos !== undefined || car.videoUrl !== undefined || car.thumbnail !== undefined) {
+        const meta: any = {};
+        if (car.photos) meta.photos = car.photos;
+        if (car.videoUrl) meta.videoUrl = car.videoUrl;
+        if (car.thumbnail) meta.thumbnail = car.thumbnail;
+
+        const descSuffix = ` |||META:${JSON.stringify(meta)}`;
+        payload.description = (car.description !== undefined ? car.description : "") + descSuffix;
+      }
 
       const { data, error } = await supabase.from('cars').update(payload).eq('id', id).select().single();
       if (error) throw error;
