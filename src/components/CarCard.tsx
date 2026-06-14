@@ -338,6 +338,23 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   // Reviews flow states
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
+
+  // Keyboard navigation for photo gallery
+  useEffect(() => {
+    if (!isPhotosOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" && allPhotos.length > 1) {
+        setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+      } else if (e.key === "ArrowRight" && allPhotos.length > 1) {
+        setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+      } else if (e.key === "Escape") {
+        setIsPhotosOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPhotosOpen, allPhotos.length]);
+
   const [reviewAuthor, setReviewAuthor] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
@@ -610,7 +627,7 @@ Description: ${formattedDesc}`;
             <div
               id={`car-image-container-${car.id}`}
               className="relative h-48 bg-stone-50 overflow-hidden cursor-pointer"
-              onClick={(e) => { e.stopPropagation(); startTransition(() => setIsPhotosOpen(true)); }}
+              onClick={(e) => { e.stopPropagation(); setCurrentPhotoIndex(0); startTransition(() => setIsPhotosOpen(true)); }}
             >
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               {hasVideo ? (
@@ -746,6 +763,17 @@ Description: ${formattedDesc}`;
 
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
+
+              {/* Photo Gallery Badge */}
+              {allPhotos.length > 1 && (
+                <div 
+                  id={`car-image-gallery-badge-${car.id}`}
+                  className="absolute top-3 left-3 bg-stone-900/75 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-stone-200 flex items-center gap-1 font-sans font-semibold z-10 pointer-events-none select-none shadow-sm transition-opacity duration-300 group-hover:bg-stone-950/80"
+                >
+                  <Images className="w-3 h-3 text-stone-300" />
+                  <span>{allPhotos.length} Photos</span>
+                </div>
+              )}
 
               {/* Sample Photo Disclaimer Overlay */}
               {!isPlaying && (
@@ -1665,33 +1693,51 @@ Description: ${formattedDesc}`;
         <AnimatePresence>
           {isPhotosOpen && (
             <div
-              className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md select-none"
+              className="fixed inset-0 z-[60] flex flex-col items-center justify-between p-4 pb-6 bg-black/90 backdrop-blur-md select-none"
               onClick={() => startTransition(() => setIsPhotosOpen(false))}
             >
+              {/* Header inside modal */}
+              <div className="w-full max-w-5xl flex items-center justify-between px-4 pt-2 mb-2 z-10" onClick={(e) => e.stopPropagation()}>
+                <div className="flex flex-col">
+                  <span className="text-white font-sans font-bold text-lg">{car.name}</span>
+                  <span className="text-white/60 font-mono text-xs">Full Media Gallery</span>
+                </div>
+                <button
+                  onClick={() => startTransition(() => setIsPhotosOpen(false))}
+                  className="text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer border border-white/10 shadow-sm"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Main Content View with Left/Right Arrows */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="relative max-w-5xl w-full flex flex-col items-center gap-4"
+                className="relative max-w-5xl w-full flex-1 flex flex-col items-center justify-center gap-4 py-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="w-full flex items-center justify-between px-2 mb-2">
-                  <div className="flex flex-col">
-                    <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-                    <span className="text-white/60 font-mono text-xs">Full Media View</span>
-                  </div>
-                  <button
-                    onClick={() => startTransition(() => setIsPhotosOpen(false))}
-                    className="text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer border border-white/10"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                
-                <div className="relative w-full group flex justify-center">
+                <div className="relative w-full group flex items-center justify-center min-h-[40vh]">
+                  {/* Left Arrow Button */}
+                  {allPhotos.length > 1 && (
+                    <button
+                      id={`gallery-prev-${car.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+                      }}
+                      className="absolute left-2 sm:left-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
+                      title="Previous Photo"
+                    >
+                      <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
+                  )}
+
+                  {/* Media Rendering */}
                   {hasVideo ? (
                     <motion.video
-                      key={`video-${renderedImageSrc}`}
+                      key={`video-${renderedImageSrc}-${currentPhotoIndex}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -1700,22 +1746,22 @@ Description: ${formattedDesc}`;
                       controls
                       autoPlay
                       loop
-                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                     />
                   ) : imageError && isGoogleDrive && driveId ? (
                     <motion.iframe
-                      key={`iframe-${renderedImageSrc}`}
+                      key={`iframe-${renderedImageSrc}-${currentPhotoIndex}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
                       src={`https://drive.google.com/file/d/${driveId}/preview`}
-                      className="w-full max-w-4xl h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                       allow="autoplay"
                     />
                   ) : (
                     <motion.img
-                      key={`img-${renderedImageSrc}`}
+                      key={`img-${renderedImageSrc}-${currentPhotoIndex}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -1729,11 +1775,70 @@ Description: ${formattedDesc}`;
                           (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
                         }
                       }}
-                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                     />
+                  )}
+
+                  {/* Right Arrow Button */}
+                  {allPhotos.length > 1 && (
+                    <button
+                      id={`gallery-next-${car.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+                      }}
+                      className="absolute right-2 sm:right-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
+                      title="Next Photo"
+                    >
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
                   )}
                 </div>
               </motion.div>
+
+              {/* Gallery Footer: Counter & Thumbnails */}
+              <div className="w-full max-w-5xl flex flex-col items-center gap-3 z-10" onClick={(e) => e.stopPropagation()}>
+                {/* Counter indicator */}
+                {allPhotos.length > 1 && (
+                  <div className="text-stone-300 font-sans text-xs bg-black/45 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md select-none tracking-wide">
+                    {currentPhotoIndex + 1} / {allPhotos.length}
+                  </div>
+                )}
+
+                {/* Thumbnails strip */}
+                {allPhotos.length > 1 && (
+                  <div className="flex gap-2 max-w-full overflow-x-auto px-4 py-2 scrollbar-none items-center justify-center">
+                    {allPhotos.map((photo, index) => {
+                      const isSelected = currentPhotoIndex === index;
+                      const thumbUrl = getOptimizedImageUrl(photo, windowWidth, 'thumbnail');
+                      return (
+                        <button
+                          key={index}
+                          id={`gallery-thumb-${car.id}-${index}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentPhotoIndex(index);
+                          }}
+                          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden cursor-pointer shrink-0 transition-all duration-300 ${
+                            isSelected
+                              ? "ring-2 ring-amber-400 scale-105 shadow-[0_0_12px_rgba(251,191,36,0.35)]"
+                              : "ring-1 ring-white/10 opacity-55 hover:opacity-100 hover:scale-[1.03]"
+                          }`}
+                        >
+                          <img
+                            src={thumbUrl}
+                            alt={`${car.name} thumbnail ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
+                            }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </AnimatePresence>,
