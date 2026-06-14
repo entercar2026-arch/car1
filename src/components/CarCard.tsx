@@ -787,23 +787,6 @@ Description: ${formattedDesc}`;
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
 
-              {/* Photo Gallery Badge - Interactive, Clickable & Safe Position */}
-              {allPhotos.length > 1 && (
-                <button 
-                  type="button"
-                  id={`car-image-gallery-badge-${car.id}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentPhotoIndex(0);
-                    startTransition(() => setIsPhotosOpen(true));
-                  }}
-                  className="absolute top-3 left-14 bg-stone-900/85 hover:bg-stone-950 text-white px-3 py-1.5 rounded-full text-[11px] text-stone-200 flex items-center gap-1.5 font-sans font-semibold z-20 pointer-events-auto cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all duration-200"
-                >
-                  <Images className="w-3.5 h-3.5 text-stone-300" />
-                  <span>{allPhotos.length} Photos</span>
-                </button>
-              )}
-
               {/* Sample Photo Disclaimer Overlay */}
               {!isPlaying && (
                 <div 
@@ -857,6 +840,23 @@ Description: ${formattedDesc}`;
               className="p-5 flex-1 flex flex-col justify-between pt-2"
             >
               <div>
+                {allPhotos.length > 1 && (
+                  <div className="flex items-center mb-2">
+                    <button 
+                      type="button"
+                      id={`car-image-gallery-badge-${car.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentPhotoIndex(0);
+                        startTransition(() => setIsPhotosOpen(true));
+                      }}
+                      className="bg-[#4C0027]/10 hover:bg-[#4C0027] hover:text-white text-[#4C0027] px-2.5 py-1 rounded-full text-[10px] flex items-center gap-1.5 font-sans font-extrabold transition-all duration-200 cursor-pointer shadow-xs border border-[#4C0027]/15"
+                    >
+                      <Images className="w-3.5 h-3.5 shrink-0" />
+                      <span>{allPhotos.length} Photos</span>
+                    </button>
+                  </div>
+                )}
                 <div className="flex justify-between items-baseline mb-1 w-full gap-2 flex-wrap">
                   <h3
                     id={`car-title-${car.id}`}
