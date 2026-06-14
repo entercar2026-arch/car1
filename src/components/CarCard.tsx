@@ -178,6 +178,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    const target = e.target;
     if (file) {
         const reader = new FileReader();
         reader.onloadend = async () => {
@@ -188,6 +189,12 @@ const CarCardComponent: React.FC<CarCardProps> = ({
             if (onEdit) {
                 onEdit({ ...car, customColors: newColors });
             }
+            
+            // Automatically select and view the new color
+            handleColorPick(extractedColor, dataUrl);
+            
+            // Clear input for future uploads
+            target.value = "";
         };
         reader.readAsDataURL(file);
     }
@@ -274,8 +281,8 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   const videoSource = useMemo(() => {
     if (currentPhotoIndex === 0 && effectiveVideoUrl) return effectiveVideoUrl;
-    return currentImage;
-  }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
+    return primaryImage;
+  }, [primaryImage, effectiveVideoUrl, currentPhotoIndex]);
 
   const optimizedVideoSource = useMemo(() => {
     return getOptimizedImageUrl(videoSource, windowWidth, 'cover');
@@ -891,9 +898,9 @@ Description: ${formattedDesc}`;
                              title="View variation"
                           />
                       ))}
-                      <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 px-2 py-1 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 ml-1" title="Upload new color variation">
+                      <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 ml-1 relative overflow-hidden" title="Upload new color variation">
                          +
-                         <input type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+                         <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onChange={handleColorImageUpload} />
                       </label>
                     </div>
                   </div>
