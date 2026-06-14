@@ -835,23 +835,6 @@ Description: ${formattedDesc}`;
                   >
                     <ChevronRight className="w-4 h-4 text-white" />
                   </button>
-                  
-                  {/* Miniature Dots Indicator */}
-                  <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 bg-black/35 px-2.5 py-1 rounded-full backdrop-blur-[2px] pointer-events-auto shadow-xs">
-                    {allPhotos.map((_, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentPhotoIndex(idx);
-                        }}
-                        className={`w-1.5 h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
-                          idx === currentPhotoIndex ? "bg-white scale-125 shadow-xs" : "bg-white/45 hover:bg-white/80"
-                        }`}
-                      />
-                    ))}
-                  </div>
                 </>
               )}
 
@@ -909,19 +892,23 @@ Description: ${formattedDesc}`;
             >
               <div>
                 {allPhotos.length > 1 && (
-                  <div className="flex items-center mb-2">
-                    <button 
-                      type="button"
-                      id={`car-image-gallery-badge-${car.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
-                      }}
-                      className="bg-[#4C0027]/10 hover:bg-[#4C0027] hover:text-white text-[#4C0027] px-2.5 py-1 rounded-full text-[10px] flex items-center gap-1.5 font-sans font-extrabold transition-all duration-200 cursor-pointer shadow-xs border border-[#4C0027]/15"
-                    >
-                      <Images className="w-3.5 h-3.5 shrink-0" />
-                      <span>{currentPhotoIndex + 1} / {allPhotos.length} Photos</span>
-                    </button>
+                  <div className="flex items-center gap-2 mb-3">
+                    {allPhotos.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentPhotoIndex(idx);
+                        }}
+                        className={`w-2.5 h-2.5 rounded-full transition-all duration-200 cursor-pointer ${
+                          idx === currentPhotoIndex
+                            ? "bg-[#4C0027] scale-125 shadow-xs"
+                            : "bg-[#4C0027]/25 hover:bg-[#4C0027]/55"
+                        }`}
+                        title={`Go to photo ${idx + 1}`}
+                      />
+                    ))}
                   </div>
                 )}
                 <div className="flex justify-between items-baseline mb-1 w-full gap-2 flex-wrap">
