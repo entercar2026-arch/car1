@@ -68,6 +68,13 @@ const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 
   return url;
 };
 
+const getYoutubeId = (url?: string | null): string | null => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
 const getFallbackCarThumbnail = (carName: string, category: string): string => {
   const name = carName.toLowerCase();
   if (name.includes("porsche") || name.includes("911")) {
@@ -287,12 +294,26 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const isMobile = windowWidth <= 768;
 
-  const allPhotos = useMemo(() => {
-    return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
-  }, [car.photos, car.image, car.altImage]);
-
   const primaryImage = car.image || getFallbackCarThumbnail(car.name, car.category);
   const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover'), [primaryImage, windowWidth]);
+
+  const allPhotos = useMemo(() => {
+    const list: string[] = [];
+    if (car.image) {
+      list.push(car.image);
+    }
+    if (car.photos) {
+      car.photos.forEach(p => {
+        if (p && p !== car.image && !list.includes(p)) {
+          list.push(p);
+        }
+      });
+    }
+    if (car.altImage && car.altImage !== car.image && !list.includes(car.altImage)) {
+      list.push(car.altImage);
+    }
+    return list.length ? list : [primaryImage];
+  }, [car.image, car.photos, car.altImage, primaryImage]);
   const currentImage = aiColorImage 
     ? aiColorImage 
     : (mediaType === 'photo' && allPhotos.length > 0 
@@ -357,18 +378,22 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   }, [currentImage, windowWidth]);
 
   const youtubeThumbnail = useMemo(() => {
-    const getYoutubeId = (url?: string): string | null => {
-      if (!url) return null;
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2].length === 11) ? match[2] : null;
-    };
     const ytId = getYoutubeId(currentImage) || getYoutubeId(car.videoUrl);
     if (ytId) {
       return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
     }
     return undefined;
   }, [currentImage, car.videoUrl]);
+
+  const isYoutubeVideo = useMemo(() => {
+    return !!getYoutubeId(videoSource);
+  }, [videoSource]);
+
+  const youtubeEmbedUrl = useMemo(() => {
+    const id = getYoutubeId(videoSource);
+    if (!id) return "";
+    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playlist=${id}&loop=1&playsinline=1&controls=1&enablejsapi=1`;
+  }, [videoSource]);
 
   const [generatedPoster, setGeneratedPoster] = useState<string | undefined>();
   
@@ -741,36 +766,48 @@ Description: ${formattedDesc}`;
                     </div>
                   )}
                   {isPlaying ? (
-                    <motion.video
-                      id={`car-photo-${car.id}`}
-                      ref={videoRef as any}
-                      src={optimizedVideoSource}
-                      poster={hasRealPoster ? finalVideoPoster : undefined}
-                      preload="auto"
-                      loop
-                      muted
-                      playsInline
-                      autoPlay
-                      initial={{ opacity: 0 }}
-                      whileInView={{
-                        opacity: 1,
-                        scale: 1,
-                        x: 0,
-                        y: 0,
-                        rotate: 0,
-                      }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3 }}
-                      className="w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsPlaying(false);
-                      }}
-                      onLoadStart={() => setIsVideoLoading(true)}
-                      onWaiting={() => setIsVideoLoading(true)}
-                      onPlaying={() => setIsVideoLoading(false)}
-                      onCanPlay={() => setIsVideoLoading(false)}
-                    />
+                    isYoutubeVideo ? (
+                      <iframe
+                        id={`car-video-yt-${car.id}`}
+                        src={youtubeEmbedUrl}
+                        title={`${car.name} Video`}
+                        className="w-full h-full border-0 select-none cursor-pointer rounded-2xl relative z-10"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-view; web-share"
+                        allowFullScreen
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <motion.video
+                        id={`car-photo-${car.id}`}
+                        ref={videoRef as any}
+                        src={optimizedVideoSource}
+                        poster={hasRealPoster ? finalVideoPoster : undefined}
+                        preload="auto"
+                        loop
+                        muted
+                        playsInline
+                        autoPlay
+                        initial={{ opacity: 0 }}
+                        whileInView={{
+                          opacity: 1,
+                          scale: 1,
+                          x: 0,
+                          y: 0,
+                          rotate: 0,
+                        }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsPlaying(false);
+                        }}
+                        onLoadStart={() => setIsVideoLoading(true)}
+                        onWaiting={() => setIsVideoLoading(true)}
+                        onPlaying={() => setIsVideoLoading(false)}
+                        onCanPlay={() => setIsVideoLoading(false)}
+                      />
+                    )
                   ) : hasRealPoster ? (
                     <motion.img
                       id={`car-photo-${car.id}`}
@@ -1006,21 +1043,18 @@ Description: ${formattedDesc}`;
                           setActiveColor(null);
                           setAiColorImage(null);
                         }}
-                        className={`relative w-10 h-10 rounded-lg border-2 transition-all duration-200 cursor-pointer flex flex-shrink-0 items-center justify-center bg-stone-50 ${
-                          (mediaType === 'video') || (mediaType === 'photo' && !effectiveVideoUrl && currentPhotoIndex === 0 && !aiColorImage)
+                        className={`relative w-10 h-10 rounded-lg border-2 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center bg-stone-50 ${
+                          mediaType === 'video'
                             ? "border-[#4C0027] scale-105 shadow-md bg-stone-100"
-                            : "border-stone-200 hover:border-stone-450 hover:bg-stone-100"
+                            : "border-stone-200 hover:border-[#4C0027] hover:bg-stone-100"
                         }`}
-                        title={effectiveVideoUrl ? (isPlaying ? "Pause cover video" : "Play cover video") : "View cover image"}
+                        title="Play default cover video"
                       >
-                        {effectiveVideoUrl ? (
-                          isPlaying && mediaType === 'video' ? (
-                            <span className="text-[10px] font-extrabold select-none tracking-tighter text-[#4C0027]">⏸</span>
-                          ) : (
-                            <Play className="w-3 h-3 text-stone-600 fill-current ml-0.5" />
-                          )
-                        ) : (
-                          <span className="text-[9px] font-bold font-mono text-stone-600 uppercase leading-none">Cover</span>
+                        <span className="text-[9px] font-black text-stone-700 tracking-tight leading-none">COVER</span>
+                        {effectiveVideoUrl && (
+                          <div className="absolute bottom-0.5 right-0.5 bg-[#4C0027]/10 rounded-full p-0.5">
+                            <Play className="w-2 h-2 text-[#4C0027] fill-current" />
+                          </div>
                         )}
                       </button>
 
@@ -1040,7 +1074,7 @@ Description: ${formattedDesc}`;
                           className={`relative w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
                             mediaType === 'photo' && currentPhotoIndex === idx && !aiColorImage
                               ? "border-[#4C0027] scale-105 shadow-md"
-                              : "border-stone-200 hover:border-stone-400"
+                              : "border-stone-200 hover:border-stone-450"
                           }`}
                         >
                           <img
@@ -1052,16 +1086,18 @@ Description: ${formattedDesc}`;
                         </button>
                       ))}
 
-                      {/* Explicit Interactive "Upload Photo" Button */}
-                      <button
-                        type="button"
-                        onClick={handleGalleryUploadClick}
-                        className="w-10 h-10 rounded-lg border-2 border-dashed border-stone-300 hover:border-[#4C0027] hover:bg-stone-50 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center flex-shrink-0"
-                        title="Upload a new photo to the car card"
-                      >
-                        <Plus className="w-3.5 h-3.5 text-stone-500" />
-                        <span className="text-[7px] font-bold font-mono text-stone-500 uppercase leading-none mt-0.5">Photo</span>
-                      </button>
+                      {/* Explicit Interactive "Upload Photo" Button (Only Shown to Admins) */}
+                      {isAdminMode && (
+                        <button
+                          type="button"
+                          onClick={handleGalleryUploadClick}
+                          className="w-10 h-10 rounded-lg border-2 border-dashed border-stone-300 hover:border-[#4C0027] hover:bg-stone-50 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center flex-shrink-0"
+                          title="Upload a new photo to the car card"
+                        >
+                          <Plus className="w-3.5 h-3.5 text-stone-500" />
+                          <span className="text-[7px] font-bold font-mono text-stone-500 uppercase leading-none mt-0.5">Photo</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1956,18 +1992,29 @@ Description: ${formattedDesc}`;
                 
                 <div className="relative w-full group flex justify-center">
                   {hasVideo ? (
-                    <motion.video
-                      key={`video-${renderedImageSrc}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      src={videoSource}
-                      controls
-                      autoPlay
-                      loop
-                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                    />
+                    isYoutubeVideo ? (
+                      <iframe
+                        key={`yt-${renderedImageSrc}`}
+                        src={youtubeEmbedUrl}
+                        title={`${car.name} Video`}
+                        className="w-full max-w-4xl h-[75vh] rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-view; web-share"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <motion.video
+                        key={`video-${renderedImageSrc}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        src={videoSource}
+                        controls
+                        autoPlay
+                        loop
+                        className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      />
+                    )
                   ) : imageError && isGoogleDrive && driveId ? (
                     <motion.iframe
                       key={`iframe-${renderedImageSrc}`}

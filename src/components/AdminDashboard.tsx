@@ -185,7 +185,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === "string") {
-          setFormImage(reader.result);
+          if (reader.result.startsWith("data:video/")) {
+            setFormVideoUrl(reader.result);
+          } else {
+            setFormImage(reader.result);
+          }
         }
       };
       reader.readAsDataURL(file);
@@ -1020,18 +1024,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
                   </div>
 
-                  {/* Visual Image link */}
+                  {/* Vehicle Photo URL (Main Image Link) */}
                   <div className="sm:col-span-2">
                     <div className="flex justify-between items-center mb-1">
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Car Image or Video URL
+                        Vehicle Photo URL (Main Image Link) *
                       </label>
                       <label className="text-[10px] font-bold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded cursor-pointer hover:bg-[#4C0027]/20 transition-colors flex items-center gap-1">
                         <Upload className="w-3 h-3" />
-                        Upload
+                        Upload Photo
                         <input
                           type="file"
-                          accept="image/*,video/*"
+                          accept="image/*"
                           className="hidden"
                           onChange={handleImageUpload}
                         />
@@ -1043,16 +1047,56 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </span>
                       {formImage.length > 200 && formImage.startsWith("data:") ? (
                         <div className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-100 rounded-xl text-stone-600 text-xs flex justify-between items-center">
-                          <span className="truncate">Local media uploaded</span>
+                          <span className="truncate">Local image uploaded</span>
                           <button type="button" onClick={() => setFormImage("")} className="text-rose-500 hover:text-rose-700 font-bold ml-2 shrink-0">&times;</button>
                         </div>
                       ) : (
                         <OptimizedInput
                           id="input-car-image"
                           type="text"
+                          required
                           value={formImage}
                           onChange={(val: any) => setFormImage(val)}
-                          placeholder="https://... or Google Drive link"
+                          placeholder="https://... or Google Drive image link"
+                          className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Vehicle Video URL (YouTube or Direct Video Link) */}
+                  <div className="sm:col-span-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Vehicle Video URL (YouTube or Direct Link)
+                      </label>
+                      <label className="text-[10px] font-bold text-[#4C0027] bg-[#4C0027]/10 px-2 py-0.5 rounded cursor-pointer hover:bg-[#4C0027]/20 transition-colors flex items-center gap-1">
+                        <Upload className="w-3 h-3" />
+                        Upload Video
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={handleImageUpload}
+                        />
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
+                        <Link2 className="h-4 w-4" />
+                      </span>
+                      {formVideoUrl.length > 200 && formVideoUrl.startsWith("data:") ? (
+                        <div className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-100 rounded-xl text-stone-600 text-xs flex justify-between items-center">
+                          <span className="truncate">Local video uploaded</span>
+                          <button type="button" onClick={() => setFormVideoUrl("")} className="text-rose-500 hover:text-rose-700 font-bold ml-2 shrink-0">&times;</button>
+                        </div>
+                      ) : (
+                        <OptimizedInput
+                          id="input-car-video"
+                          type="text"
+                          value={formVideoUrl}
+                          onChange={(val: any) => setFormVideoUrl(val)}
+                          placeholder="https://youtube.com/watch?v=... or direct MP4 link"
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
