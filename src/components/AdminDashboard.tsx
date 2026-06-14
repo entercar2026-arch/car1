@@ -1229,73 +1229,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             return (
                               <div 
                                 key={idx} 
-                                className="flex flex-col gap-1.5 p-2 bg-white border border-stone-150 rounded-lg shadow-2xs"
+                                className="flex flex-col gap-1.5 p-2.5 bg-white border border-stone-150 rounded-lg shadow-2xs"
                               >
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-semibold text-stone-700 flex items-center gap-1">
-                                    {isFirst ? (
-                                      <>
-                                        <span className="inline-block p-1 bg-stone-100 rounded text-[10px] text-stone-600">Slide {idx + 1}</span>
+                                {isFirst ? (
+                                  <div className="flex flex-col gap-1.5 h-full">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-semibold text-stone-500 flex items-center gap-1">
+                                        <span className="inline-block p-1 bg-stone-200 rounded text-[10px] text-stone-700 font-bold">Slide {idx + 1}</span>
                                         <span>First Dot (Play Video / Photo 1)</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span className="inline-block p-1 bg-stone-100 rounded text-[10px] text-stone-600">Slide {idx + 1}</span>
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 px-2.5 py-1.5 rounded-md mt-auto">
+                                      <div 
+                                        className="w-7 h-7 rounded-md border border-stone-200 shadow-2xs shrink-0"
+                                        style={{ backgroundColor: formDotColor || "#4C0027" }}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span className="font-mono text-xs uppercase text-stone-700 font-extrabold">{formDotColor || "#4C0027"}</span>
+                                        <span className="text-[10px] text-stone-400 font-semibold italic">Uses Default Indicator Color</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col gap-1.5 h-full">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-semibold text-stone-700 flex items-center gap-1">
+                                        <span className="inline-block p-1 bg-stone-150 rounded text-[10px] text-stone-600 font-bold">Slide {idx + 1}</span>
                                         <span>Dot {idx + 1}</span>
-                                      </>
-                                    )}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="color"
-                                    value={currentVal}
-                                    onChange={(e) => {
-                                      const updated = [...formDotColors];
-                                      for (let k = 0; k <= idx; k++) {
-                                        if (updated[k] === undefined) {
-                                          updated[k] = formDotColor || "#4C0027";
-                                        }
-                                      }
-                                      updated[idx] = e.target.value;
-                                      setFormDotColors(updated);
-                                    }}
-                                    className="w-8 h-8 cursor-pointer border border-stone-300 rounded-md p-0.5 bg-white shrink-0"
-                                    title={`Choose color for dot ${idx + 1}`}
-                                  />
-                                  <span className="font-mono text-xs uppercase text-stone-500 font-extrabold flex-1">{currentVal}</span>
-                                  
-                                  {/* Quick colors for this specific dot */}
-                                  <div className="flex items-center gap-1 bg-stone-50 p-1 rounded-md border border-stone-100">
-                                    {[
-                                      "#4C0027",
-                                      "#DC2626",
-                                      "#2563EB",
-                                      "#059669",
-                                      "#D97706",
-                                      "#1C1917"
-                                    ].map((hex) => (
-                                      <button
-                                        key={hex}
-                                        type="button"
-                                        onClick={() => {
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-auto">
+                                      <input
+                                        type="color"
+                                        value={currentVal}
+                                        onChange={(e) => {
                                           const updated = [...formDotColors];
                                           for (let k = 0; k <= idx; k++) {
                                             if (updated[k] === undefined) {
                                               updated[k] = formDotColor || "#4C0027";
                                             }
                                           }
-                                          updated[idx] = hex;
+                                          updated[idx] = e.target.value;
                                           setFormDotColors(updated);
                                         }}
-                                        className={`w-3.5 h-3.5 rounded-full border transition-all duration-100 cursor-pointer ${
-                                          currentVal.toLowerCase() === hex.toLowerCase() ? "scale-110 border-stone-700 ring-1 ring-stone-200" : "border-transparent hover:scale-105"
-                                        }`}
-                                        style={{ backgroundColor: hex }}
+                                        className="w-8 h-8 cursor-pointer border border-stone-300 rounded-md p-0.5 bg-white shrink-0"
+                                        title={`Choose color for dot ${idx + 1}`}
                                       />
-                                    ))}
+                                      <div className="flex flex-col">
+                                        <span className="font-mono text-xs uppercase text-stone-600 font-extrabold">{currentVal}</span>
+                                        <span className="text-[10px] text-stone-400 font-medium font-semibold">Custom Color Picker Choice</span>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
+                                )}
                               </div>
                             );
                           })}
