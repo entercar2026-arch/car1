@@ -149,6 +149,20 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [activeColor, setActiveColor] = useState<string | null>(null);
   const [stagingColor, setStagingColor] = useState<{ img: string, color: string } | null>(null);
 
+  const effectiveVideoUrl = useMemo(() => {
+    return car.videoUrl || "";
+  }, [car.videoUrl]);
+
+  const [mediaType, setMediaType] = useState<'video' | 'photo'>(() => {
+    return effectiveVideoUrl ? 'video' : 'photo';
+  });
+
+  useEffect(() => {
+    setMediaType(car.videoUrl ? 'video' : 'photo');
+    setCurrentPhotoIndex(0);
+    setIsPlaying(false);
+  }, [car.id, car.videoUrl]);
+
   const extractAverageColor = (url: string): Promise<string> => {
      return new Promise((resolve) => {
          const img = new Image();
@@ -206,6 +220,8 @@ const CarCardComponent: React.FC<CarCardProps> = ({
             const updatedPhotos = [...(car.photos || []), dataUrl];
             onEdit({ ...car, photos: updatedPhotos });
             setCurrentPhotoIndex(updatedPhotos.length - 1);
+            setMediaType('photo');
+            setIsPlaying(false);
             setActiveColor(null);
             setAiColorImage(null);
             target.value = "";
@@ -271,17 +287,17 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const isMobile = windowWidth <= 768;
 
-  const effectiveVideoUrl = useMemo(() => {
-    return car.videoUrl || "";
-  }, [car.videoUrl]);
-
   const allPhotos = useMemo(() => {
     return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
   }, [car.photos, car.image, car.altImage]);
 
   const primaryImage = car.image || getFallbackCarThumbnail(car.name, car.category);
   const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover'), [primaryImage, windowWidth]);
-  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage);
+  const currentImage = aiColorImage 
+    ? aiColorImage 
+    : (mediaType === 'photo' && allPhotos.length > 0 
+        ? allPhotos[currentPhotoIndex] 
+        : primaryImage);
 
   const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover'), [currentImage, windowWidth]);
   const [renderedImageSrc, setRenderedImageSrc] = useState(targetImageSrc);
@@ -317,14 +333,14 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   };
 
   const hasVideo = useMemo(() => {
-    if (currentPhotoIndex === 0 && effectiveVideoUrl) return true;
+    if (mediaType === 'video' && effectiveVideoUrl) return true;
     return isVideoMedia(currentImage);
-  }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
+  }, [currentImage, effectiveVideoUrl, mediaType]);
 
   const videoSource = useMemo(() => {
-    if (currentPhotoIndex === 0 && effectiveVideoUrl) return effectiveVideoUrl;
+    if (mediaType === 'video' && effectiveVideoUrl) return effectiveVideoUrl;
     return primaryImage;
-  }, [primaryImage, effectiveVideoUrl, currentPhotoIndex]);
+  }, [primaryImage, effectiveVideoUrl, mediaType]);
 
   const optimizedVideoSource = useMemo(() => {
     return getOptimizedImageUrl(videoSource, windowWidth, 'cover');
@@ -967,9 +983,7 @@ Description: ${formattedDesc}`;
                   )}
                   <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
                      {t.samplePhotoNotice}
-                  </p>
-
-                  {/* Photo Gallery Thumbnails & Upload Button */}
+                  </p>                  {/* Photo Gallery Thumbnails & Upload Button */}
                   <div className="mt-2 mb-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
                       {/* View Original / Reset Button */}
@@ -977,23 +991,37 @@ Description: ${formattedDesc}`;
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (currentPhotoIndex === 0 && !activeColor && !aiColorImage) {
-                            setIsPlaying((prev) => !prev);
+                          if (effectiveVideoUrl) {
+                            if (mediaType === 'video') {
+                              setIsPlaying((prev) => !prev);
+                            } else {
+                              setMediaType('video');
+                              setIsPlaying(true);
+                            }
                           } else {
+                            setMediaType('photo');
                             setCurrentPhotoIndex(0);
-                            setActiveColor(null);
-                            setAiColorImage(null);
-                            setIsPlaying(true);
+                            setIsPlaying(false);
                           }
+                          setActiveColor(null);
+                          setAiColorImage(null);
                         }}
                         className={`relative w-10 h-10 rounded-lg border-2 transition-all duration-200 cursor-pointer flex flex-shrink-0 items-center justify-center bg-stone-50 ${
-                          currentPhotoIndex === 0 && !activeColor && !aiColorImage
+                          (mediaType === 'video') || (mediaType === 'photo' && !effectiveVideoUrl && currentPhotoIndex === 0 && !aiColorImage)
                             ? "border-[#4C0027] scale-105 shadow-md bg-stone-100"
                             : "border-stone-200 hover:border-stone-450 hover:bg-stone-100"
                         }`}
-                        title="View original cover image"
+                        title={effectiveVideoUrl ? (isPlaying ? "Pause cover video" : "Play cover video") : "View cover image"}
                       >
-                        <Play className="w-3 h-3 text-stone-600 fill-current ml-0.5" />
+                        {effectiveVideoUrl ? (
+                          isPlaying && mediaType === 'video' ? (
+                            <span className="text-[10px] font-extrabold select-none tracking-tighter text-[#4C0027]">⏸</span>
+                          ) : (
+                            <Play className="w-3 h-3 text-stone-600 fill-current ml-0.5" />
+                          )
+                        ) : (
+                          <span className="text-[9px] font-bold font-mono text-stone-600 uppercase leading-none">Cover</span>
+                        )}
                       </button>
 
                       {/* Other Photos in Gallery */}
@@ -1003,13 +1031,14 @@ Description: ${formattedDesc}`;
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            setMediaType('photo');
                             setCurrentPhotoIndex(idx);
                             setActiveColor(null);
                             setAiColorImage(null);
                             setIsPlaying(false);
                           }}
                           className={`relative w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer flex-shrink-0 ${
-                            currentPhotoIndex === idx && !aiColorImage
+                            mediaType === 'photo' && currentPhotoIndex === idx && !aiColorImage
                               ? "border-[#4C0027] scale-105 shadow-md"
                               : "border-stone-200 hover:border-stone-400"
                           }`}
