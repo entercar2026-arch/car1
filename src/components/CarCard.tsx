@@ -918,8 +918,8 @@ Description: ${formattedDesc}`;
                               isActive ? "scale-110 select-none shadow-xs" : "opacity-60 hover:opacity-100"
                             }`}
                             style={{
-                              backgroundColor: isActive ? activeColor : `${activeColor}40`,
-                              color: isActive ? "#ffffff" : "#1c1917",
+                              backgroundColor: activeColor,
+                              color: "#ffffff",
                             }}
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
@@ -949,7 +949,7 @@ Description: ${formattedDesc}`;
                             isActive ? "scale-110 shadow-xs" : "opacity-60 hover:opacity-100"
                           }`}
                           style={{
-                            backgroundColor: isActive ? activeColor : `${activeColor}40`
+                            backgroundColor: activeColor
                           }}
                           title={`Go to photo ${idx + 1}`}
                         />
