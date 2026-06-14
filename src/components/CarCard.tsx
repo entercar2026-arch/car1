@@ -146,6 +146,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   // Internet Image Search states
   const [aiColorImage, setAiColorImage] = useState<string | null>(null);
   const [activeColor, setActiveColor] = useState<string | null>(null);
+  const [stagingColor, setStagingColor] = useState<{ img: string, color: string } | null>(null);
 
   const extractAverageColor = (url: string): Promise<string> => {
      return new Promise((resolve) => {
@@ -175,7 +176,6 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const handleColorPick = (colorKey: string, imageUrl: string) => {
     setActiveColor(colorKey);
     setAiColorImage(imageUrl);
-    startTransition(() => setIsPhotosOpen(true));
   };
 
   const colorUploadRef = React.useRef<HTMLInputElement>(null);
@@ -195,20 +195,24 @@ const CarCardComponent: React.FC<CarCardProps> = ({
         reader.onloadend = async () => {
             const dataUrl = reader.result as string;
             const extractedColor = await extractAverageColor(dataUrl);
-            const newColors = { ...(car.customColors || {}), [extractedColor]: dataUrl };
-            
-            if (onEdit) {
-                onEdit({ ...car, customColors: newColors });
-            }
-            
-            // Automatically select and view the new color
-            handleColorPick(extractedColor, dataUrl);
-            
-            // Clear input for future uploads
+            setStagingColor({ img: dataUrl, color: extractedColor });
             target.value = "";
         };
         reader.readAsDataURL(file);
     }
+  };
+
+  const finishColorUpload = () => {
+     if (stagingColor && onEdit) {
+         const newColors = { ...(car.customColors || {}), [stagingColor.color]: stagingColor.img };
+         onEdit({ ...car, customColors: newColors });
+         handleColorPick(stagingColor.color, stagingColor.img);
+     }
+     setStagingColor(null);
+  };
+  
+  const cancelColorUpload = () => {
+     setStagingColor(null);
   };
 
   useEffect(() => {
@@ -899,6 +903,14 @@ Description: ${formattedDesc}`;
                   {/* Color Palette */}
                   <div className="flex items-center justify-between mt-3 mb-1">
                     <div className="flex gap-2 items-center flex-wrap">
+                      <button
+                         type="button"
+                         onClick={(e) => { e.stopPropagation(); setActiveColor(null); setAiColorImage(null); }}
+                         className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer flex items-center justify-center bg-stone-100 ${!activeColor ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
+                         title="View original"
+                      >
+                         <Play className="w-2.5 h-2.5 text-stone-600 fill-current ml-0.5" />
+                      </button>
                       {Object.entries(car.customColors || {} as Record<string, string>).map(([colorKey, imageUrl]) => (
                           <button
                              key={colorKey}
@@ -909,14 +921,24 @@ Description: ${formattedDesc}`;
                              title="View variation"
                           />
                       ))}
-                      {isAdminMode && (
+                      {stagingColor ? (
+                          <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-full border border-stone-200 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                              <input type="color" value={stagingColor.color} onChange={(e) => setStagingColor({ ...stagingColor, color: e.target.value })} className="w-4 h-4 rounded-full border-0 p-0 cursor-pointer overflow-hidden bg-transparent block [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:border-none" />
+                              <button type="button" onClick={finishColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-green-600 hover:bg-stone-200 transition-all shadow-sm">
+                                  <Check className="w-2.5 h-2.5" />
+                              </button>
+                              <button type="button" onClick={cancelColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-red-600 hover:bg-stone-200 transition-all shadow-sm">
+                                  <X className="w-2.5 h-2.5" />
+                              </button>
+                          </div>
+                      ) : (isAdminMode && (
                         <div onClick={(e) => e.stopPropagation()}>
-                          <button type="button" onClick={handlePlusClick} className="cursor-pointer bg-stone-100 hover:bg-stone-200 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-6 h-6 outline-none" title="Upload new color variation">
-                             <span className="text-[14px] leading-none mb-[2px]">+</span>
+                          <button type="button" onClick={handlePlusClick} className="cursor-pointer bg-stone-100 hover:bg-stone-200 flex items-center justify-center rounded-full text-stone-700 font-bold transition-all border border-stone-200 shadow-sm w-5 h-5 outline-none" title="Upload new color variation">
+                             <span className="text-[12px] leading-none mb-[2px]">+</span>
                           </button>
                           <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
                   {(Object.keys(car.customColors || {}).length > 0) && (
