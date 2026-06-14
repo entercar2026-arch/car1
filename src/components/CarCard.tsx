@@ -145,7 +145,6 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   // Internet Image Search states
   const [aiColorImage, setAiColorImage] = useState<string | null>(null);
-  const [isFetchingColor, setIsFetchingColor] = useState(false);
   const [activeColor, setActiveColor] = useState<string | null>(null);
 
   const CAR_COLORS = [
@@ -156,38 +155,33 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     { name: "Blue", hex: "#2563EB" },
   ];
 
-  const fetchCarImageFromInternet = async (colorName: string) => {
+  const handleColorPick = (colorHex: string, colorName: string) => {
     setActiveColor(colorName);
-    setIsFetchingColor(true);
-    setAiColorImage(null);
-    try {
-      const query = `${car.name} ${colorName} car`;
-      const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=3&prop=imageinfo&iiprop=url&format=json&origin=*`;
-      const response = await fetch(url);
-      const data = await response.json();
-      const pages = data.query?.pages;
-      if (pages) {
-        let foundUrl = null;
-        for (const pageId of Object.keys(pages)) {
-           const candidate = pages[pageId].imageinfo[0].url;
-           if (candidate.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/)) {
-             foundUrl = candidate;
-             break;
-           }
-        }
-        if (!foundUrl && Object.keys(pages).length > 0) {
-            foundUrl = pages[Object.keys(pages)[0]].imageinfo[0].url;
-        }
-        if (foundUrl) {
-            setAiColorImage(foundUrl);
-        } else {
-            console.warn("No image found for this color.");
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch image", error);
-    } finally {
-      setIsFetchingColor(false);
+    // If we have a custom image for this color, set it
+    if (car.customColors && car.customColors[colorName]) {
+       setAiColorImage(car.customColors[colorName]);
+    } else {
+       // if not, reset
+       setAiColorImage(null);
+    }
+  };
+
+  const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!activeColor) return;
+    const file = e.target.files?.[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            const newColors = { ...(car.customColors || {}), [activeColor]: dataUrl };
+            setAiColorImage(dataUrl);
+            
+            // save immediately via onEdit if available
+            if (onEdit) {
+                onEdit({ ...car, customColors: newColors });
+            }
+        };
+        reader.readAsDataURL(file);
     }
   };
 
@@ -665,7 +659,7 @@ Description: ${formattedDesc}`;
                       <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
                     </div>
                   )}
-                  {(isPreloading || isFetchingColor) && (
+                  {isPreloading && (
                     <div className="absolute inset-0 z-[16] flex items-center justify-center bg-stone-100/30 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
                       <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
                     </div>
@@ -908,6 +902,27 @@ Description: ${formattedDesc}`;
                       {car.description}
                     </p>
                   )}
+                  {/* Color Palette */}
+                  <div className="flex items-center justify-between mt-3 mb-1">
+                    <div className="flex gap-2 items-center">
+                      {CAR_COLORS.map(color => (
+                          <button
+                             key={color.name}
+                             type="button"
+                             onClick={(e) => { e.stopPropagation(); handleColorPick(color.hex, color.name); }}
+                             className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer ${activeColor === color.name ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
+                             style={{ backgroundColor: color.hex }}
+                             title={color.name}
+                          />
+                      ))}
+                    </div>
+                    {activeColor && (
+                       <label onClick={(e) => e.stopPropagation()} className="cursor-pointer text-[10px] bg-stone-100 hover:bg-stone-200 px-2 py-1.5 flex items-center gap-1 rounded-md text-stone-700 font-bold transition-all border border-stone-200">
+                          <Upload className="w-3 h-3"/> {activeColor} Photo
+                          <input type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+                       </label>
+                    )}
+                  </div>
                   <p className="text-[10px] text-stone-400 italic line-clamp-2 mt-1">
                     {t.samplePhotoNotice}
                   </p>

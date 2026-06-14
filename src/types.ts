@@ -6,6 +6,7 @@ export interface Car {
   image: string; // URL
   altImage?: string; // photo of car in different color
   photos?: string[]; // Array of image URLs for the carousel
+  customColors?: Record<string, string>; // Maps a color name (like 'White', 'Black') to an image URL
   transmission: "Automatic" | "Manual";
   seats: number;
   fuelType: "Electric" | "Gasoline" | "Hybrid" | "Diesel" | "LPG";

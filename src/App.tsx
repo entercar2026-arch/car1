@@ -2038,6 +2038,7 @@ export default function App() {
                           onToggleLike={handleToggleLike}
                           lang={lang}
                           onFilterSelect={handleGridFilterSelect}
+                          onEdit={handleUpdateCar}
                         />
                       </motion.div>
                     ))}
