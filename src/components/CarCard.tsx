@@ -787,15 +787,21 @@ Description: ${formattedDesc}`;
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
 
-              {/* Photo Gallery Badge */}
+              {/* Photo Gallery Badge - Interactive, Clickable & Safe Position */}
               {allPhotos.length > 1 && (
-                <div 
+                <button 
+                  type="button"
                   id={`car-image-gallery-badge-${car.id}`}
-                  className="absolute top-3 left-3 bg-stone-900/75 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-stone-200 flex items-center gap-1 font-sans font-semibold z-10 pointer-events-none select-none shadow-sm transition-opacity duration-300 group-hover:bg-stone-950/80"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentPhotoIndex(0);
+                    startTransition(() => setIsPhotosOpen(true));
+                  }}
+                  className="absolute top-3 left-14 bg-stone-900/85 hover:bg-stone-950 text-white px-3 py-1.5 rounded-full text-[11px] text-stone-200 flex items-center gap-1.5 font-sans font-semibold z-20 pointer-events-auto cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all duration-200"
                 >
-                  <Images className="w-3 h-3 text-stone-300" />
+                  <Images className="w-3.5 h-3.5 text-stone-300" />
                   <span>{allPhotos.length} Photos</span>
-                </div>
+                </button>
               )}
 
               {/* Sample Photo Disclaimer Overlay */}
@@ -1765,7 +1771,7 @@ Description: ${formattedDesc}`;
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
-                      src={videoSource}
+                      src={currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage}
                       controls
                       autoPlay
                       loop
