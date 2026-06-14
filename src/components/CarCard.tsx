@@ -138,6 +138,91 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const t = translations[lang];
 
   const [isHovered, setIsHovered] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // Internet Image Search states
+  const [aiColorImage, setAiColorImage] = useState<string | null>(null);
+  const [activeColor, setActiveColor] = useState<string | null>(null);
+  const [stagingColor, setStagingColor] = useState<{ img: string, color: string } | null>(null);
+
+  const extractAverageColor = (url: string): Promise<string> => {
+     return new Promise((resolve) => {
+         const img = new Image();
+         if (!url.startsWith("data:")) {
+             img.crossOrigin = "Anonymous";
+         }
+         img.onload = () => {
+             const canvas = document.createElement("canvas");
+             canvas.width = 1;
+             canvas.height = 1;
+             const ctx = canvas.getContext("2d");
+             if (ctx) {
+                 // sample the center 20%
+                 ctx.drawImage(img, img.width * 0.4, img.height * 0.4, img.width * 0.2, img.height * 0.2, 0, 0, 1, 1);
+                 const data = ctx.getImageData(0, 0, 1, 1).data;
+                 resolve(`rgb(${data[0]}, ${data[1]}, ${data[2]})`);
+             } else {
+                 resolve("#cccccc");
+             }
+         };
+         img.onerror = () => resolve("#cccccc");
+         img.src = url;
+     });
+  };
+
+  const handleColorPick = (colorKey: string, imageUrl: string) => {
+    setActiveColor(colorKey);
+    setAiColorImage(imageUrl);
+  };
+
+  const colorUploadRef = React.useRef<HTMLInputElement>(null);
+
+  const handlePlusClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (colorUploadRef.current) {
+        colorUploadRef.current.click();
+    }
+  };
+
+  const handleColorImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const target = e.target;
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const dataUrl = reader.result as string;
+            const extractedColor = await extractAverageColor(dataUrl);
+            setStagingColor({ img: dataUrl, color: extractedColor });
+            target.value = "";
+        };
+        reader.readAsDataURL(file);
+    }
+  };
+
+  const finishColorUpload = () => {
+     if (stagingColor && onEdit) {
+         const newColors = { ...(car.customColors || {}), [stagingColor.color]: stagingColor.img };
+         onEdit({ ...car, customColors: newColors });
+         handleColorPick(stagingColor.color, stagingColor.img);
+     }
+     setStagingColor(null);
+  };
+  
+  const cancelColorUpload = () => {
+     setStagingColor(null);
+  };
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.play().catch(() => setIsPlaying(false));
+    } else {
+      videoRef.current.pause();
+    }
+  }, [isPlaying]);
 
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
 
@@ -159,81 +244,150 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const isMobile = windowWidth <= 768;
 
-  const getYoutubeId = (url?: string): string | null => {
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
+  const effectiveVideoUrl = useMemo(() => {
+    return car.videoUrl || "";
+  }, [car.videoUrl]);
+
+  const allPhotos = useMemo(() => {
+    return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
+  }, [car.photos, car.image, car.altImage]);
+
+  const primaryImage = car.image || getFallbackCarThumbnail(car.name, car.category);
+  const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover'), [primaryImage, windowWidth]);
+  const currentImage = aiColorImage ? aiColorImage : (allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage);
+
+  const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover'), [currentImage, windowWidth]);
+  const [renderedImageSrc, setRenderedImageSrc] = useState(targetImageSrc);
+  const [isPreloading, setIsPreloading] = useState(false);
+
+  useEffect(() => {
+    if (targetImageSrc !== renderedImageSrc) {
+      let isCancelled = false;
+      setIsPreloading(true);
+      const img = new Image();
+      img.onload = () => {
+        if (!isCancelled) {
+          setRenderedImageSrc(targetImageSrc);
+          setIsPreloading(false);
+        }
+      };
+      img.onerror = () => {
+        if (!isCancelled) {
+          setRenderedImageSrc(targetImageSrc);
+          setIsPreloading(false);
+        }
+      };
+      img.src = targetImageSrc;
+      return () => {
+        isCancelled = true;
+      };
+    }
+  }, [targetImageSrc, renderedImageSrc]);
 
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
     return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
   };
 
-  const mediaItems = useMemo(() => {
-    const items: Array<{
-      id: string;
-      url: string;
-      optimizedUrl: string;
-      type: 'image' | 'video' | 'iframe';
-      driveId?: string | null;
-      poster?: string;
-    }> = [];
+  const hasVideo = useMemo(() => {
+    if (currentPhotoIndex === 0 && effectiveVideoUrl) return true;
+    return isVideoMedia(currentImage);
+  }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
 
-    const explicitVid = car.videoUrl;
-    if (explicitVid) {
-      const isDrive = explicitVid.includes("drive.google.com/uc");
-      items.push({
-        id: "vid-main",
-        url: explicitVid,
-        optimizedUrl: getOptimizedImageUrl(explicitVid, windowWidth, 'cover'),
-        type: isDrive ? 'iframe' : 'video',
-        driveId: isDrive ? explicitVid.match(/id=([^&]+)/)?.[1] : null,
-        poster: car.thumbnail || (car.image ? getOptimizedImageUrl(car.image, windowWidth, 'cover') : undefined)
-      });
+  const videoSource = useMemo(() => {
+    if (currentPhotoIndex === 0 && effectiveVideoUrl) return effectiveVideoUrl;
+    return primaryImage;
+  }, [primaryImage, effectiveVideoUrl, currentPhotoIndex]);
+
+  const optimizedVideoSource = useMemo(() => {
+    return getOptimizedImageUrl(videoSource, windowWidth, 'cover');
+  }, [videoSource, windowWidth]);
+
+  const isGoogleDrive = currentImage.includes("drive.google.com/uc");
+  const driveId = isGoogleDrive ? currentImage.match(/id=([^&]+)/)?.[1] : null;
+
+  const videoPoster = useMemo(() => {
+    if (currentImage.includes("upload/") && currentImage.match(/\.(mp4|webm|ogg)$/i)) {
+      return getOptimizedImageUrl(currentImage.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
     }
+    return undefined;
+  }, [currentImage, windowWidth]);
 
-    const photos = car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
+  const youtubeThumbnail = useMemo(() => {
+    const getYoutubeId = (url?: string): string | null => {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    };
+    const ytId = getYoutubeId(currentImage) || getYoutubeId(car.videoUrl);
+    if (ytId) {
+      return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+    }
+    return undefined;
+  }, [currentImage, car.videoUrl]);
+
+  const [generatedPoster, setGeneratedPoster] = useState<string | undefined>();
+  
+  useEffect(() => {
+    if (videoPoster || youtubeThumbnail) return;
+    if (!hasVideo) return;
     
-    photos.forEach((photo, idx) => {
-      if (photo === explicitVid) return; // avoid duplicate
-
-      const isVid = isVideoMedia(photo);
-      const isDrive = photo.includes("drive.google.com/uc");
-      const ytId = getYoutubeId(photo);
-      
-      let type: 'image' | 'video' | 'iframe' = 'image';
-      if (ytId || isVid) type = 'video';
-      else if (isDrive) type = 'image'; // Try image first, fallback to iframe below if we want, but sticking to image
-
-      let poster = car.thumbnail;
-      if (isVid && photo.includes("upload/")) {
-         poster = getOptimizedImageUrl(photo.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
+    let isMounted = true;
+    const video = document.createElement("video");
+    video.crossOrigin = "anonymous";
+    video.muted = true;
+    video.playsInline = true;
+    video.style.display = "none";
+    document.body.appendChild(video);
+    
+    const cleanup = () => {
+      isMounted = false;
+      video.removeAttribute("src");
+      video.load();
+      if (document.body.contains(video)) {
+        document.body.removeChild(video);
       }
-
-      items.push({
-        id: `photo-${idx}`,
-        url: photo,
-        optimizedUrl: getOptimizedImageUrl(photo, windowWidth, 'cover'),
-        type,
-        driveId: isDrive ? photo.match(/id=([^&]+)/)?.[1] : null,
-        poster
-      });
+    };
+    
+    video.addEventListener("loadeddata", () => {
+      if (!isMounted) return;
+      video.currentTime = 0.5;
     });
-
-    if (items.length === 0) {
-      const fallback = getFallbackCarThumbnail(car.name, car.category);
-      items.push({
-         id: "fallback",
-         url: fallback,
-         optimizedUrl: getOptimizedImageUrl(fallback, windowWidth, 'cover'),
-         type: 'image'
-      });
+    
+    video.addEventListener("seeked", () => {
+      if (!isMounted) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 360;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          setGeneratedPoster(dataUrl);
+        }
+      } catch (err) {
+        console.warn("Could not generate video thumbnail due to CORS");
+      }
+      cleanup();
+    });
+    
+    const sourceToUse = optimizedVideoSource;
+    let videoUrlForCapture = sourceToUse;
+    if (videoUrlForCapture && !videoUrlForCapture.startsWith("data:") && !videoUrlForCapture.includes("drive.google.com")) {
+        videoUrlForCapture += (videoUrlForCapture.includes("?") ? "&" : "?") + "cors_bypass=" + Date.now();
     }
+    video.src = videoUrlForCapture;
+    
+    return cleanup;
+  }, [hasVideo, videoPoster, youtubeThumbnail, optimizedVideoSource]);
+  
+  const finalVideoPoster = car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster || currentImage;
 
-    return items;
-  }, [car.videoUrl, car.photos, car.image, car.altImage, car.thumbnail, car.name, car.category, windowWidth]);
+  const hasRealPoster = useMemo(() => {
+    return !!(car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster);
+  }, [car.thumbnail, videoPoster, youtubeThumbnail, generatedPoster]);
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -297,14 +451,15 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   }, [car.price]);
 
   const shareText = useMemo(() => {
+    const videoLink = effectiveVideoUrl;
     return `Check out this ${car.name}!
 Price: $${car.price.toLocaleString()} / month
 Description: ${car.description || 'A great car for you.'}
-${car.videoUrl ? `Video Link: ${car.videoUrl}` : ''}`;
-  }, [car.name, car.price, car.description, car.videoUrl]);
+${videoLink ? `Video Link: ${videoLink}` : ''}`;
+  }, [car.name, car.price, car.description, effectiveVideoUrl]);
 
   const telegramShareLink = useMemo(() => {
-    const shareUrl = car.videoUrl || car.image || window.location.href;
+    const shareUrl = effectiveVideoUrl || car.image || window.location.href;
     const cleanDescription = (car.description || "A great car for you.").trim();
     const formattedDesc = cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
 
@@ -313,10 +468,10 @@ Price: $${car.price.toLocaleString()} / month
 Description: ${formattedDesc}`;
 
     return `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(cleanText)}`;
-  }, [car.name, car.price, car.description, car.image, car.videoUrl]);
+  }, [car.name, car.price, car.description, car.image, effectiveVideoUrl]);
 
   const whatsAppShareLink = useMemo(() => {
-    const shareUrl = car.videoUrl || car.image || window.location.href;
+    const shareUrl = effectiveVideoUrl || car.image || window.location.href;
     const cleanDescription = (car.description || "A great car for you.").trim();
     const formattedDesc = cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
 
@@ -325,7 +480,7 @@ Price: $${car.price.toLocaleString()} / month
 Description: ${formattedDesc}`;
 
     return `https://wa.me/?text=${encodeURIComponent(`${shareUrl}\n\n${cleanText}`)}`;
-  }, [car.name, car.price, car.description, car.image, car.videoUrl]);
+  }, [car.name, car.price, car.description, car.image, effectiveVideoUrl]);
 
   const targetUrl = useMemo(() => {
     const carDetails = `*${bookingMode === "book" ? "Booking" : "Enquiry"} for: ${car.name}*`;
@@ -526,64 +681,162 @@ Description: ${formattedDesc}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative h-48 bg-stone-50 overflow-x-auto flex snap-x snap-mandatory scrollbar-hide cursor-pointer"
+              className="relative h-48 bg-stone-50 overflow-hidden cursor-pointer"
               onClick={(e) => { e.stopPropagation(); startTransition(() => setIsPhotosOpen(true)); }}
             >
-              {mediaItems.map((item, index) => (
-                 <div key={item.id} className="min-w-full h-full snap-center shrink-0 relative bg-stone-100 flex items-center justify-center overflow-hidden">
-                    {item.type === 'video' ? (
-                       <motion.video
-                           src={item.optimizedUrl + (item.optimizedUrl.includes("?") ? "&" : "?") + "t=0.01"}
-                           poster={item.poster}
-                           preload="metadata"
-                           muted
-                           playsInline
-                           loop
-                           autoPlay
-                           initial={{ scale: 1 }}
-                           animate={{
-                             scale: isHovered ? 1.05 : 1,
-                           }}
-                           transition={{ duration: 0.55, ease: "easeOut" }}
-                           className="w-full h-full object-cover text-transparent"
-                       />
-                    ) : item.type === 'iframe' && item.driveId ? (
-                       <motion.iframe
-                           src={`https://drive.google.com/file/d/${item.driveId}/preview`}
-                           className="w-full h-full object-cover border-none pointer-events-none"
-                           allow="autoplay"
-                       />
-                    ) : (
-                       <motion.img
-                           src={item.optimizedUrl}
-                           alt={car.name}
-                           loading="lazy"
-                           initial={{ scale: 1 }}
-                           animate={{
-                             scale: isHovered ? 1.05 : 1,
-                           }}
-                           transition={{ duration: 0.55, ease: "easeOut" }}
-                           className="w-full h-full object-cover bg-stone-100"
-                           onError={(e) => {
-                             if (!item.driveId) {
-                               (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-                             }
-                           }}
-                       />
-                    )}
-                    {item.type === 'video' && (
-                       <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase z-10 flex items-center gap-1">
-                          <Play className="w-2.5 h-2.5 fill-current" /> Video
-                       </div>
-                    )}
-                 </div>
-              ))}
+              {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
+              {hasVideo ? (
+                <>
+                  {isVideoLoading && (!hasRealPoster || isPlaying) && (
+                    <div className="absolute inset-0 z-[15] flex items-center justify-center bg-stone-100/30 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+                      <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
+                    </div>
+                  )}
+                  {isPreloading && (
+                    <div className="absolute inset-0 z-[16] flex items-center justify-center bg-stone-100/30 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+                      <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
+                    </div>
+                  )}
+                  {isPlaying ? (
+                    <motion.video
+                      id={`car-photo-${car.id}`}
+                      ref={videoRef as any}
+                      src={optimizedVideoSource}
+                      poster={hasRealPoster ? finalVideoPoster : undefined}
+                      preload="auto"
+                      loop
+                      muted
+                      playsInline
+                      autoPlay
+                      initial={{ opacity: 0 }}
+                      whileInView={{
+                        opacity: 1,
+                        scale: 1,
+                        x: 0,
+                        y: 0,
+                        rotate: 0,
+                      }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3 }}
+                      className="w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(false);
+                      }}
+                      onLoadStart={() => setIsVideoLoading(true)}
+                      onWaiting={() => setIsVideoLoading(true)}
+                      onPlaying={() => setIsVideoLoading(false)}
+                      onCanPlay={() => setIsVideoLoading(false)}
+                    />
+                  ) : hasRealPoster ? (
+                    <motion.img
+                      id={`car-photo-${car.id}`}
+                      src={finalVideoPoster}
+                      alt={car.name}
+                      loading="lazy"
+                      decoding="async"
+                      initial={{ scale: 0.94, y: 15 }}
+                      animate={{
+                        scale: isHovered ? 1.15 : 1.01,
+                        x: isHovered ? 8 : 0,
+                        y: isHovered ? -4 : 0,
+                        rotate: isHovered ? -0.8 : 0,
+                      }}
+                      transition={{ duration: 0.55, ease: "easeOut" }}
+                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer animate-fade-in"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(true);
+                      }}
+                    />
+                  ) : (
+                    <motion.video
+                      id={`car-photo-${car.id}`}
+                      src={optimizedVideoSource ? (optimizedVideoSource.includes("#") ? optimizedVideoSource : `${optimizedVideoSource}#t=0.1`) : ""}
+                      preload="metadata"
+                      muted
+                      playsInline
+                      initial={{ scale: 0.94, y: 15 }}
+                      animate={{
+                        scale: isHovered ? 1.15 : 1.01,
+                        x: isHovered ? 8 : 0,
+                        y: isHovered ? -4 : 0,
+                        rotate: isHovered ? -0.8 : 0,
+                      }}
+                      transition={{ duration: 0.55, ease: "easeOut" }}
+                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer animate-fade-in"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(true);
+                      }}
+                      onLoadStart={() => setIsVideoLoading(true)}
+                      onWaiting={() => setIsVideoLoading(true)}
+                      onLoadedData={() => setIsVideoLoading(false)}
+                      onCanPlay={() => setIsVideoLoading(false)}
+                    />
+                  )}
+                </>
+              ) : imageError && isGoogleDrive && driveId ? (
+                <motion.iframe
+                  id={`car-photo-${car.id}`}
+                  src={`https://drive.google.com/file/d/${driveId}/preview`}
+                  className="w-full h-full object-cover select-none"
+                  allow="autoplay"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: false }}
+                  title={car.name}
+                  style={{ border: "none" }}
+                />
+              ) : (
+                <motion.img
+                  id={`car-photo-${car.id}`}
+                  src={primaryImageSrc}
+                  alt={car.name}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => {
+                    if (isGoogleDrive) {
+                      setImageError(true);
+                    } else {
+                      (e.target as HTMLImageElement).src =
+                        "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                    }
+                  }}
+                  initial={{ scale: 0.94, y: 15 }}
+                  animate={{
+                    scale: isHovered ? 1.15 : 1.01,
+                    x: isHovered ? 8 : 0,
+                    y: isHovered ? -4 : 0,
+                    rotate: isHovered ? -0.8 : 0,
+                  }}
+                  transition={{ duration: 0.55, ease: "easeOut" }}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover select-none bg-stone-100"
+                />
+              )}
 
               {/* Beautiful linear cover shadow */}
-              <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-stone-900/40 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 to-transparent pointer-events-none" />
 
               {/* Video Actions overlay */}
               <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                {hasVideo && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPlaying(prev => !prev);
+                    }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-white/80 backdrop-blur-sm text-stone-700 border border-stone-200 hover:bg-white shadow-sm"
+                    title={isPlaying ? "Pause Video" : "Play Video"}
+                  >
+                    {isPlaying ? (
+                      <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
+                    ) : (
+                      <Play className="w-3.5 h-3.5 fill-current text-stone-700 ml-0.5" />
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -601,18 +854,6 @@ Description: ${formattedDesc}`;
                   />
                 </button>
               </div>
-              
-              {/* Dots indicator if multiple items */}
-              {mediaItems.length > 1 && (
-                <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1.5 z-10 pointer-events-none">
-                  {mediaItems.map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-1.5 h-1.5 rounded-full shadow-sm transition-all bg-white/70"
-                    />
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Narrative & Info */}
@@ -653,15 +894,59 @@ Description: ${formattedDesc}`;
                     <Share2 className="w-3.5 h-3.5 text-stone-500 hover:text-stone-700 transition-colors" />
                   </button>
                 </div>
-                  <div className="mb-4">
-                    {car.description && (
-                      <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
-                        {car.description}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Highlights Info Grid (Technical) */}
+                <div className="mb-4">
+                  {car.description && (
+                    <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
+                      {car.description}
+                    </p>
+                  )}
+                  {/* Color Palette */}
+                  {(Object.keys(car.customColors || {}).length > 0 || stagingColor) && (
+                    <>
+                      <div className="flex items-center justify-between mt-3 mb-1">
+                        <div className="flex gap-2 items-center flex-wrap">
+                          <button
+                             type="button"
+                             onClick={(e) => { e.stopPropagation(); setActiveColor(null); setAiColorImage(null); }}
+                             className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer flex items-center justify-center bg-stone-100 ${!activeColor ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
+                             title="View original"
+                          >
+                             <Play className="w-2.5 h-2.5 text-stone-600 fill-current ml-0.5" />
+                          </button>
+                          {Object.entries(car.customColors || {} as Record<string, string>).map(([colorKey, imageUrl]) => (
+                              <button
+                                 key={colorKey}
+                                 type="button"
+                                 onClick={(e) => { e.stopPropagation(); handleColorPick(colorKey, imageUrl as string); }}
+                                 className={`w-5 h-5 rounded-full border-2 shadow-xs transition-all cursor-pointer ${activeColor === colorKey ? 'border-[#4C0027] scale-125' : 'border-stone-200 hover:scale-110'}`}
+                                 style={{ backgroundColor: colorKey }}
+                                 title="View variation"
+                              />
+                          ))}
+                          {stagingColor && (
+                              <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-full border border-stone-200 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                                  <input type="color" value={stagingColor.color} onChange={(e) => setStagingColor({ ...stagingColor, color: e.target.value })} className="w-4 h-4 rounded-full border-0 p-0 cursor-pointer overflow-hidden bg-transparent block [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-moz-color-swatch]:border-none" />
+                                  <button type="button" onClick={finishColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-green-600 hover:bg-stone-200 transition-all shadow-sm">
+                                      <Check className="w-2.5 h-2.5" />
+                                  </button>
+                                  <button type="button" onClick={cancelColorUpload} className="w-4 h-4 flex items-center justify-center bg-white rounded-full text-red-600 hover:bg-stone-200 transition-all shadow-sm">
+                                      <X className="w-2.5 h-2.5" />
+                                  </button>
+                              </div>
+                          )}
+                        </div>
+                      </div>
+                      {(Object.keys(car.customColors || {}).length > 0) && (
+                        <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
+                           {t.samplePhotoNotice}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+                <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
+                  
+                {/* Highlights Info Grid (Technical) */}
                 <div
                   id={`car-specs-${car.id}`}
                   className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-3 bg-stone-100/50 rounded-xl px-1"
@@ -742,6 +1027,12 @@ Description: ${formattedDesc}`;
                       className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer"
                     >
                       Edit
+                    </button>
+                    <button
+                      onClick={handlePlusClick}
+                      className="px-3 py-2 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      + Color
                     </button>
                     <button
                       id={`car-btn-delete-${car.id}`}
@@ -897,6 +1188,12 @@ Description: ${formattedDesc}`;
                     className="px-3 py-1.5 text-[10px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition-all cursor-pointer border border-stone-700"
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handlePlusClick(e); }}
+                    className="px-3 py-1.5 text-[10px] font-bold bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition-all cursor-pointer border border-stone-700 whitespace-nowrap"
+                  >
+                    + Color
                   </button>
                   <button
                     id={`car-back-btn-delete-${car.id}`}
@@ -1085,7 +1382,11 @@ Description: ${formattedDesc}`;
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
                     <img
-                      src={mediaItems[0]?.poster || mediaItems[0]?.optimizedUrl || car.image}
+                      src={
+                         finalVideoPoster 
+                           ? finalVideoPoster 
+                           : getOptimizedImageUrl(currentImage, windowWidth, 'thumbnail')
+                      }
                       alt={car.name}
                       loading="lazy"
                       className="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded-xl border border-stone-100 shadow-sm"
@@ -1509,7 +1810,7 @@ Description: ${formattedDesc}`;
                 <div className="w-full flex items-center justify-between px-2 mb-2">
                   <div className="flex flex-col">
                     <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-                    <span className="text-white/60 font-mono text-xs">Full Media View</span>
+                    <span className="text-white/60 font-mono text-xs">{aiColorImage ? "Custom Variation" : "Full Media View"}</span>
                   </div>
                   <button
                     onClick={() => startTransition(() => setIsPhotosOpen(false))}
@@ -1519,61 +1820,51 @@ Description: ${formattedDesc}`;
                   </button>
                 </div>
                 
-                <div className="relative w-full group flex overflow-x-auto snap-x snap-mandatory gap-4 py-4 px-2 scrollbar-hide scroll-smooth">
-                   {mediaItems.map((item, index) => (
-                      <div key={`modal-${item.id}`} className="flex-none w-[90%] md:w-[75%] snap-center relative shrink-0 flex items-center justify-center">
-                         {item.type === 'video' ? (
-                            <motion.video
-                               key={`video-${item.id}`}
-                               initial={{ opacity: 0 }}
-                               animate={{ opacity: 1 }}
-                               transition={{ duration: 0.3 }}
-                               src={item.url}
-                               poster={item.poster}
-                               controls
-                               className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                            />
-                         ) : item.type === 'iframe' && item.driveId ? (
-                            <motion.iframe
-                               key={`iframe-${item.id}`}
-                               initial={{ opacity: 0 }}
-                               animate={{ opacity: 1 }}
-                               transition={{ duration: 0.3 }}
-                               src={`https://drive.google.com/file/d/${item.driveId}/preview`}
-                               className="w-full h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                               allow="autoplay"
-                            />
-                         ) : (
-                            <motion.img
-                               key={`img-${item.id}`}
-                               initial={{ opacity: 0 }}
-                               animate={{ opacity: 1 }}
-                               transition={{ duration: 0.3 }}
-                               src={item.optimizedUrl}
-                               alt={`${car.name} photo`}
-                               onError={(e) => {
-                                 if (!item.driveId) {
-                                   (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
-                                 }
-                               }}
-                               className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                            />
-                         )}
-                      </div>
-                   ))}
+                <div className="relative w-full group flex justify-center">
+                  {hasVideo ? (
+                    <motion.video
+                      key={`video-${renderedImageSrc}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      src={videoSource}
+                      controls
+                      autoPlay
+                      loop
+                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                    />
+                  ) : imageError && isGoogleDrive && driveId ? (
+                    <motion.iframe
+                      key={`iframe-${renderedImageSrc}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      src={`https://drive.google.com/file/d/${driveId}/preview`}
+                      className="w-full max-w-4xl h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      allow="autoplay"
+                    />
+                  ) : (
+                    <motion.img
+                      key={`img-${renderedImageSrc}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      src={renderedImageSrc}
+                      alt={`${car.name} photo`}
+                      onError={(e) => {
+                        if (isGoogleDrive) {
+                          setImageError(true);
+                        } else {
+                          (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
+                        }
+                      }}
+                      className="w-auto max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                    />
+                  )}
                 </div>
-
-                {/* Dots indicator for modal */}
-                {mediaItems.length > 1 && (
-                  <div className="flex flex-wrap justify-center gap-2 mt-2">
-                    {mediaItems.map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-2 h-2 rounded-full shadow-sm transition-all bg-white/60"
-                      />
-                    ))}
-                  </div>
-                )}
               </motion.div>
             </div>
           )}
