@@ -8,10 +8,6 @@ export const INITIAL_CARS: Car[] = [
     price: 2705,
     image: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600',
     altImage: 'https://images.unsplash.com/photo-1503376712344-6a0c2394fdce?auto=format&fit=crop&q=80&w=600',
-    customColors: {
-      '#ef4444': 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600',
-      '#000000': 'https://images.unsplash.com/photo-1503376712344-6a0c2394fdce?auto=format&fit=crop&q=80&w=600'
-    },
     photos: [
       'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=800',
       'https://images.unsplash.com/photo-1503376712344-6a0c2394fdce?auto=format&fit=crop&q=80&w=800',
@@ -40,11 +36,6 @@ export const INITIAL_CARS: Car[] = [
     price: 1950,
     image: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600',
     altImage: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=600',
-    customColors: {
-      '#ffffff': 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600',
-      '#000000': 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=600',
-      '#dc2626': 'https://images.unsplash.com/photo-1536700503339-1e4b06520771?auto=format&fit=crop&q=80&w=600'
-    },
     photos: [
       'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=800',
       'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=800',
