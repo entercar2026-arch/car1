@@ -40,6 +40,7 @@ import {
   MessageCircle,
   Heart,
   Globe,
+  Printer,
 } from "lucide-react";
 
 const SECURE_TOKEN_KEY = "enter_admin_session_token";
@@ -106,180 +107,288 @@ const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
 
   return (
-    <div className="max-w-5xl mx-auto mt-8 mb-8 animate-fade-in">
-      <div className="bg-[#4C0027] text-white rounded-3xl p-6 sm:p-8 border border-[#4C0027]/20 shadow-lg relative overflow-hidden flex flex-col justify-center items-center text-center select-none">
-        {/* Subtle background abstract decorations */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+    <>
+      <div className="max-w-5xl mx-auto mt-8 mb-8 animate-fade-in no-print">
+        <div className="bg-[#4C0027] text-white rounded-3xl p-6 sm:p-8 border border-[#4C0027]/20 shadow-lg relative overflow-hidden flex flex-col justify-center items-center text-center select-none">
+          {/* Subtle background abstract decorations */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
-          {t.contractRequirement}
-        </span>
+          <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
+            {t.contractRequirement}
+          </span>
 
-        <h2 className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-wider uppercase mb-3 drop-shadow-md">
-          {t.sixMonthTerm}
-        </h2>
+          <h2 className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-wider uppercase mb-3 drop-shadow-md">
+            {t.sixMonthTerm}
+          </h2>
 
-        <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
-          {t.termDetail}
-        </p>
+          <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
+            {t.termDetail}
+          </p>
 
-        <div className="mt-6 flex flex-wrap justify-center gap-4 relative z-10 w-full px-4">
-          <button
-            type="button"
-            onClick={() => setIsContractModalOpen(true)}
-            className="px-6 py-2.5 bg-amber-400 text-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
-          >
-            <FileText className="w-4 h-4" />
-            {t.viewContract}
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsQuotationModalOpen(true)}
-            className="px-6 py-2.5 bg-stone-800 border border-amber-400/50 text-amber-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-stone-700 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
-          >
-            <FileText className="w-4 h-4" />
-            {t.viewQuotation || "View Quotation"}
-          </button>
+          <div className="mt-6 flex flex-wrap justify-center gap-4 relative z-10 w-full px-4">
+            <button
+              type="button"
+              onClick={() => setIsContractModalOpen(true)}
+              className="px-6 py-2.5 bg-amber-400 text-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+            >
+              <FileText className="w-4 h-4" />
+              {t.viewContract}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsQuotationModalOpen(true)}
+              className="px-6 py-2.5 bg-stone-800 border border-amber-400/50 text-amber-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-stone-700 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+            >
+              <FileText className="w-4 h-4" />
+              {t.viewQuotation || "View Quotation"}
+            </button>
+          </div>
         </div>
+
+        {/* Contract Modal */}
+        <AnimatePresence>
+          {isContractModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsContractModalOpen(false)}
+                className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
+                  <h3 className="font-bold text-stone-900 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-[#4C0027]" />
+                    {t.contractTitle}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsContractModalOpen(false)}
+                    className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
+                  <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
+                    {t.contractContent}
+                  </p>
+                  <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                      <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
+                    </div>
+                    <div>
+                      <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                      <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Quotation Modal */}
+        <AnimatePresence>
+          {isQuotationModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 min-w-[320px]">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsQuotationModalOpen(false)}
+                className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+              />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                className="relative w-full max-w-4xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-hidden flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200/60 shrink-0">
+                  <h3 className="font-bold text-stone-900 flex items-center gap-2 text-xl tracking-wide uppercase">
+                    <FileText className="w-6 h-6 text-[#4C0027]" />
+                    {t.viewQuotation || "Quotation"}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuotationModalOpen(false)}
+                    className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <div className="overflow-y-auto flex-1 pr-2 -mr-2">
+                  <div className="bg-white rounded-xl border border-stone-200/60 overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left whitespace-nowrap min-w-[600px]">
+                        <thead className="bg-[#4C0027] text-amber-400">
+                          <tr>
+                            <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
+                            <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
+                            <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
+                            <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Deposit</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-stone-100">
+                          {cars.map((car: Car) => (
+                            <tr key={car.id} className="hover:bg-stone-50/80 transition-colors group">
+                              <td className="px-6 py-4 font-semibold text-stone-800">
+                                <div className="flex flex-col">
+                                  <span>{car.name}</span>
+                                  <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-center text-stone-500">{car.category}</td>
+                              <td className="px-6 py-4 text-center text-stone-900 font-bold font-mono">
+                                ${car.price.toLocaleString()}/mo
+                              </td>
+                              <td className="px-6 py-4 text-center text-stone-600 font-medium font-mono border-l border-stone-100 bg-stone-50 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
+                                ${(car.price * 1).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 pt-5 border-t border-stone-200/60 bg-stone-50 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 shadow-inner border border-stone-200">
+                  <div className="flex flex-col gap-1 items-center sm:items-start w-full sm:w-auto">
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] font-mono">Standard Terms</span>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+                      <span className="text-xs font-semibold text-stone-700">Minimum 6 mos</span>
+                      <span className="text-stone-300">•</span>
+                      <span className="text-xs font-semibold text-stone-700">1 month deposit</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="w-full sm:w-auto px-6 py-3 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-extrabold rounded-xl shadow-md uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 border border-amber-500/20"
+                    >
+                      <Printer className="w-4 h-4 shrink-0 text-stone-950" />
+                      Download PDF Quote
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuotationModalOpen(false)}
+                      className="w-full sm:w-auto px-8 py-3 bg-[#4C0027] text-white text-xs font-bold rounded-xl shadow-xs uppercase tracking-wider transition-all hover:bg-[#5E0030] active:scale-95 cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Contract Modal */}
-      <AnimatePresence>
-        {isContractModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsContractModalOpen(false)}
-              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
-                <h3 className="font-bold text-stone-900 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#4C0027]" />
-                  {t.contractTitle}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsContractModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
-                <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
-                  {t.contractContent}
-                </p>
-                <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
-                  </div>
-                  <div>
-                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+      {/* Printable Quotation Document (Beautifully styled & optimized exclusively for Print / Save to PDF) */}
+      <div id="print-section" className="print-only-layout p-12 bg-white text-stone-900">
+        {/* Header Ribbon / Enterprise Meta */}
+        <div className="flex justify-between items-start border-b-2 border-[#4C0027] pb-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-black text-[#4C0027] tracking-wider uppercase">ENTER CAR RENTAL</h1>
+            <p className="text-xs font-mono font-bold tracking-wider text-stone-500 mt-1 uppercase">Premium Fleet Sourcing & Long-Term Leases</p>
+            <div className="mt-4 text-xs space-y-1 text-stone-600 font-sans">
+              <p>Email: <span className="font-semibold text-[#4C0027]">entercar2026@gmail.com</span></p>
+              <p>Web Inquiry Portal: <span className="font-semibold text-stone-800">enter.v1</span></p>
+              <p>Phnom Penh, Kingdom of Cambodia</p>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+          <div className="text-right flex flex-col items-end">
+            <span className="bg-[#4C0027]/10 text-[#4C0027] px-3 py-1 text-[10px] font-black tracking-widest uppercase rounded">Official Quotation</span>
+            <p className="text-xs font-mono font-bold text-stone-700 mt-3">Ref No: <span className="text-[#4C0027] font-extrabold">QT-2787-8ef4-31fc</span></p>
+            <p className="text-xs text-stone-500 mt-1">Date Issued: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p className="text-xs text-stone-500">Validity Period: 30 Calendar Days</p>
+          </div>
+        </div>
 
-      {/* Quotation Modal */}
-      <AnimatePresence>
-        {isQuotationModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 min-w-[320px]">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsQuotationModalOpen(false)}
-              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-4xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-hidden flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200/60 shrink-0">
-                <h3 className="font-bold text-stone-900 flex items-center gap-2 text-xl tracking-wide uppercase">
-                  <FileText className="w-6 h-6 text-[#4C0027]" />
-                  {t.viewQuotation || "Quotation"}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsQuotationModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <div className="overflow-y-auto flex-1 pr-2 -mr-2">
-                <div className="bg-white rounded-xl border border-stone-200/60 overflow-hidden shadow-sm">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left whitespace-nowrap min-w-[600px]">
-                      <thead className="bg-[#4C0027] text-amber-400">
-                        <tr>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Deposit</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-stone-100">
-                        {cars.map((car: Car) => (
-                          <tr key={car.id} className="hover:bg-stone-50/80 transition-colors group">
-                            <td className="px-6 py-4 font-semibold text-stone-800">
-                              <div className="flex flex-col">
-                                <span>{car.name}</span>
-                                <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-center text-stone-500">{car.category}</td>
-                            <td className="px-6 py-4 text-center text-stone-900 font-bold font-mono">
-                              ${car.price.toLocaleString()}/mo
-                            </td>
-                            <td className="px-6 py-4 text-center text-stone-600 font-medium font-mono border-l border-stone-100 bg-stone-50 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
-                              ${(car.price * 1).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 pt-5 border-t border-stone-200/60 bg-stone-50 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 shadow-inner border border-stone-200">
-                <div className="flex flex-col gap-1 items-center sm:items-start w-full sm:w-auto">
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] font-mono">Standard Terms</span>
-                  <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
-                    <span className="text-xs font-semibold text-stone-700">Minimum 6 mos</span>
-                    <span className="text-stone-300">•</span>
-                    <span className="text-xs font-semibold text-stone-700">1 month deposit</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsQuotationModalOpen(false)}
-                  className="w-full sm:w-auto px-8 py-3 bg-[#4C0027] text-white text-xs font-bold rounded-xl shadow-xs uppercase tracking-wider transition-all hover:bg-[#5E0030] active:scale-95 cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
+        {/* Professional Cover Letter Intro */}
+        <div className="mb-8 text-xs text-stone-700 space-y-3 leading-relaxed">
+          <p>
+            Dear Valued Customer,
+          </p>
+          <p>
+            In reference to your recent catalog inquiry and rental preferences, we are pleased to submit our official vehicle leasing terms and pricing proposal. We cooperate directly with specialized car owners to ensure you receive the pristine quality vehicles requested under the most flexible conditions.
+          </p>
+        </div>
+
+        {/* Print specific pricing table */}
+        <div className="mb-8 overflow-hidden border border-stone-300 rounded-lg">
+          <table className="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr className="bg-[#4C0027] text-white">
+                <th className="px-5 py-3 font-bold uppercase tracking-wider text-left border-b border-stone-300">Vehicle Model Description</th>
+                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Body Type</th>
+                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Monthly Rent (USD)</th>
+                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Refundable Deposit</th>
+                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Min. Commitment</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-200">
+              {cars.map((car: Car) => (
+                <tr key={car.id} className="bg-white">
+                  <td className="px-5 py-3 font-bold text-stone-900">{car.name}</td>
+                  <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.category}</td>
+                  <td className="px-5 py-3 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
+                  <td className="px-5 py-3 text-center text-stone-850 font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-center text-stone-600 font-bold">6 Months</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Terms and Conditions Callout */}
+        <div className="mb-10 p-6 bg-stone-50 rounded-xl border border-stone-200 no-break">
+          <h3 className="text-xs font-black text-[#4C0027] uppercase tracking-widest border-b-2 border-stone-300 pb-2 mb-3">
+            Corporate Rental Guidelines & General Terms
+          </h3>
+          <ol className="list-decimal list-inside text-[11px] text-stone-700 space-y-2 leading-relaxed">
+            <li><strong className="text-stone-900">Minimum Rental Term:</strong> All active vehicles listed in this quotation are subject to a standard minimum contract period of six (6) months.</li>
+            <li><strong className="text-stone-900">Refundable Deposit Clause:</strong> A security deposit equivalent to exactly one (1) month of the specified rental rate is due immediately upon execution of the final lease agreement. This sum is held in escrow and is fully refundable at contract termination, subject to satisfactory vehicle inspection.</li>
+            <li><strong className="text-stone-900">Advanced Billing:</strong> Standard rental billing cycles are processed in advance at the start of each operating month.</li>
+            <li><strong className="text-stone-900">Premium Comprehensive Care:</strong> The monthly leasing fee includes standard recurring maintenance checks, parts wear replacements, and premium vehicle liability protection.</li>
+            <li><strong className="text-stone-900">Official Non-Binding nature:</strong> This quotation is structured solely for informative and budgeting purposes. Vehicle availability is confirmed only upon signing the binding Contract Agreement.</li>
+          </ol>
+        </div>
+
+        {/* Corporate Sign-off blocks */}
+        <div className="mt-16 pt-10 border-t border-stone-200 grid grid-cols-2 gap-12 no-break">
+          <div className="flex flex-col">
+            <p className="text-xs font-bold text-stone-500 mb-16 uppercase tracking-wider">Authorized Officer – ENTER Car Rental</p>
+            <div className="border-b border-stone-400 w-56 mb-2"></div>
+            <p className="text-xs font-black text-[#4C0027]">Sourcing & Leasing Department</p>
+            <p className="text-[10px] text-stone-400 font-mono">ENTER CAR RENTAL Co., Ltd.</p>
           </div>
-        )}
-      </AnimatePresence>
-    </div>
+          <div className="flex flex-col items-end text-right">
+            <p className="text-xs font-bold text-stone-500 mb-16 uppercase tracking-wider">Accepted & Acknowledged – Client</p>
+            <div className="border-b border-stone-400 w-56 mb-2"></div>
+            <p className="text-xs font-black text-stone-850">Authorized Client Signature</p>
+            <p className="text-[10px] text-stone-400 font-mono">Date signed: ______ / ______ / 2026</p>
+          </div>
+        </div>
+
+        {/* Footer disclaimer */}
+        <div className="mt-12 text-center border-t border-stone-100 pt-4">
+          <p className="text-[9px] text-stone-400 font-mono tracking-wider">
+            Thank you for choosing ENTER Car Rental. We value your business and look forward to safe journeys together.
+          </p>
+        </div>
+      </div>
+    </>
   );
 });
 

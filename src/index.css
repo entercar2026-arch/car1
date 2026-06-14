@@ -68,3 +68,48 @@ input[type="range"] {
   animation: shimmer 1.6s infinite linear;
 }
 
+/* Print-Only Layout Classes & Media Queries */
+.print-only-layout {
+  display: none;
+}
+
+@media print {
+  /* Hide standard interactive page elements */
+  body *, #root, .no-print {
+    visibility: hidden !important;
+  }
+
+  /* Make only the print-only layout container and its children visible */
+  .print-only-layout, .print-only-layout * {
+    visibility: visible !important;
+  }
+
+  .print-only-layout {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: #1c1917 !important;
+    font-family: inherit !important;
+  }
+
+  /* Base reset for PDF generation layout */
+  html, body {
+    background: white !important;
+    color: #1c1917 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Force print backgrounds */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
