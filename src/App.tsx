@@ -101,6 +101,188 @@ const generateSessionToken = (): string => {
   return btoa(JSON.stringify(session));
 };
 
+const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[] }) => {
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
+
+  return (
+    <div className="max-w-5xl mx-auto mt-8 mb-8 animate-fade-in">
+      <div className="bg-[#4C0027] text-white rounded-3xl p-6 sm:p-8 border border-[#4C0027]/20 shadow-lg relative overflow-hidden flex flex-col justify-center items-center text-center select-none">
+        {/* Subtle background abstract decorations */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
+          {t.contractRequirement}
+        </span>
+
+        <h2 className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-wider uppercase mb-3 drop-shadow-md">
+          {t.sixMonthTerm}
+        </h2>
+
+        <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
+          {t.termDetail}
+        </p>
+
+        <div className="mt-6 flex flex-wrap justify-center gap-4 relative z-10 w-full px-4">
+          <button
+            type="button"
+            onClick={() => setIsContractModalOpen(true)}
+            className="px-6 py-2.5 bg-amber-400 text-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+          >
+            <FileText className="w-4 h-4" />
+            {t.viewContract}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsQuotationModalOpen(true)}
+            className="px-6 py-2.5 bg-stone-800 border border-amber-400/50 text-amber-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-stone-700 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
+          >
+            <FileText className="w-4 h-4" />
+            {t.viewQuotation || "View Quotation"}
+          </button>
+        </div>
+      </div>
+
+      {/* Contract Modal */}
+      <AnimatePresence>
+        {isContractModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsContractModalOpen(false)}
+              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
+                <h3 className="font-bold text-stone-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#4C0027]" />
+                  {t.contractTitle}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsContractModalOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
+                <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
+                  {t.contractContent}
+                </p>
+                <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
+                  </div>
+                  <div>
+                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Quotation Modal */}
+      <AnimatePresence>
+        {isQuotationModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 min-w-[320px]">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsQuotationModalOpen(false)}
+              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-4xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200/60 shrink-0">
+                <h3 className="font-bold text-stone-900 flex items-center gap-2 text-xl tracking-wide uppercase">
+                  <FileText className="w-6 h-6 text-[#4C0027]" />
+                  {t.viewQuotation || "Quotation"}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsQuotationModalOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-1 pr-2 -mr-2">
+                <div className="bg-white rounded-xl border border-stone-200/60 overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left whitespace-nowrap min-w-[600px]">
+                      <thead className="bg-[#4C0027] text-amber-400">
+                        <tr>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
+                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Deposit</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-stone-100">
+                        {cars.map((car: Car) => (
+                          <tr key={car.id} className="hover:bg-stone-50/80 transition-colors group">
+                            <td className="px-6 py-4 font-semibold text-stone-800">
+                              <div className="flex flex-col">
+                                <span>{car.name}</span>
+                                <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-center text-stone-500">{car.category}</td>
+                            <td className="px-6 py-4 text-center text-stone-900 font-bold font-mono">
+                              ${car.price.toLocaleString()}/mo
+                            </td>
+                            <td className="px-6 py-4 text-center text-stone-600 font-medium font-mono border-l border-stone-100 bg-stone-50 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
+                              ${(car.price * 1).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 pt-5 border-t border-stone-200/60 bg-stone-50 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 shadow-inner border border-stone-200">
+                <div className="flex flex-col gap-1 items-center sm:items-start w-full sm:w-auto">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] font-mono">Standard Terms</span>
+                  <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+                    <span className="text-xs font-semibold text-stone-700">Minimum 6 mos</span>
+                    <span className="text-stone-300">•</span>
+                    <span className="text-xs font-semibold text-stone-700">1 month deposit</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsQuotationModalOpen(false)}
+                  className="w-full sm:w-auto px-8 py-3 bg-[#4C0027] text-white text-xs font-bold rounded-xl shadow-xs uppercase tracking-wider transition-all hover:bg-[#5E0030] active:scale-95 cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
 export default function App() {
   // Cars Fleet State
   const [cars, setCars] = useState<Car[]>(() => {
@@ -255,8 +437,6 @@ export default function App() {
 
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
-  const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
 
   // Booking details toast state
   const [bookingToast, setBookingToast] = useState<string | null>(null);
@@ -438,7 +618,7 @@ export default function App() {
   };
 
   // Handle addition of reviews with moderation pending state
-  const handleAddReview = (
+  const handleAddReview = React.useCallback((
     carId: string,
     rating: number,
     comment: string,
@@ -460,10 +640,10 @@ export default function App() {
       `Review saved! An administrator will review your comment for approval.`,
     );
     setTimeout(() => setBookingToast(null), 4000);
-  };
+  }, []);
 
   // Handle booking reservations from customer catalog
-  const handleConfirmBook = (
+  const handleConfirmBook = React.useCallback((
     carId: string,
     bookingFields: {
       customerName: string;
@@ -497,7 +677,7 @@ export default function App() {
       setBookings((prev) => [freshBooking, ...prev]);
     }, 0);
     return freshBooking;
-  };
+  }, [cars]);
 
   // Admin Bookings & Reviews controls
   const handleUpdateBookingStatus = (
@@ -549,7 +729,7 @@ export default function App() {
     });
   };
 
-  const handleToggleLike = (carId: string) => {
+  const handleToggleLike = React.useCallback((carId: string) => {
     setLikedCars((prev) => {
       if (prev.includes(carId)) {
         const newLikes = prev.filter((id) => id !== carId);
@@ -565,7 +745,7 @@ export default function App() {
       }
       return [...prev, carId];
     });
-  };
+  }, [filters.likedOnly, cars]);
 
   const handleClearLikes = () => {
     setShowClearConfirm(true);
@@ -609,7 +789,23 @@ export default function App() {
 
   // Filter computation logic
   const [isFiltering, setIsFiltering] = useState(false);
+  const handleGridFilterSelect = React.useCallback((filterType: "category" | "transmission" | "fuelType" | "seats", value: string | number) => {
+    setFilters({
+      searchTerm: "",
+      category: "All",
+      maxPrice: 5000,
+      transmission: "All",
+      fuelType: "All",
+      seats: "All",
+      brand: "All",
+      likedOnly: false,
+      [filterType]: value
+    });
+    scrollToAnchor("category-filter-container");
+  }, []);
+
   const [activeFiltersRaw, setActiveFiltersRaw] = useState<CatalogFilters>(filters);
+
   const activeFilters = activeFiltersRaw;
   const setActiveFilters = React.useCallback((val: CatalogFilters | ((prev: CatalogFilters) => CatalogFilters)) => {
     React.startTransition(() => {
@@ -721,14 +917,14 @@ export default function App() {
   };
 
   // Trigger booking success toast from CarCard notifications
-  const handleBookingToast = (carName: string) => {
+  const handleBookingToast = React.useCallback((carName: string) => {
     setBookingToast(
       `Successfully requested booking for ${carName}! Access code generated.`,
     );
     setTimeout(() => {
       setBookingToast(null);
     }, 4500);
-  };
+  }, []);
 
   // Brand color constant
   const brandPlum = "#4C0027";
@@ -934,7 +1130,7 @@ export default function App() {
               <div className="flex flex-row flex-nowrap items-center gap-1.5 sm:gap-4">
                 {/* Language Switcher */}
                 <button
-                  onClick={() => setLang(l => l === "en" ? "kh" : l === "kh" ? "zh" : "en")}
+                  onClick={() => React.startTransition(() => setLang(l => l === "en" ? "kh" : l === "kh" ? "zh" : "en"))}
                   className="px-2 py-1 flex items-center gap-1.5 shrink-0 lg:mr-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
                   title="Toggle Language"
                 >
@@ -1001,7 +1197,7 @@ export default function App() {
               <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5">
                 {/* Language Switcher (Mobile) */}
                 <button
-                  onClick={() => setLang(l => l === "en" ? "kh" : l === "kh" ? "zh" : "en")}
+                  onClick={() => React.startTransition(() => setLang(l => l === "en" ? "kh" : l === "kh" ? "zh" : "en"))}
                   className="px-1.5 py-0.5 flex items-center gap-1 shrink-0 rounded-md bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer shadow-3xs"
                   title="Toggle Language"
                 >
@@ -1268,44 +1464,7 @@ export default function App() {
           </div>
 
           {/* Contract Requirement Visual Highlight Board */}
-          <div className="max-w-5xl mx-auto mt-8 mb-8 animate-fade-in">
-            <div className="bg-[#4C0027] text-white rounded-3xl p-6 sm:p-8 border border-[#4C0027]/20 shadow-lg relative overflow-hidden flex flex-col justify-center items-center text-center select-none">
-              {/* Subtle background abstract decorations */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-              <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-              <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
-                {t.contractRequirement}
-              </span>
-
-              <h2 className="text-3xl sm:text-4.5xl font-black text-amber-400 tracking-wider uppercase mb-3 drop-shadow-md">
-                {t.sixMonthTerm}
-              </h2>
-
-              <p className="text-xs sm:text-sm font-mono text-stone-200 tracking-wider">
-                {t.termDetail}
-              </p>
-
-              <div className="mt-6 flex flex-wrap justify-center gap-4 relative z-10 w-full px-4">
-                <button
-                  type="button"
-                  onClick={() => setIsContractModalOpen(true)}
-                  className="px-6 py-2.5 bg-amber-400 text-stone-900 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
-                >
-                  <FileText className="w-4 h-4" />
-                  {t.viewContract}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsQuotationModalOpen(true)}
-                  className="px-6 py-2.5 bg-stone-800 border border-amber-400/50 text-amber-400 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-stone-700 transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
-                >
-                  <FileText className="w-4 h-4" />
-                  {t.viewQuotation || "View Quotation"}
-                </button>
-              </div>
-            </div>
-          </div>
+          <ContractRequirementSection t={t} cars={cars} />
         </section>
 
         {/* Catalog Anchor Target */}
@@ -1879,20 +2038,7 @@ export default function App() {
                           isLiked={likedCars.includes(car.id)}
                           onToggleLike={handleToggleLike}
                           lang={lang}
-                          onFilterSelect={(filterType, value) => {
-                            setFilters({
-                              searchTerm: "",
-                              category: "All",
-                              maxPrice: 5000,
-                              transmission: "All",
-                              fuelType: "All",
-                              seats: "All",
-                              brand: "All",
-                              likedOnly: false,
-                              [filterType]: value
-                            });
-                            scrollToAnchor("category-filter-container");
-                          }}
+                          onFilterSelect={handleGridFilterSelect}
                         />
                       </motion.div>
                     ))}
@@ -2369,125 +2515,6 @@ export default function App() {
                 >
                   {t.yesClear}
                 </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Contract Modal */}
-      <AnimatePresence>
-        {isContractModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsContractModalOpen(false)}
-              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
-                <h3 className="font-bold text-stone-900 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-[#4C0027]" />
-                  {t.contractTitle}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsContractModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
-                <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
-                  {t.contractContent}
-                </p>
-                <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
-                  </div>
-                  <div>
-                    <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                    <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Quotation Modal */}
-      <AnimatePresence>
-        {isQuotationModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 min-w-[320px]">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsQuotationModalOpen(false)}
-              className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              className="relative w-full max-w-4xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-hidden flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200/60 shrink-0">
-                <h3 className="font-bold text-stone-900 flex items-center gap-2 text-xl tracking-wide uppercase">
-                  <FileText className="w-6 h-6 text-[#4C0027]" />
-                  {t.viewQuotation || "Quotation"}
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsQuotationModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <div className="overflow-y-auto flex-1 pr-2 -mr-2">
-                <div className="bg-white rounded-xl border border-stone-200/60 overflow-hidden shadow-sm">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left whitespace-nowrap min-w-[600px]">
-                      <thead className="bg-[#4C0027] text-amber-400">
-                        <tr>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
-                          <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Deposit</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-stone-100">
-                        {cars.map((car: Car) => (
-                          <tr key={car.id} className="hover:bg-stone-50/80 transition-colors group">
-                            <td className="px-6 py-4 font-semibold text-stone-800">
-                              <div className="flex flex-col">
-                                <span>{car.name}</span>
-                                <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-center text-stone-500">{car.category}</td>
-                            <td className="px-6 py-4 text-center font-bold text-emerald-700 bg-emerald-50/30 group-hover:bg-emerald-50">${car.price}</td>
-                            <td className="px-6 py-4 text-center font-bold text-stone-600 bg-stone-50/50 group-hover:bg-amber-50/30">${car.price}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div className="mt-6 text-center text-xs text-stone-500 uppercase tracking-widest leading-relaxed">
-                  * Prices are valid at the time of quotation request.<br className="sm:hidden" /> Contact us to lock this rate.
-                </div>
               </div>
             </motion.div>
           </div>
