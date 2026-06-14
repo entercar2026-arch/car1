@@ -936,13 +936,11 @@ Description: ${formattedDesc}`;
                           )}
                         </div>
                       </div>
-                      {(Object.keys(car.customColors || {}).length > 0) && (
-                        <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
-                           {t.samplePhotoNotice}
-                        </p>
-                      )}
                     </>
                   )}
+                  <p className="text-[10px] text-stone-400 italic mt-1 mb-2">
+                     {t.samplePhotoNotice}
+                  </p>
                 </div>
                 <input ref={colorUploadRef} type="file" accept="image/*" className="hidden" onChange={handleColorImageUpload} />
                   
