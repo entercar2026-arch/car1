@@ -177,7 +177,30 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   }, [car.videoUrl]);
 
   const allPhotos = useMemo(() => {
-    return car.photos?.length ? car.photos : [car.image, car.altImage].filter(Boolean) as string[];
+    if (!car.image) {
+      return car.photos?.length ? car.photos : [];
+    }
+    
+    if (car.photos?.length) {
+      const cleanUrl = (u: string) => u.split('?')[0].trim();
+      const targetClean = cleanUrl(car.image);
+      const firstPhotoClean = cleanUrl(car.photos[0]);
+      
+      if (targetClean !== firstPhotoClean) {
+        const cleanedPhotos = car.photos.map(p => cleanUrl(p));
+        const indexInPhotos = cleanedPhotos.indexOf(targetClean);
+        if (indexInPhotos > -1) {
+          const rearranged = [...car.photos];
+          const [moved] = rearranged.splice(indexInPhotos, 1);
+          return [moved, ...rearranged];
+        } else {
+          return [car.image, ...car.photos];
+        }
+      }
+      return car.photos;
+    }
+    
+    return [car.image, car.altImage].filter(Boolean) as string[];
   }, [car.photos, car.image, car.altImage]);
 
   const primaryImage = car.image || getFallbackCarThumbnail(car.name, car.category);
