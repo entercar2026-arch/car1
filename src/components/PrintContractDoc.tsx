@@ -3,9 +3,17 @@ import { Check } from "lucide-react";
 
 interface PrintContractDocProps {
   lang: "kh" | "en" | "zh";
+  page1Ref?: React.RefObject<HTMLDivElement | null>;
+  page2Ref?: React.RefObject<HTMLDivElement | null>;
+  page3Ref?: React.RefObject<HTMLDivElement | null>;
 }
 
-export const PrintContractDoc: React.FC<PrintContractDocProps> = ({ lang }) => {
+export const PrintContractDoc: React.FC<PrintContractDocProps> = ({ 
+  lang,
+  page1Ref,
+  page2Ref,
+  page3Ref
+}) => {
   const isKh = lang === "kh";
   const isZh = lang === "zh";
   const isEn = lang === "en";
@@ -104,7 +112,7 @@ export const PrintContractDoc: React.FC<PrintContractDocProps> = ({ lang }) => {
     <div id="khmer-printable-contract" className="w-full bg-white text-stone-900 select-text font-khmer">
       
       {/* PAGE 1 */}
-      <div className="print-pdf-page pdf-page bg-white text-stone-900 border border-stone-200 p-8 sm:p-14 w-full text-left relative overflow-hidden flex flex-col justify-between" style={{ minHeight: "1123px" }}>
+      <div ref={page1Ref} className="print-pdf-page pdf-page bg-white text-stone-900 border border-stone-200 p-8 sm:p-14 w-full text-left relative overflow-hidden flex flex-col justify-between" style={{ minHeight: "1123px" }}>
         <div>
           {/* Header Seals */}
           <div className="flex flex-col items-center text-center mb-6">
@@ -302,7 +310,7 @@ export const PrintContractDoc: React.FC<PrintContractDocProps> = ({ lang }) => {
       </div>
 
       {/* PAGE 2 */}
-      <div className="print-pdf-page pdf-page bg-white text-stone-900 border border-stone-200 p-8 sm:p-14 w-full text-left relative overflow-hidden flex flex-col justify-between" style={{ minHeight: "1123px" }}>
+      <div ref={page2Ref} className="print-pdf-page pdf-page bg-white text-stone-900 border border-stone-200 p-8 sm:p-14 w-full text-left relative overflow-hidden flex flex-col justify-between" style={{ minHeight: "1123px" }}>
         <div className="flex flex-col gap-5 text-xs sm:text-[13px] leading-relaxed text-stone-800 pt-4">
           
           {isKh && (
@@ -482,7 +490,7 @@ export const PrintContractDoc: React.FC<PrintContractDocProps> = ({ lang }) => {
       </div>
 
       {/* PAGE 3 */}
-      <div className="print-pdf-page pdf-page bg-white text-stone-900 border border-stone-200 p-8 sm:p-14 w-full text-left relative overflow-hidden flex flex-col justify-between" style={{ minHeight: "1123px" }}>
+      <div ref={page3Ref} className="print-pdf-page pdf-page bg-white text-stone-900 border border-stone-200 p-8 sm:p-14 w-full text-left relative overflow-hidden flex flex-col justify-between" style={{ minHeight: "1123px" }}>
         <div className="flex flex-col gap-5 text-xs sm:text-[13px] leading-relaxed text-stone-800 pt-4">
           
           {isKh && (

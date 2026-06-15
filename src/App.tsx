@@ -223,7 +223,10 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs">
+          <span 
+            onClick={() => setIsContractModalOpen(true)}
+            className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs cursor-pointer hover:text-amber-400 select-none flex items-center gap-1.5 transition-colors duration-200"
+          >
             {t.contractRequirement}
           </span>
 
@@ -258,54 +261,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
         {/* Contract Modal */}
         <AnimatePresence>
           {isContractModalOpen && (
-            lang === "kh" ? (
-              <KhmerContractPDFModal isOpen={isContractModalOpen} onClose={() => setIsContractModalOpen(false)} />
-            ) : (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setIsContractModalOpen(false)}
-                  className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
-                />
-                <motion.div
-                  initial={{ scale: 0.95, opacity: 0, y: 15 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                  className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
-                >
-                  <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
-                    <h3 className="font-bold text-stone-900 flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-[#4C0027]" />
-                      {t.contractTitle}
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setIsContractModalOpen(false)}
-                      className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
-                    <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
-                      {t.contractContent}
-                    </p>
-                    <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                        <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
-                      </div>
-                      <div>
-                        <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                        <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            )
+            <KhmerContractPDFModal isOpen={isContractModalOpen} onClose={() => setIsContractModalOpen(false)} lang={lang} />
           )}
         </AnimatePresence>
 
