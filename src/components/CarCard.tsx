@@ -227,32 +227,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const currentImage = allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage;
 
   const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover'), [currentImage, windowWidth]);
-  const [renderedImageSrc, setRenderedImageSrc] = useState(targetImageSrc);
-  const [isPreloading, setIsPreloading] = useState(false);
-
-  useEffect(() => {
-    if (targetImageSrc !== renderedImageSrc) {
-      let isCancelled = false;
-      setIsPreloading(true);
-      const img = new Image();
-      img.onload = () => {
-        if (!isCancelled) {
-          setRenderedImageSrc(targetImageSrc);
-          setIsPreloading(false);
-        }
-      };
-      img.onerror = () => {
-        if (!isCancelled) {
-          setRenderedImageSrc(targetImageSrc);
-          setIsPreloading(false);
-        }
-      };
-      img.src = targetImageSrc;
-      return () => {
-        isCancelled = true;
-      };
-    }
-  }, [targetImageSrc, renderedImageSrc]);
+  const renderedImageSrc = targetImageSrc;
 
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
@@ -694,7 +669,7 @@ Description: ${formattedDesc}`;
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 1.02 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      transition={{ duration: 0.15, ease: "easeInOut" }}
                       className="w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -719,7 +694,7 @@ Description: ${formattedDesc}`;
                         opacity: 1,
                       }}
                       exit={{ opacity: 0, scale: 1.02 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      transition={{ duration: 0.15, ease: "easeInOut" }}
                       className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -740,7 +715,7 @@ Description: ${formattedDesc}`;
                         opacity: 1,
                       }}
                       exit={{ opacity: 0, scale: 1.02 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      transition={{ duration: 0.15, ease: "easeInOut" }}
                       className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -762,14 +737,14 @@ Description: ${formattedDesc}`;
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
+                    transition={{ duration: 0.15 }}
                     title={car.name}
                     style={{ border: "none" }}
                   />
                 ) : (
                   <motion.img
                     id={`car-photo-${car.id}`}
-                    key={`inline-img-${renderedImageSrc}-${currentPhotoIndex}`}
+                    key={`inline-img-${car.id}-${currentPhotoIndex}`}
                     src={renderedImageSrc}
                     alt={car.name}
                     loading="lazy"
@@ -788,7 +763,7 @@ Description: ${formattedDesc}`;
                       opacity: 1,
                     }}
                     exit={{ opacity: 0, scale: 1.02 }}
-                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    transition={{ duration: 0.15, ease: "easeInOut" }}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover select-none bg-stone-100"
                   />
@@ -1866,11 +1841,11 @@ Description: ${formattedDesc}`;
                   <AnimatePresence mode="wait" initial={false}>
                     {hasVideo ? (
                       <motion.video
-                        key={`video-${renderedImageSrc}-${currentPhotoIndex}`}
+                        key={`video-${car.id}-${currentPhotoIndex}`}
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.02 }}
-                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        transition={{ duration: 0.15, ease: "easeInOut" }}
                         src={currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage}
                         controls
                         autoPlay
@@ -1879,22 +1854,22 @@ Description: ${formattedDesc}`;
                       />
                     ) : imageError && isGoogleDrive && driveId ? (
                       <motion.iframe
-                        key={`iframe-${renderedImageSrc}-${currentPhotoIndex}`}
+                        key={`iframe-${car.id}-${currentPhotoIndex}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25 }}
+                        transition={{ duration: 0.15 }}
                         src={`https://drive.google.com/file/d/${driveId}/preview`}
                         className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         allow="autoplay"
                       />
                     ) : (
                       <motion.img
-                        key={`img-${renderedImageSrc}-${currentPhotoIndex}`}
+                        key={`img-${car.id}-${currentPhotoIndex}`}
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.02 }}
-                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        transition={{ duration: 0.15, ease: "easeInOut" }}
                         src={renderedImageSrc}
                         alt={`${car.name} photo`}
                         onError={(e) => {
