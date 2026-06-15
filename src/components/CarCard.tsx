@@ -876,8 +876,8 @@ Description: ${formattedDesc}`;
                                 }
                               }
                             }}
-                            className={`w-5 h-5 rounded-none border border-stone-300/60 flex items-center justify-center origin-center cursor-pointer ${
-                              isActive ? "select-none shadow-md z-10 bg-stone-900 text-white border-stone-900" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                            className={`w-5 h-5 rounded-full border border-stone-300/60 flex items-center justify-center origin-center cursor-pointer ${
+                              isActive ? "select-none shadow-md z-10 bg-red-50 text-red-600 border-red-300" : "bg-stone-50 text-red-500 hover:bg-stone-200/80"
                             }`}
                             animate={{
                               scale: isActive ? 1.3 : 1.0,
