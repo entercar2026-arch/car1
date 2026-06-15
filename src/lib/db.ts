@@ -7,6 +7,8 @@ const dbToCar = (dbCar: any): Car => {
   let photos: string[] | undefined = undefined;
   let videoUrl = dbCar.video_url || dbCar.videoUrl || "";
   let thumbnail = dbCar.thumbnail || "";
+  let dotColor: string | undefined = undefined;
+  let dotColors: string[] | undefined = undefined;
 
   // Parse metadata from description if present
   if (description.includes("|||META:")) {
@@ -17,6 +19,8 @@ const dbToCar = (dbCar: any): Car => {
       if (meta.photos) photos = meta.photos;
       if (meta.videoUrl) videoUrl = meta.videoUrl;
       if (meta.thumbnail) thumbnail = meta.thumbnail;
+      if (meta.dotColor) dotColor = meta.dotColor;
+      if (meta.dotColors) dotColors = meta.dotColors;
     } catch (e) {
       console.error("Failed to parse car metadata", e);
     }
@@ -35,6 +39,8 @@ const dbToCar = (dbCar: any): Car => {
     videoUrl: videoUrl,
     thumbnail: thumbnail || undefined,
     photos: photos,
+    dotColor: dotColor || undefined,
+    dotColors: dotColors,
   };
 };
 
@@ -43,6 +49,8 @@ const carToDb = (car: Omit<Car, 'id'>) => {
   if (car.photos) meta.photos = car.photos;
   if (car.videoUrl) meta.videoUrl = car.videoUrl;
   if (car.thumbnail) meta.thumbnail = car.thumbnail;
+  if (car.dotColor) meta.dotColor = car.dotColor;
+  if (car.dotColors) meta.dotColors = car.dotColors;
 
   const descSuffix = ` |||META:${JSON.stringify(meta)}`;
   const fullDescription = (car.description || "") + descSuffix;
@@ -87,11 +95,13 @@ export const db = {
       if (car.seats) payload.seats = car.seats;
       if (car.fuelType) payload.fuel_type = car.fuelType;
 
-      if (car.description !== undefined || car.photos !== undefined || car.videoUrl !== undefined || car.thumbnail !== undefined) {
+      if (car.description !== undefined || car.photos !== undefined || car.videoUrl !== undefined || car.thumbnail !== undefined || car.dotColor !== undefined || car.dotColors !== undefined) {
         const meta: any = {};
         if (car.photos) meta.photos = car.photos;
         if (car.videoUrl) meta.videoUrl = car.videoUrl;
         if (car.thumbnail) meta.thumbnail = car.thumbnail;
+        if (car.dotColor) meta.dotColor = car.dotColor;
+        if (car.dotColors) meta.dotColors = car.dotColors;
 
         const descSuffix = ` |||META:${JSON.stringify(meta)}`;
         payload.description = (car.description !== undefined ? car.description : "") + descSuffix;

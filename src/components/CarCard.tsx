@@ -792,8 +792,8 @@ Description: ${formattedDesc}`;
                     if (isGoogleDrive) {
                       setImageError(true);
                     } else {
-                      (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+                      const fallback = car.thumbnail || getFallbackCarThumbnail(car.name, car.category);
+                      (e.target as HTMLImageElement).src = fallback;
                     }
                   }}
                   initial={{ scale: 0.96, opacity: 0.4 }}

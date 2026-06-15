@@ -30,6 +30,30 @@ import {
   Search,
 } from "lucide-react";
 
+// Fallback thumbnails by brand/category
+const getAdminFallbackCarThumbnail = (carName: string, category: string): string => {
+  const name = (carName || "").toLowerCase();
+  if (name.includes("porsche") || name.includes("911")) {
+    return "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("tesla") || name.includes("model s") || name.includes("plaid")) {
+    return "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("lexus") || name.includes("rx") || name.includes("gs")) {
+    return "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("prius") || name.includes("toyota")) {
+    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
+  }
+  if (name.includes("ford") || name.includes("mustang")) {
+    return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=600";
+  }
+  if (category && category.toLowerCase() === "suv") {
+    return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
+  }
+  return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+};
+
 // Optimized Form components to prevent full-dashboard synchronous re-renders on keystroke (INP fix)
 const OptimizedTextArea = ({ id, value, onChange, placeholder, className, rows }: any) => {
   const [localVal, setLocalVal] = useState(value);
@@ -360,35 +384,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         className="hover:bg-stone-50/40 transition-colors"
       >
         <td className="p-4 pl-6 text-center">
-          {car.thumbnail ? (
-            <img
-              id={`admin-thumb-${car.id}`}
-              src={car.thumbnail}
-              alt={car.name}
-              className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
-            />
-          ) : car.image.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || car.image.includes("video") ? (
-            <video
-              id={`admin-thumb-${car.id}`}
-              src={car.image.includes("#") ? car.image : `${car.image}#t=0.1`}
-              preload="metadata"
-              muted
-              playsInline
-              className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none bg-stone-100"
-            />
-          ) : (
-            <img
-              id={`admin-thumb-${car.id}`}
-              src={car.image}
-              alt={car.name}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
-              }}
-              referrerPolicy="no-referrer"
-              className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
-            />
-          )}
+          {(() => {
+            const hasThumbnail = !!car.thumbnail;
+            const isUnsplash = car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com"));
+            // Try to resolve custom photos if the main image is an Unsplash sample placeholder
+            const effectiveImage = (isUnsplash && car.photos && car.photos.length > 0) ? car.photos[0] : car.image;
+            const isVideo = effectiveImage && (effectiveImage.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || effectiveImage.includes("video"));
+
+            if (hasThumbnail) {
+              return (
+                <img
+                  id={`admin-thumb-${car.id}`}
+                  src={car.thumbnail}
+                  alt={car.name}
+                  className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
+                />
+              );
+            } else if (isVideo) {
+              return (
+                <video
+                  id={`admin-thumb-${car.id}`}
+                  src={effectiveImage.includes("#") ? effectiveImage : `${effectiveImage}#t=0.1`}
+                  preload="metadata"
+                  muted
+                  playsInline
+                  className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none bg-stone-100"
+                />
+              );
+            } else {
+              return (
+                <img
+                  id={`admin-thumb-${car.id}`}
+                  src={effectiveImage || "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600"}
+                  alt={car.name}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = getAdminFallbackCarThumbnail(car.name, car.category);
+                  }}
+                  referrerPolicy="no-referrer"
+                  className="w-16 h-12 object-cover rounded-xl border border-stone-100 shadow-2xs select-none"
+                />
+              );
+            }
+          })()}
         </td>
         <td className="p-4">
           <span
