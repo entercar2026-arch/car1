@@ -120,19 +120,33 @@ const getCarImageSrc = (car: Car) => {
   if (!url) {
     const name = car.name.toLowerCase();
     const category = (car.category || "").toLowerCase();
-    if (name.includes("porsche") || name.includes("911")) {
-      url = "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600";
-    } else if (name.includes("tesla") || name.includes("model s") || name.includes("plaid")) {
-      url = "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600";
-    } else if (name.includes("lexus") || name.includes("rx") || name.includes("gs")) {
-      url = "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=600";
-    } else if (name.includes("prius") || name.includes("toyota") || name.includes("tundra") || name.includes("hilux")) {
+    
+    // 1. Heavy Trucks / Commercial Cargo / Trucks
+    if (category === "truck" || name.includes("heavy truck") || (name.includes("truck") && !name.includes("pickup") && !name.includes("f-150") && !name.includes("raptor") && !name.includes("hilux") && !name.includes("tundra"))) {
+      url = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=600";
+    }
+    // 2. Pickup Trucks (Raptor, F-150, Tundra, Hilux, Pickup, etc.)
+    else if (category === "pickup" || name.includes("pickup") || name.includes("raptor") || name.includes("hilux") || name.includes("tundra") || name.includes("f-150") || name.includes("f150") || name.includes("truck")) {
       url = "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
-    } else if (name.includes("ford") || name.includes("mustang") || name.includes("raptor")) {
+    }
+    // 3. MPV / Vans (Alphard, Starex, MPV, Van, etc.)
+    else if (category === "mpv" || category === "van" || name.includes("alphard") || name.includes("starex") || name.includes("van") || name.includes("mpv")) {
       url = "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=600";
-    } else if (category === "suv") {
-      url = "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
-    } else {
+    }
+    // 4. SUVs
+    else if (category === "suv" || name.includes("suv") || name.includes("range rover") || name.includes("discovery") || name.includes("land cruiser") || name.includes("jeep") || name.includes("lexus rx") || name.includes("rx")) {
+      url = "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=600";
+    }
+    // 5. Sports Cars / Exotic
+    else if (name.includes("porsche") || name.includes("911") || name.includes("ferrari") || name.includes("mustang")) {
+      url = "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600";
+    }
+    // 6. Tesla/Electric
+    else if (name.includes("tesla") || name.includes("model s") || name.includes("plaid") || name.includes("model 3") || name.includes("model y") || name.includes("model x")) {
+      url = "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600";
+    }
+    // 7. General Lexus / Toyota Camry / Sedans / Hatchback
+    else {
       url = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
     }
   }
