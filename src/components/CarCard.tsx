@@ -877,12 +877,8 @@ Description: ${formattedDesc}`;
                               }
                             }}
                             className={`w-5 h-5 rounded-none border border-stone-300/60 flex items-center justify-center origin-center cursor-pointer ${
-                              isActive ? "select-none shadow-md z-10" : "hover:opacity-90"
+                              isActive ? "select-none shadow-md z-10 bg-stone-900 text-white border-stone-900" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                             }`}
-                            style={{
-                              backgroundColor: activeColor,
-                              color: "#ffffff",
-                            }}
                             animate={{
                               scale: isActive ? 1.3 : 1.0,
                             }}
