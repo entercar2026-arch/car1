@@ -2055,6 +2055,10 @@ export default function App() {
                   <>
                     Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> of <span className="font-bold text-stone-800">{cars.length}</span> vehicles
                   </>
+                ) : lang === "zh" ? (
+                  <>
+                    正在显示 <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> 辆车，共 <span className="font-bold text-stone-800">{cars.length}</span> 辆
+                  </>
                 ) : (
                   <>
                     កំពុងបង្ហាញរថយន្ដ <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> នៃ <span className="font-bold text-stone-800">{cars.length}</span>
