@@ -42,7 +42,9 @@ import {
   Heart,
   Globe,
   Printer,
+  FileSignature,
 } from "lucide-react";
+import { PrintContractDoc } from "./components/PrintContractDoc";
 
 const SECURE_TOKEN_KEY = "enter_admin_session_token";
 
@@ -160,6 +162,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "type-asc" | "type-desc">("default");
   const [selectedCarIds, setSelectedCarIds] = useState<Record<string, boolean>>({});
+  const [includeContract, setIncludeContract] = useState(true);
 
   // Reset or initialize selections when cars change or modal is shown
   useEffect(() => {
@@ -432,19 +435,41 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                     </div>
                   </div>
                 </div>
-                <div className="mt-6 pt-5 border-t border-stone-200/60 bg-stone-50 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 shadow-inner border border-stone-200">
-                  <div className="flex flex-col gap-1 items-center sm:items-start w-full sm:w-auto">
-                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] font-mono">Standard Terms</span>
-                    <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
-                      <span className="text-xs font-semibold text-stone-700">Minimum 6 mos</span>
-                      <span className="text-stone-300">•</span>
-                      <span className="text-xs font-semibold text-stone-700">1 month deposit</span>
+                <div className="mt-6 pt-5 border-t border-stone-200/60 bg-stone-50 rounded-xl p-4 flex flex-col lg:flex-row items-center justify-between gap-4 shrink-0 shadow-inner border border-stone-200">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+                    <div className="flex flex-col gap-1 items-center sm:items-start shrink-0">
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] font-mono">Standard Terms</span>
+                      <div className="flex items-center gap-1.5 flex-wrap justify-center sm:justify-start">
+                        <span className="text-xs font-semibold text-stone-700">Minimum 6 mos</span>
+                        <span className="text-stone-300">•</span>
+                        <span className="text-xs font-semibold text-stone-700">1 month deposit</span>
+                      </div>
+                    </div>
+
+                    <div className="h-px w-full sm:h-8 sm:w-px bg-stone-200 hidden sm:block" />
+
+                    {/* PDF Append Toggle for Contract Doc */}
+                    <div className="flex items-center gap-2.5 bg-white border border-stone-200 px-3 py-1.5 rounded-xl select-none shadow-2xs">
+                      <input
+                        id="toggle-include-contract"
+                        type="checkbox"
+                        checked={includeContract}
+                        onChange={(e) => setIncludeContract(e.target.checked)}
+                        className="w-4 h-4 text-emerald-600 bg-white border-stone-300 rounded focus:ring-emerald-500 cursor-pointer accent-[#4C0027]"
+                      />
+                      <label htmlFor="toggle-include-contract" className="text-xs font-bold text-stone-700 cursor-pointer flex items-center gap-1.5 font-sans">
+                        <FileSignature className="w-3.5 h-3.5 text-[#4C0027]" />
+                        {lang === "kh" ? "រួមបញ្ចូលគំរូកិច្ចសន្យា" : lang === "zh" ? "附带租赁合同" : "Include Contract Template"}
+                      </label>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto shrink-0">
+                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
                     <button
                       type="button"
-                      onClick={() => window.print()}
+                      onClick={() => {
+                        document.body.setAttribute("data-print-mode", "quotation");
+                        window.print();
+                      }}
                       className="w-full sm:w-auto px-6 py-3 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-extrabold rounded-xl shadow-md uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 border border-amber-500/20"
                     >
                       <Printer className="w-4 h-4 shrink-0 text-stone-950" />
@@ -573,6 +598,13 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
             Thank you for choosing ENTER Car Rental. We value your business and look forward to safe journeys together.
           </p>
         </div>
+
+        {/* Localized Car Rental Lease Contract Appended */}
+        {includeContract && (
+          <div className="print-contract-append mt-12 pt-8" style={{ pageBreakBefore: "always", breakBefore: "page" }}>
+            <PrintContractDoc lang={lang} />
+          </div>
+        )}
       </div>
     </>
   );
@@ -670,6 +702,14 @@ export default function App() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleAfterPrint = () => {
+      document.body.removeAttribute("data-print-mode");
+    };
+    window.addEventListener("afterprint", handleAfterPrint);
+    return () => window.removeEventListener("afterprint", handleAfterPrint);
   }, []);
 
   // Current Screen / Node View

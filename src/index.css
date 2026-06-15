@@ -76,32 +76,23 @@ input[type="range"] {
 }
 
 @media print {
-  /* Hide all elements that have the .no-print class completely from the document flow */
+  /* Hide all elements that have the .no-print class completely */
   .no-print,
   .no-print * {
     display: none !important;
   }
 
-  /* Hide interactive floating layouts, headers, footers and navigation tools */
-  header, footer, button, select, input, label, svg, iframe,
+  /* Universal print hides for floating structures, actions, widgets, and header/footers */
+  header, footer, button, select, input:not([type="checkbox"]), label, svg, iframe,
   .fixed,
-  .absolute:not(#print-section *) {
+  .absolute:not(#print-section *, #khmer-printable-contract *) {
     display: none !important;
   }
 
-  /* Hide sibling layouts of #print-section's ancestor chain to ensure zero layout height */
-  #customer-application-root > *:not(main) {
-    display: none !important;
-  }
-  
-  main > *:not(#home-panel) {
-    display: none !important;
-  }
-
-  /* Normalize CSS page dimensions and layout flow for parent containers */
+  /* Base root containers adjustments to ensure height constraints do not cause extra blank pages */
   html, body, #root, #customer-application-root, main, #home-panel {
     background: white !important;
-    color: #1c1917 !important;
+    color: #1a1513 !important;
     width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
@@ -113,31 +104,93 @@ input[type="range"] {
     display: block !important;
   }
 
-  /* Display print section beautifully on page */
-  .print-only-layout,
-  #print-section {
+  /* Force background color rendering and image fidelity on pdf generation */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Clean up page margins and prevent double margins */
+  @page {
+    margin: 0.5in !important;
+  }
+
+  /* Display custom print layouts depending on print mode */
+  body:not([data-print-mode]) #print-section,
+  body:not([data-print-mode]) #khmer-printable-contract {
+    display: none !important;
+  }
+
+  /* QUOTATION MODE */
+  body[data-print-mode="quotation"] #print-section {
     display: block !important;
     position: relative !important;
     width: 100% !important;
     margin: 0 !important;
-    padding: 2.5rem !important;
+    padding: 1.5rem !important;
     background: white !important;
-    color: #1c1917 !important;
-    font-family: inherit !important;
+    color: #1a1513 !important;
     opacity: 1 !important;
     visibility: visible !important;
     overflow: visible !important;
+    border: none !important;
   }
 
-  .print-only-layout * {
+  body[data-print-mode="quotation"] #print-section * {
     visibility: visible !important;
     opacity: 1 !important;
   }
 
-  /* Force background colors and image adjustments for high-fidelity printing */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  body[data-print-mode="quotation"] #khmer-printable-contract,
+  body[data-print-mode="quotation"] #khmer-printable-contract * {
+    display: none !important;
+  }
+
+  /* CONTRACT MODE */
+  body[data-print-mode="contract"] #print-section,
+  body[data-print-mode="contract"] #print-section * {
+    display: none !important;
+  }
+
+  body[data-print-mode="contract"] #khmer-printable-contract {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: #1a1513 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    border: none !important;
+  }
+
+  body[data-print-mode="contract"] #khmer-printable-contract * {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Ensure each contract page splits on an exact page boundary */
+  body[data-print-mode="contract"] .pdf-page {
+    display: block !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    background: white !important;
+    color: #1a1513 !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 0 1.5in 0 !important; /* Space between pages during screen view, but triggers pagebreak */
+    padding: 1.5rem !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  body[data-print-mode="contract"] .pdf-page:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    margin-bottom: 0 !important;
   }
 }
 

@@ -96,57 +96,8 @@ export const KhmerContractPDFModal: React.FC<KhmerContractPDFModalProps> = ({ is
   };
 
   const handlePrint = () => {
-    // Generate simple print frame
-    const printContent = document.getElementById("khmer-printable-contract");
-    if (!printContent) return;
-
-    const originalContent = document.body.innerHTML;
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Enter_Car_Rental_Contract_KH</title>
-            <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Moul&family=Nokora:wght@400;700&display=swap" rel="stylesheet">
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-              @media print {
-                body {
-                  background: white;
-                  color: black;
-                }
-                .pdf-page {
-                  page-break-after: always;
-                  box-shadow: none !important;
-                  border: none !important;
-                  margin: 0 !important;
-                  width: 100% !important;
-                  height: auto !important;
-                }
-              }
-              body {
-                font-family: "Kantumruy Pro", sans-serif;
-              }
-              .moul-font {
-                font-family: "Moul", serif;
-              }
-            </style>
-          </head>
-          <body class="p-4 bg-white text-stone-900">
-            <div>
-              ${printContent.innerHTML}
-            </div>
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(function() { window.close(); }, 500);
-              }
-            </script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
+    document.body.setAttribute("data-print-mode", "contract");
+    window.print();
   };
 
   // Mock download of clean text configuration file

@@ -40,12 +40,29 @@ import {
 } from "lucide-react";
 
 const getOptimizedImageUrl = (
-  url: string, 
+  rawUrl: string, 
   windowWidth: number, 
   type: 'cover' | 'thumbnail' = 'cover',
   connectionStatus: 'slow' | 'moderate' | 'good' = 'good'
 ) => {
-  if (!url) return url;
+  if (!rawUrl) return rawUrl;
+  
+  let url = rawUrl;
+  if (rawUrl.includes("drive.google.com")) {
+    const fileDMatch = rawUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    let driveId = "";
+    if (fileDMatch && fileDMatch[1]) {
+      driveId = fileDMatch[1];
+    } else {
+      const idParamMatch = rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (idParamMatch && idParamMatch[1]) {
+        driveId = idParamMatch[1];
+      }
+    }
+    if (driveId) {
+      url = `https://lh3.googleusercontent.com/d/${driveId}`;
+    }
+  }
   
   // Decide target width based on viewport and usage type
   let targetWidth = 800;
@@ -276,11 +293,14 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   }, [car.photos, car.image, car.altImage]);
 
   const primaryImage = useMemo(() => {
+    if (car.thumbnail) {
+      return car.thumbnail;
+    }
     if (car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com")) && car.photos?.length) {
       return car.photos[0];
     }
     return car.image || getFallbackCarThumbnail(car.name, car.category);
-  }, [car.image, car.photos, car.name, car.category]);
+  }, [car.thumbnail, car.image, car.photos, car.name, car.category]);
   const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover', connectionStatus), [primaryImage, windowWidth, connectionStatus]);
   const currentImage = allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage;
 
