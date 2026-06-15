@@ -39,7 +39,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 'thumbnail' = 'cover') => {
+const getOptimizedImageUrl = (
+  url: string, 
+  windowWidth: number, 
+  type: 'cover' | 'thumbnail' = 'cover',
+  connectionStatus: 'slow' | 'moderate' | 'good' = 'good'
+) => {
   if (!url) return url;
   
   // Decide target width based on viewport and usage type
@@ -51,17 +56,27 @@ const getOptimizedImageUrl = (url: string, windowWidth: number, type: 'cover' | 
     targetWidth = windowWidth <= 640 ? 400 : windowWidth <= 1024 ? 600 : 800;
   }
 
+  // Adjust quality and width dynamically based on internet speed connection status
+  let quality = 75;
+  if (connectionStatus === 'slow') {
+    targetWidth = Math.round(targetWidth * 0.4); // Reduce width to 40% for extremely fast loading
+    quality = 35; // Lower quality for high compression
+  } else if (connectionStatus === 'moderate') {
+    targetWidth = Math.round(targetWidth * 0.7); // Reduce width to 70%
+    quality = 55; // Medium quality compression
+  }
+
   if (url.includes('unsplash.com')) {
     if (url.includes('w=')) {
-      return url.replace(/w=\d+/, `w=${targetWidth}`).replace(/q=\d+/, 'q=70');
+      return url.replace(/w=\d+/, `w=${targetWidth}`).replace(/q=\d+/, `q=${quality}`);
     }
     const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}w=${targetWidth}&q=70&auto=format&fit=crop`;
+    return `${url}${separator}w=${targetWidth}&q=${quality}&auto=format&fit=crop`;
   }
   
   if (url.includes('/upload/') && !url.includes('wikimedia.org')) {
-    // f_auto will serve webp/avif for images, and wepm/mp4 for videos automatically based on browser
-    return url.replace('/upload/', `/upload/f_auto,q_auto,w_${targetWidth},c_scale/`);
+    // f_auto serves optimized webp/avif, q controls quality compression dynamically
+    return url.replace('/upload/', `/upload/f_auto,q_${quality},w_${targetWidth},c_scale/`);
   }
   
   return url;
@@ -169,6 +184,49 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     };
   }, []);
 
+  const [connectionStatus, setConnectionStatus] = useState<'slow' | 'moderate' | 'good'>(() => {
+    if (typeof navigator === "undefined" || !("connection" in navigator)) {
+      return "good";
+    }
+    const conn = (navigator as any).connection;
+    if (!conn) return "good";
+    const effectiveType = conn.effectiveType || "";
+    const downlink = conn.downlink || 10;
+    const saveData = conn.saveData || false;
+    
+    if (saveData || effectiveType === "2g" || downlink < 1.5) {
+      return "slow";
+    } else if (effectiveType === "3g" || downlink < 3.0) {
+      return "moderate";
+    }
+    return "good";
+  });
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("connection" in navigator)) return;
+    const conn = (navigator as any).connection;
+    if (!conn) return;
+
+    const handleConnectionChange = () => {
+      const effectiveType = conn.effectiveType || "";
+      const downlink = conn.downlink || 10;
+      const saveData = conn.saveData || false;
+
+      if (saveData || effectiveType === "2g" || downlink < 1.5) {
+        setConnectionStatus("slow");
+      } else if (effectiveType === "3g" || downlink < 3.0) {
+        setConnectionStatus("moderate");
+      } else {
+        setConnectionStatus("good");
+      }
+    };
+
+    conn.addEventListener("change", handleConnectionChange);
+    return () => {
+      conn.removeEventListener("change", handleConnectionChange);
+    };
+  }, []);
+
   const [imageError, setImageError] = useState(false);
   const isMobile = windowWidth <= 768;
 
@@ -223,10 +281,10 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     }
     return car.image || getFallbackCarThumbnail(car.name, car.category);
   }, [car.image, car.photos, car.name, car.category]);
-  const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover'), [primaryImage, windowWidth]);
+  const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover', connectionStatus), [primaryImage, windowWidth, connectionStatus]);
   const currentImage = allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage;
 
-  const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover'), [currentImage, windowWidth]);
+  const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover', connectionStatus), [currentImage, windowWidth, connectionStatus]);
   const renderedImageSrc = targetImageSrc;
 
   const isVideoMedia = (url?: string) => {
@@ -245,18 +303,18 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   }, [primaryImage, effectiveVideoUrl, currentPhotoIndex]);
 
   const optimizedVideoSource = useMemo(() => {
-    return getOptimizedImageUrl(videoSource, windowWidth, 'cover');
-  }, [videoSource, windowWidth]);
+    return getOptimizedImageUrl(videoSource, windowWidth, 'cover', connectionStatus);
+  }, [videoSource, windowWidth, connectionStatus]);
 
   const isGoogleDrive = currentImage.includes("drive.google.com/uc");
   const driveId = isGoogleDrive ? currentImage.match(/id=([^&]+)/)?.[1] : null;
 
   const videoPoster = useMemo(() => {
     if (currentImage.includes("upload/") && currentImage.match(/\.(mp4|webm|ogg)$/i)) {
-      return getOptimizedImageUrl(currentImage.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover');
+      return getOptimizedImageUrl(currentImage.replace(/\.(mp4|webm|ogg)$/i, ".jpg"), windowWidth, 'cover', connectionStatus);
     }
     return undefined;
-  }, [currentImage, windowWidth]);
+  }, [currentImage, windowWidth, connectionStatus]);
 
   const youtubeThumbnail = useMemo(() => {
     const getYoutubeId = (url?: string): string | null => {
@@ -1380,7 +1438,7 @@ Description: ${formattedDesc}`;
                       src={
                          finalVideoPoster 
                            ? finalVideoPoster 
-                           : getOptimizedImageUrl(currentImage, windowWidth, 'thumbnail')
+                           : getOptimizedImageUrl(currentImage, windowWidth, 'thumbnail', connectionStatus)
                       }
                       alt={car.name}
                       loading="lazy"
@@ -1911,7 +1969,7 @@ Description: ${formattedDesc}`;
                   <div className="flex gap-2 max-w-full overflow-x-auto px-4 py-2 scrollbar-none items-center justify-center">
                     {allPhotos.map((photo, index) => {
                       const isSelected = currentPhotoIndex === index;
-                      const thumbUrl = getOptimizedImageUrl(photo, windowWidth, 'thumbnail');
+                      const thumbUrl = getOptimizedImageUrl(photo, windowWidth, 'thumbnail', connectionStatus);
                       return (
                         <button
                           key={index}
