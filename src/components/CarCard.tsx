@@ -677,21 +677,12 @@ Description: ${formattedDesc}`;
               }}
             >
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
-              {hasVideo ? (
-                <>
-                  {isVideoLoading && (!hasRealPoster || isPlaying) && (
-                    <div className="absolute inset-0 z-[15] flex items-center justify-center bg-stone-100/30 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
-                      <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
-                    </div>
-                  )}
-                  {isPreloading && (
-                    <div className="absolute inset-0 z-[16] flex items-center justify-center bg-stone-100/30 backdrop-blur-sm pointer-events-none transition-opacity duration-300">
-                      <Loader2 className="w-6 h-6 text-stone-600 animate-spin opacity-70" />
-                    </div>
-                  )}
-                  {isPlaying ? (
+              <AnimatePresence mode="wait" initial={false}>
+                {hasVideo ? (
+                  isPlaying ? (
                     <motion.video
                       id={`car-photo-${car.id}`}
+                      key={`video-playing-${car.id}-${currentPhotoIndex}`}
                       ref={videoRef as any}
                       src={optimizedVideoSource}
                       poster={hasRealPoster ? finalVideoPoster : undefined}
@@ -700,16 +691,10 @@ Description: ${formattedDesc}`;
                       muted
                       playsInline
                       autoPlay
-                      initial={{ opacity: 0 }}
-                      whileInView={{
-                        opacity: 1,
-                        scale: 1,
-                        x: 0,
-                        y: 0,
-                        rotate: 0,
-                      }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.02 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
                       className="w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -723,19 +708,19 @@ Description: ${formattedDesc}`;
                   ) : hasRealPoster ? (
                     <motion.img
                       id={`car-photo-${car.id}`}
+                      key={`video-poster-${car.id}-${currentPhotoIndex}`}
                       src={finalVideoPoster}
                       alt={car.name}
                       loading="lazy"
                       decoding="async"
-                      initial={{ scale: 0.94, y: 15 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
                       animate={{
-                        scale: isHovered ? 1.15 : 1.01,
-                        x: isHovered ? 8 : 0,
-                        y: isHovered ? -4 : 0,
-                        rotate: isHovered ? -0.8 : 0,
+                        scale: isHovered ? 1.08 : 1,
+                        opacity: 1,
                       }}
-                      transition={{ duration: 0.55, ease: "easeOut" }}
-                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer animate-fade-in"
+                      exit={{ opacity: 0, scale: 1.02 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsPlaying(true);
@@ -744,19 +729,19 @@ Description: ${formattedDesc}`;
                   ) : (
                     <motion.video
                       id={`car-photo-${car.id}`}
+                      key={`video-preview-${car.id}-${currentPhotoIndex}`}
                       src={optimizedVideoSource ? (optimizedVideoSource.includes("#") ? optimizedVideoSource : `${optimizedVideoSource}#t=0.1`) : ""}
                       preload="metadata"
                       muted
                       playsInline
-                      initial={{ scale: 0.94, y: 15 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
                       animate={{
-                        scale: isHovered ? 1.15 : 1.01,
-                        x: isHovered ? 8 : 0,
-                        y: isHovered ? -4 : 0,
-                        rotate: isHovered ? -0.8 : 0,
+                        scale: isHovered ? 1.08 : 1,
+                        opacity: 1,
                       }}
-                      transition={{ duration: 0.55, ease: "easeOut" }}
-                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer animate-fade-in"
+                      exit={{ opacity: 0, scale: 1.02 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsPlaying(true);
@@ -766,46 +751,49 @@ Description: ${formattedDesc}`;
                       onLoadedData={() => setIsVideoLoading(false)}
                       onCanPlay={() => setIsVideoLoading(false)}
                     />
-                  )}
-                </>
-              ) : imageError && isGoogleDrive && driveId ? (
-                <motion.iframe
-                  id={`car-photo-${car.id}`}
-                  src={`https://drive.google.com/file/d/${driveId}/preview`}
-                  className="w-full h-full object-cover select-none"
-                  allow="autoplay"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: false }}
-                  title={car.name}
-                  style={{ border: "none" }}
-                />
-              ) : (
-                <motion.img
-                  id={`car-photo-${car.id}`}
-                  key={`inline-img-${renderedImageSrc}-${currentPhotoIndex}`}
-                  src={renderedImageSrc}
-                  alt={car.name}
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => {
-                    if (isGoogleDrive) {
-                      setImageError(true);
-                    } else {
-                      const fallback = car.thumbnail || getFallbackCarThumbnail(car.name, car.category);
-                      (e.target as HTMLImageElement).src = fallback;
-                    }
-                  }}
-                  initial={{ scale: 0.96, opacity: 0.4 }}
-                  animate={{
-                    scale: isHovered ? 1.08 : 1,
-                    opacity: 1,
-                  }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover select-none bg-stone-100"
-                />
-              )}
+                  )
+                ) : imageError && isGoogleDrive && driveId ? (
+                  <motion.iframe
+                    id={`car-photo-${car.id}`}
+                    key={`drive-preview-${car.id}-${currentPhotoIndex}`}
+                    src={`https://drive.google.com/file/d/${driveId}/preview`}
+                    className="w-full h-full object-cover select-none"
+                    allow="autoplay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    title={car.name}
+                    style={{ border: "none" }}
+                  />
+                ) : (
+                  <motion.img
+                    id={`car-photo-${car.id}`}
+                    key={`inline-img-${renderedImageSrc}-${currentPhotoIndex}`}
+                    src={renderedImageSrc}
+                    alt={car.name}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      if (isGoogleDrive) {
+                        setImageError(true);
+                      } else {
+                        const fallback = car.thumbnail || getFallbackCarThumbnail(car.name, car.category);
+                        (e.target as HTMLImageElement).src = fallback;
+                      }
+                    }}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{
+                      scale: isHovered ? 1.08 : 1,
+                      opacity: 1,
+                    }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover select-none bg-stone-100"
+                  />
+                )}
+              </AnimatePresence>
 
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/25 via-transparent to-transparent pointer-events-none" />
@@ -899,7 +887,7 @@ Description: ${formattedDesc}`;
                       
                       if (idx === 0) {
                         return (
-                          <button
+                          <motion.button
                             key={idx}
                             type="button"
                             onClick={(e) => {
@@ -914,18 +902,24 @@ Description: ${formattedDesc}`;
                                 }
                               }
                             }}
-                            className={`w-3.5 h-3.5 rounded-none border border-black flex items-center justify-center transition-all duration-200 cursor-pointer ${
-                              isActive ? "scale-110 select-none shadow-xs" : "opacity-60 hover:opacity-100"
+                            className={`w-5 h-5 rounded-none border border-stone-800 flex items-center justify-center origin-center cursor-pointer ${
+                              isActive ? "select-none shadow-md z-10 ring-2 ring-black ring-offset-2" : "opacity-60 hover:opacity-100"
                             }`}
                             style={{
                               backgroundColor: activeColor,
                               color: "#ffffff",
                             }}
+                            animate={{
+                              scale: isActive ? 1.3 : 1.0,
+                            }}
+                            whileHover={{ scale: isActive ? 1.3 : 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
                             <svg 
                               viewBox="0 0 24 24" 
-                              className="w-2.5 h-2.5 fill-current"
+                              className="w-3 h-3 fill-current"
                             >
                               {isActive && isPlaying ? (
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
@@ -933,24 +927,30 @@ Description: ${formattedDesc}`;
                                 <path d="M8 5v14l11-7z" />
                               )}
                             </svg>
-                          </button>
+                          </motion.button>
                         );
                       }
 
                       return (
-                        <button
+                        <motion.button
                           key={idx}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setCurrentPhotoIndex(idx);
                           }}
-                          className={`w-3.5 h-3.5 rounded-none border border-black transition-all duration-200 cursor-pointer ${
-                            isActive ? "scale-110 shadow-xs" : "opacity-60 hover:opacity-100"
+                          className={`w-5 h-5 rounded-none border border-stone-800 origin-center cursor-pointer ${
+                            isActive ? "shadow-md z-10 ring-2 ring-black ring-offset-2" : "opacity-60 hover:opacity-100"
                           }`}
                           style={{
                             backgroundColor: activeColor
                           }}
+                          animate={{
+                            scale: isActive ? 1.3 : 1.0,
+                          }}
+                          whileHover={{ scale: isActive ? 1.3 : 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
                           title={`Go to photo ${idx + 1}`}
                         />
                       );
@@ -1864,49 +1864,51 @@ Description: ${formattedDesc}`;
                   )}
 
                   {/* Media Rendering */}
-                  {hasVideo ? (
-                    <motion.video
-                      key={`video-${renderedImageSrc}-${currentPhotoIndex}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      src={currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage}
-                      controls
-                      autoPlay
-                      loop
-                      className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                    />
-                  ) : imageError && isGoogleDrive && driveId ? (
-                    <motion.iframe
-                      key={`iframe-${renderedImageSrc}-${currentPhotoIndex}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      src={`https://drive.google.com/file/d/${driveId}/preview`}
-                      className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                      allow="autoplay"
-                    />
-                  ) : (
-                    <motion.img
-                      key={`img-${renderedImageSrc}-${currentPhotoIndex}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      src={renderedImageSrc}
-                      alt={`${car.name} photo`}
-                      onError={(e) => {
-                        if (isGoogleDrive) {
-                          setImageError(true);
-                        } else {
-                          (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
-                        }
-                      }}
-                      className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                    />
-                  )}
+                  <AnimatePresence mode="wait" initial={false}>
+                    {hasVideo ? (
+                      <motion.video
+                        key={`video-${renderedImageSrc}-${currentPhotoIndex}`}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        src={currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage}
+                        controls
+                        autoPlay
+                        loop
+                        className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      />
+                    ) : imageError && isGoogleDrive && driveId ? (
+                      <motion.iframe
+                        key={`iframe-${renderedImageSrc}-${currentPhotoIndex}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        src={`https://drive.google.com/file/d/${driveId}/preview`}
+                        className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        allow="autoplay"
+                      />
+                    ) : (
+                      <motion.img
+                        key={`img-${renderedImageSrc}-${currentPhotoIndex}`}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        src={renderedImageSrc}
+                        alt={`${car.name} photo`}
+                        onError={(e) => {
+                          if (isGoogleDrive) {
+                            setImageError(true);
+                          } else {
+                            (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
+                          }
+                        }}
+                        className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                      />
+                    )}
+                  </AnimatePresence>
 
                   {/* Right Arrow Button */}
                   {allPhotos.length > 1 && (
