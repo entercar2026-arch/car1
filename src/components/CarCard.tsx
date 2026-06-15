@@ -772,14 +772,20 @@ Description: ${formattedDesc}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative h-48 bg-stone-50 overflow-hidden cursor-pointer group/media"
+              className="relative h-48 bg-stone-50 overflow-hidden cursor-zoom-in group/media"
               onClick={(e) => { 
                 e.stopPropagation(); 
-                if (allPhotos.length > 1) {
-                  setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
-                }
+                setIsPhotosOpen(true);
               }}
             >
+              {/* Zoom-in interactive hover label */}
+              <div className="absolute inset-0 bg-stone-950/20 opacity-0 group-hover/media:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none z-10">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/65 text-white text-[10px] uppercase tracking-widest rounded-full shadow-lg backdrop-blur-md transform scale-95 group-hover/media:scale-100 transition-all duration-300 font-sans font-bold">
+                  <Images className="w-3.5 h-3.5 text-white" />
+                  <span>{t.viewPhotos || "View Photos"}</span>
+                </div>
+              </div>
+
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               <AnimatePresence mode="wait" initial={false}>
                 {hasVideo ? (
@@ -911,7 +917,7 @@ Description: ${formattedDesc}`;
                       e.stopPropagation();
                       setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
                     }}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto"
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto cursor-pointer"
                     title="Previous Photo"
                   >
                     <ChevronLeft className="w-4 h-4 text-white" />
@@ -922,7 +928,7 @@ Description: ${formattedDesc}`;
                       e.stopPropagation();
                       setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
                     }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto cursor-pointer"
                     title="Next Photo"
                   >
                     <ChevronRight className="w-4 h-4 text-white" />
@@ -958,6 +964,16 @@ Description: ${formattedDesc}`;
                     )}
                   </button>
                 )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsPhotosOpen(true);
+                  }}
+                  title={t.viewPhotos || "View Photos"}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
+                >
+                  <Images className="w-4 h-4 text-current" />
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

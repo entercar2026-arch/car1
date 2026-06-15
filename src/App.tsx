@@ -31,6 +31,7 @@ import {
   TrendingUp,
   Award,
   ChevronRight,
+  ChevronLeft,
   ChevronDown,
   ChevronUp,
   ShieldCheck,
@@ -43,6 +44,7 @@ import {
   Globe,
   Printer,
   FileSignature,
+  Images,
 } from "lucide-react";
 import { PrintContractDoc } from "./components/PrintContractDoc";
 
@@ -177,6 +179,41 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "type-asc" | "type-desc">("default");
   const [selectedCarIds, setSelectedCarIds] = useState<Record<string, boolean>>({});
   const [includeContract, setIncludeContract] = useState(true);
+
+  // High-Resolution Lightbox Gallery State
+  const [lightboxCar, setLightboxCar] = useState<Car | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
+
+  const getCarPhotos = (car: Car) => {
+    const list: string[] = [];
+    if (car.thumbnail) list.push(car.thumbnail);
+    if (car.image && car.image !== car.thumbnail) list.push(car.image);
+    if (car.photos && car.photos.length > 0) {
+      car.photos.forEach(p => {
+        if (!list.includes(p)) list.push(p);
+      });
+    }
+    if (list.length === 0) {
+      list.push("https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=800");
+    }
+    return list;
+  };
+
+  useEffect(() => {
+    if (!lightboxCar) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const photos = getCarPhotos(lightboxCar);
+      if (e.key === "ArrowLeft" && photos.length > 1) {
+        setLightboxIndex((prev) => (prev - 1 + photos.length) % photos.length);
+      } else if (e.key === "ArrowRight" && photos.length > 1) {
+        setLightboxIndex((prev) => (prev + 1) % photos.length);
+      } else if (e.key === "Escape") {
+        setLightboxCar(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxCar, lightboxIndex]);
 
   // Reset or initialize selections when cars change or modal is shown
   useEffect(() => {
@@ -374,7 +411,14 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                               <td className="px-6 py-4 font-semibold text-stone-800">
                                 <div className="flex items-center gap-3.5">
                                   {/* Small crisp car thumbnail */}
-                                  <div className="w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-stone-200 bg-stone-50 shrink-0 shadow-xs group-hover:border-amber-500/30 transition-all relative">
+                                  <div 
+                                    onClick={() => {
+                                      setLightboxCar(car);
+                                      setLightboxIndex(0);
+                                    }}
+                                    className="w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-stone-200 bg-stone-50 shrink-0 shadow-xs group-hover:border-amber-400 group-hover:scale-105 active:scale-95 cursor-zoom-in transition-all relative"
+                                    title="Click to zoom gallery lightbox"
+                                  >
                                     <img
                                       src={getCarImageSrc(car)}
                                       alt={car.name}
@@ -458,6 +502,102 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
             </div>
           )}
         </AnimatePresence>
+
+        {/* High-Resolution Gallery Lightbox */}
+        <AnimatePresence>
+          {lightboxCar && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-md select-none no-print">
+              {/* Close background trigger */}
+              <div className="absolute inset-0 cursor-zoom-out" onClick={() => setLightboxCar(null)} />
+              
+              {/* Main content container */}
+              <div className="relative z-10 max-w-5xl w-full px-4 flex flex-col items-center">
+                
+                {/* Header text with vehicle details */}
+                <div className="w-full flex items-center justify-between text-white mb-4">
+                  <div className="flex flex-col">
+                    <h4 className="text-xl font-extrabold tracking-tight font-sans text-amber-400">
+                      {lightboxCar.name}
+                    </h4>
+                    <p className="text-xs font-mono text-stone-300 uppercase tracking-wider">
+                      {lightboxCar.category} • ${lightboxCar.price.toLocaleString()}/mo • {getCarPhotos(lightboxCar).length} Photos Available
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLightboxCar(null)}
+                    className="p-2 bg-stone-850 hover:bg-stone-800 text-white rounded-full transition-colors cursor-pointer border border-stone-700 flex items-center justify-center shadow-md active:scale-95"
+                    title="Close Gallery (Esc)"
+                  >
+                    <X className="w-6 h-6 text-stone-200" />
+                  </button>
+                </div>
+
+                {/* Main slide display */}
+                <div className="relative w-full aspect-video md:aspect-[16/10] bg-stone-900 rounded-3xl overflow-hidden border border-stone-800 flex items-center justify-center group shadow-2xl">
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={`${lightboxCar.id}-${lightboxIndex}`}
+                      initial={{ opacity: 0, scale: 0.97 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.03 }}
+                      transition={{ duration: 0.2 }}
+                      src={getCarPhotos(lightboxCar)[lightboxIndex]}
+                      alt={`${lightboxCar.name} High Res Photo`}
+                      className="w-full h-full object-contain pointer-events-none"
+                    />
+                  </AnimatePresence>
+
+                  {/* Arrow controls if there are multiple photos */}
+                  {getCarPhotos(lightboxCar).length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setLightboxIndex((prev) => (prev - 1 + getCarPhotos(lightboxCar).length) % getCarPhotos(lightboxCar).length)}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-stone-900/60 hover:bg-stone-900/80 border border-stone-700 backdrop-blur-xs text-white opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md"
+                        title="Previous Photo (Left/Right Arrows)"
+                      >
+                        <ChevronLeft className="w-6 h-6 text-white" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLightboxIndex((prev) => (prev + 1) % getCarPhotos(lightboxCar).length)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-stone-900/60 hover:bg-stone-900/80 border border-stone-700 backdrop-blur-xs text-white opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md"
+                        title="Next Photo (Left/Right Arrows)"
+                      >
+                        <ChevronRight className="w-6 h-6 text-white" />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Carousel indicators dots / thumbnails */}
+                {getCarPhotos(lightboxCar).length > 1 && (
+                  <div className="flex items-center gap-2 mt-5 flex-wrap justify-center max-w-full">
+                    {getCarPhotos(lightboxCar).map((photoUrl, idx) => {
+                      const isActive = idx === lightboxIndex;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setLightboxIndex(idx)}
+                          className={`w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border-2 transition-all relative cursor-pointer ${isActive ? "border-amber-400 scale-105" : "border-stone-700 hover:border-stone-500 opacity-60 hover:opacity-100"}`}
+                        >
+                          <img
+                            src={photoUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Printable Quotation Document (Beautifully styled & optimized exclusively for Print / Save to PDF) */}
@@ -508,7 +648,14 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                 <tr key={car.id} className="bg-white">
                   <td className="px-5 py-3 font-bold text-stone-900">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-8 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0">
+                      <div 
+                        onClick={() => {
+                          setLightboxCar(car);
+                          setLightboxIndex(0);
+                        }}
+                        className="w-12 h-8 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0 cursor-zoom-in hover:border-[#4C0027] hover:scale-105 transition-all"
+                        title="Click to zoom gallery lightbox"
+                      >
                         <img
                           src={getCarImageSrc(car)}
                           alt={car.name}
