@@ -76,39 +76,65 @@ input[type="range"] {
 }
 
 @media print {
-  /* Hide standard interactive page elements */
-  body *, #root, .no-print {
-    visibility: hidden !important;
+  /* Hide all elements that have the .no-print class completely from the document flow */
+  .no-print,
+  .no-print * {
+    display: none !important;
   }
 
-  /* Make only the print-only layout container and its children visible */
-  .print-only-layout, .print-only-layout * {
-    visibility: visible !important;
+  /* Hide interactive floating layouts, headers, footers and navigation tools */
+  header, footer, button, select, input, label, svg, iframe,
+  .fixed,
+  .absolute:not(#print-section *) {
+    display: none !important;
   }
 
-  .print-only-layout {
-    display: block !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-    color: #1c1917 !important;
-    font-family: inherit !important;
+  /* Hide sibling layouts of #print-section's ancestor chain to ensure zero layout height */
+  #customer-application-root > *:not(main) {
+    display: none !important;
+  }
+  
+  main > *:not(#home-panel) {
+    display: none !important;
   }
 
-  /* Base reset for PDF generation layout */
-  html, body {
+  /* Normalize CSS page dimensions and layout flow for parent containers */
+  html, body, #root, #customer-application-root, main, #home-panel {
     background: white !important;
     color: #1c1917 !important;
     width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Display print section beautifully on page */
+  .print-only-layout,
+  #print-section {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 2.5rem !important;
+    background: white !important;
+    color: #1c1917 !important;
+    font-family: inherit !important;
+    opacity: 1 !important;
+    visibility: visible !important;
     overflow: visible !important;
   }
 
-  /* Force print backgrounds */
+  .print-only-layout * {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Force background colors and image adjustments for high-fidelity printing */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;

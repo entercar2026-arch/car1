@@ -104,9 +104,35 @@ const generateSessionToken = (): string => {
 };
 
 const getCarImageSrc = (car: Car) => {
-  const url = car.thumbnail || car.image || "";
+  let url = car.thumbnail || "";
+  
   if (!url) {
-    return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+    const isUnsplash = car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com"));
+    if (isUnsplash && car.photos && car.photos.length > 0) {
+      url = car.photos[0];
+    } else {
+      url = car.image || "";
+    }
+  }
+
+  if (!url) {
+    const name = car.name.toLowerCase();
+    const category = (car.category || "").toLowerCase();
+    if (name.includes("porsche") || name.includes("911")) {
+      url = "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=600";
+    } else if (name.includes("tesla") || name.includes("model s") || name.includes("plaid")) {
+      url = "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600";
+    } else if (name.includes("lexus") || name.includes("rx") || name.includes("gs")) {
+      url = "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=600";
+    } else if (name.includes("prius") || name.includes("toyota") || name.includes("tundra") || name.includes("hilux")) {
+      url = "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
+    } else if (name.includes("ford") || name.includes("mustang") || name.includes("raptor")) {
+      url = "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=600";
+    } else if (category === "suv") {
+      url = "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
+    } else {
+      url = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+    }
   }
   
   let driveId = "";
@@ -1247,7 +1273,7 @@ export default function App() {
       {/* 1. Responsive & Sticky Navigation Header */}
       <header
         id="main-public-header"
-        className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-xs relative"
+        className="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-xs relative no-print"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-auto py-2.5 lg:py-0 lg:h-20 flex items-center justify-between">
           <div
@@ -1689,7 +1715,7 @@ export default function App() {
         {/* Home Anchor panel wrapper */}
         <section id="home-panel" className="scroll-mt-24 select-none pb-2">
           {/* Hero Welcome Banner */}
-          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-200 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs">
+          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-200 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs no-print">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
 
