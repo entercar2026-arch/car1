@@ -287,6 +287,38 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover', connectionStatus), [currentImage, windowWidth, connectionStatus]);
   const renderedImageSrc = targetImageSrc;
 
+  // Active Background Image & Thumbnail Preloader for instant caching and flawless transitions
+  useEffect(() => {
+    if (!allPhotos || allPhotos.length <= 1) return;
+
+    // Run in background with a slight delay to allow critical initial components to load first
+    const preloadTimeout = setTimeout(() => {
+      // 1. Preload alternate full-size photo versions matching the current width/quality settings
+      allPhotos.forEach((photo, index) => {
+        if (index === currentPhotoIndex) return; // Already rendered
+        if (!photo || photo.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i)) return; // Skip video formats
+        
+        const optimizedUrl = getOptimizedImageUrl(photo, windowWidth, 'cover', connectionStatus);
+        if (optimizedUrl) {
+          const img = new Image();
+          img.src = optimizedUrl;
+        }
+      });
+      
+      // 2. Preload thumbnail size variations so that popup models load thumbnails immediately
+      allPhotos.forEach((photo) => {
+        if (!photo || photo.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i)) return;
+        const thumbUrl = getOptimizedImageUrl(photo, windowWidth, 'thumbnail', connectionStatus);
+        if (thumbUrl) {
+          const img = new Image();
+          img.src = thumbUrl;
+        }
+      });
+    }, 500);
+
+    return () => clearTimeout(preloadTimeout);
+  }, [allPhotos, windowWidth, connectionStatus, currentPhotoIndex]);
+
   const isVideoMedia = (url?: string) => {
     if (!url) return false;
     return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
@@ -805,7 +837,7 @@ Description: ${formattedDesc}`;
                     key={`inline-img-${car.id}-${currentPhotoIndex}`}
                     src={renderedImageSrc}
                     alt={car.name}
-                    loading="lazy"
+                    loading={currentPhotoIndex === 0 ? "lazy" : "eager"}
                     decoding="async"
                     onError={(e) => {
                       if (isGoogleDrive) {
