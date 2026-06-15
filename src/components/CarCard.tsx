@@ -884,8 +884,7 @@ Description: ${formattedDesc}`;
                     {allPhotos.map((_, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const activeColor = idx === 0 ? (car.dotColor || "#4C0027") : ((car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027");
-                      
-                      if (idx === 0) {
+                                           if (idx === 0) {
                         return (
                           <motion.button
                             key={idx}
@@ -902,8 +901,8 @@ Description: ${formattedDesc}`;
                                 }
                               }
                             }}
-                            className={`w-5 h-5 rounded-none border border-stone-800 flex items-center justify-center origin-center cursor-pointer ${
-                              isActive ? "select-none shadow-md z-10 ring-2 ring-black ring-offset-2" : "opacity-60 hover:opacity-100"
+                            className={`w-5 h-5 rounded-none border border-stone-300/60 flex items-center justify-center origin-center cursor-pointer ${
+                              isActive ? "select-none shadow-md z-10" : "hover:opacity-90"
                             }`}
                             style={{
                               backgroundColor: activeColor,
@@ -912,7 +911,7 @@ Description: ${formattedDesc}`;
                             animate={{
                               scale: isActive ? 1.3 : 1.0,
                             }}
-                            whileHover={{ scale: isActive ? 1.3 : 1.1 }}
+                            whileHover={{ scale: isActive ? 1.3 : 1.15 }}
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 400, damping: 25 }}
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
@@ -939,8 +938,8 @@ Description: ${formattedDesc}`;
                             e.stopPropagation();
                             setCurrentPhotoIndex(idx);
                           }}
-                          className={`w-5 h-5 rounded-none border border-stone-800 origin-center cursor-pointer ${
-                            isActive ? "shadow-md z-10 ring-2 ring-black ring-offset-2" : "opacity-60 hover:opacity-100"
+                          className={`w-5 h-5 rounded-none border border-stone-300/60 origin-center cursor-pointer ${
+                            isActive ? "shadow-md z-10" : "hover:opacity-90"
                           }`}
                           style={{
                             backgroundColor: activeColor
@@ -948,7 +947,7 @@ Description: ${formattedDesc}`;
                           animate={{
                             scale: isActive ? 1.3 : 1.0,
                           }}
-                          whileHover={{ scale: isActive ? 1.3 : 1.1 }}
+                          whileHover={{ scale: isActive ? 1.3 : 1.15 }}
                           whileTap={{ scale: 0.95 }}
                           transition={{ type: "spring", stiffness: 400, damping: 25 }}
                           title={`Go to photo ${idx + 1}`}
