@@ -103,10 +103,64 @@ const generateSessionToken = (): string => {
   return btoa(JSON.stringify(session));
 };
 
+const getCarImageSrc = (car: Car) => {
+  const url = car.thumbnail || car.image || "";
+  if (!url) {
+    return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
+  }
+  
+  let driveId = "";
+  if (url.includes("drive.google.com")) {
+    const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileDMatch && fileDMatch[1]) {
+      driveId = fileDMatch[1];
+    } else {
+      const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (idParamMatch && idParamMatch[1]) {
+        driveId = idParamMatch[1];
+      }
+    }
+  }
+  
+  if (driveId) {
+    return `https://lh3.googleusercontent.com/d/${driveId}`;
+  }
+  
+  return url;
+};
+
 const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars: Car[], lang: string }) => {
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc">("default");
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "type-asc" | "type-desc">("default");
+  const [selectedCarIds, setSelectedCarIds] = useState<Record<string, boolean>>({});
+
+  // Reset or initialize selections when cars change or modal is shown
+  useEffect(() => {
+    if (cars && cars.length > 0) {
+      const initial: Record<string, boolean> = {};
+      cars.forEach((car) => {
+        initial[car.id] = true;
+      });
+      setSelectedCarIds(initial);
+    }
+  }, [cars]);
+
+  const toggleSelectCar = (id: string) => {
+    setSelectedCarIds((prev) => ({
+      ...prev,
+      [id]: prev[id] === false ? true : false,
+    }));
+  };
+
+  const toggleSelectAll = () => {
+    const allSelected = cars.every((car) => selectedCarIds[car.id] !== false);
+    const newState: Record<string, boolean> = {};
+    cars.forEach((car) => {
+      newState[car.id] = !allSelected;
+    });
+    setSelectedCarIds(newState);
+  };
 
   const sortedCars = useMemo(() => {
     const list = [...cars];
@@ -119,8 +173,18 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
     if (sortBy === "name-asc") {
       return list.sort((a, b) => a.name.localeCompare(b.name));
     }
+    if (sortBy === "type-asc") {
+      return list.sort((a, b) => a.category.localeCompare(b.category));
+    }
+    if (sortBy === "type-desc") {
+      return list.sort((a, b) => b.category.localeCompare(a.category));
+    }
     return list;
   }, [cars, sortBy]);
+
+  const printedCars = useMemo(() => {
+    return sortedCars.filter((car) => selectedCarIds[car.id] !== false);
+  }, [sortedCars, selectedCarIds]);
 
   return (
     <>
@@ -250,7 +314,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                 {/* Sorting Controls Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-2 shrink-0">
                   <span className="text-xs text-stone-550 font-medium">
-                    {sortedCars.length} {t.resultsFound || "vehicles listed"}
+                    {printedCars.length} / {sortedCars.length} {t.resultsFound || "vehicles selected"}
                   </span>
                   <div className="flex items-center gap-2">
                     <label htmlFor="quote-sort" className="text-xs font-bold text-stone-700 font-sans uppercase tracking-wider flex items-center gap-1 shrink-0">
@@ -266,6 +330,12 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                       <option value="default">{t.defaultOrder || "Default Order"}</option>
                       <option value="price-asc">{t.sortByPrice || "Price"}: {t.lowestToHighest || "Lowest to Highest"}</option>
                       <option value="price-desc">{t.sortByPrice || "Price"}: {t.highestToLowest || "Highest to Lowest"}</option>
+                      <option value="type-asc">
+                        {t.category || "Body Type"}: {lang === "kh" ? "ក-អ" : lang === "zh" ? "从A-Z" : "A-Z"}
+                      </option>
+                      <option value="type-desc">
+                        {t.category || "Body Type"}: {lang === "kh" ? "អ-ក" : lang === "zh" ? "从Z-A" : "Z-A"}
+                      </option>
                       <option value="name-asc">{t.aToZ || "A-Z"}</option>
                     </select>
                   </div>
@@ -277,6 +347,14 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                       <table className="w-full text-sm text-left whitespace-nowrap min-w-[600px]">
                         <thead className="bg-[#4C0027] text-amber-400">
                           <tr>
+                            <th className="px-4 py-4 font-bold tracking-wider text-xs uppercase w-12 text-center">
+                              <input
+                                type="checkbox"
+                                checked={cars.length > 0 && cars.every((car) => selectedCarIds[car.id] !== false)}
+                                onChange={toggleSelectAll}
+                                className="w-4 h-4 text-[#4C0527] bg-white border-stone-300 rounded focus:ring-[#4C0027] cursor-pointer"
+                              />
+                            </th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
@@ -285,16 +363,27 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                         </thead>
                         <tbody className="divide-y divide-stone-100">
                           {sortedCars.map((car: Car) => (
-                            <tr key={car.id} className="hover:bg-stone-50/80 transition-colors group">
+                            <tr key={car.id} className={`hover:bg-stone-50/80 transition-colors group ${selectedCarIds[car.id] === false ? "opacity-50" : ""}`}>
+                              <td className="px-4 py-4 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedCarIds[car.id] !== false}
+                                  onChange={() => toggleSelectCar(car.id)}
+                                  className="w-4 h-4 text-[#4C0027] bg-white border-stone-300 rounded focus:ring-[#4C0027] cursor-pointer"
+                                />
+                              </td>
                               <td className="px-6 py-4 font-semibold text-stone-800">
                                 <div className="flex items-center gap-3.5">
                                   {/* Small crisp car thumbnail */}
                                   <div className="w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-stone-200 bg-stone-50 shrink-0 shadow-xs group-hover:border-amber-500/30 transition-all relative">
                                     <img
-                                      src={car.thumbnail || car.image}
+                                      src={getCarImageSrc(car)}
                                       alt={car.name}
                                       className="w-full h-full object-cover"
                                       referrerPolicy="no-referrer"
+                                      onError={(e) => {
+                                        e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
+                                      }}
                                     />
                                   </div>
                                   <div className="flex flex-col">
@@ -394,16 +483,19 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
-              {sortedCars.map((car: Car) => (
+              {printedCars.map((car: Car) => (
                 <tr key={car.id} className="bg-white">
                   <td className="px-5 py-3 font-bold text-stone-900">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-8 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0">
                         <img
-                          src={car.thumbnail || car.image}
+                          src={getCarImageSrc(car)}
                           alt={car.name}
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
+                          }}
                         />
                       </div>
                       <span>{car.name}</span>
