@@ -5,6 +5,7 @@ import { BrandLogo } from "./components/BrandLogo";
 import { CarCard } from "./components/CarCard";
 import { AdminLogin } from "./components/AdminLogin";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { KhmerContractPDFModal } from "./components/KhmerContractPDFModal";
 import { motion, AnimatePresence, useScroll, useSpring } from "motion/react";
 import { db } from "./lib/db";
 import { supabase } from "./lib/supabase";
@@ -102,9 +103,24 @@ const generateSessionToken = (): string => {
   return btoa(JSON.stringify(session));
 };
 
-const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[] }) => {
+const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars: Car[], lang: string }) => {
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc">("default");
+
+  const sortedCars = useMemo(() => {
+    const list = [...cars];
+    if (sortBy === "price-asc") {
+      return list.sort((a, b) => a.price - b.price);
+    }
+    if (sortBy === "price-desc") {
+      return list.sort((a, b) => b.price - a.price);
+    }
+    if (sortBy === "name-asc") {
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+  }, [cars, sortBy]);
 
   return (
     <>
@@ -149,50 +165,54 @@ const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[
         {/* Contract Modal */}
         <AnimatePresence>
           {isContractModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsContractModalOpen(false)}
-                className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
-              />
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 15 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
-              >
-                <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
-                  <h3 className="font-bold text-stone-900 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-[#4C0027]" />
-                    {t.contractTitle}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setIsContractModalOpen(false)}
-                    className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
-                  <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
-                    {t.contractContent}
-                  </p>
-                  <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                      <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
-                    </div>
-                    <div>
-                      <div className="border-b border-stone-500 mx-8 mb-2"></div>
-                      <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
+            lang === "kh" ? (
+              <KhmerContractPDFModal isOpen={isContractModalOpen} onClose={() => setIsContractModalOpen(false)} />
+            ) : (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsContractModalOpen(false)}
+                  className="absolute inset-0 bg-stone-950/70 backdrop-blur-xs"
+                />
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0, y: 15 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                  className="relative w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between mb-4 border-b border-stone-100 pb-4">
+                    <h3 className="font-bold text-stone-900 flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-[#4C0027]" />
+                      {t.contractTitle}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsContractModalOpen(false)}
+                      className="p-1.5 rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-4 bg-stone-50 rounded-xl border border-stone-200">
+                    <p className="text-sm text-stone-600 leading-relaxed font-mono whitespace-pre-wrap text-left">
+                      {t.contractContent}
+                    </p>
+                    <div className="mt-8 pt-8 border-t border-stone-200 grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                        <span className="text-xs text-stone-500 uppercase tracking-wider">{t.renterSignature || "Renter Signature"}</span>
+                      </div>
+                      <div>
+                        <div className="border-b border-stone-500 mx-8 mb-2"></div>
+                        <span className="text-xs text-stone-500 uppercase tracking-wider">{t.enterpriseSignature || "Enterprise Signature"}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            </div>
+                </motion.div>
+              </div>
+            )
           )}
         </AnimatePresence>
 
@@ -213,7 +233,7 @@ const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[
                 exit={{ scale: 0.95, opacity: 0, y: 10 }}
                 className="relative w-full max-w-4xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-stone-100 font-sans z-10 max-h-[85vh] overflow-hidden flex flex-col"
               >
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200/60 shrink-0">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-stone-200/60 shrink-0">
                   <h3 className="font-bold text-stone-900 flex items-center gap-2 text-xl tracking-wide uppercase">
                     <FileText className="w-6 h-6 text-[#4C0027]" />
                     {t.viewQuotation || "Quotation"}
@@ -226,6 +246,31 @@ const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[
                     <X className="w-6 h-6" />
                   </button>
                 </div>
+
+                {/* Sorting Controls Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-2 shrink-0">
+                  <span className="text-xs text-stone-550 font-medium">
+                    {sortedCars.length} {t.resultsFound || "vehicles listed"}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="quote-sort" className="text-xs font-bold text-stone-700 font-sans uppercase tracking-wider flex items-center gap-1 shrink-0">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-[#4C0027]" />
+                      {t.filters || "Sort"}:
+                    </label>
+                    <select
+                      id="quote-sort"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 text-xs font-semibold rounded-lg focus:ring-1 focus:ring-[#4C0027] focus:border-[#4C0027] p-1.5 pr-8 transition-colors outline-hidden cursor-pointer"
+                    >
+                      <option value="default">{t.defaultOrder || "Default Order"}</option>
+                      <option value="price-asc">{t.sortByPrice || "Price"}: {t.lowestToHighest || "Lowest to Highest"}</option>
+                      <option value="price-desc">{t.sortByPrice || "Price"}: {t.highestToLowest || "Highest to Lowest"}</option>
+                      <option value="name-asc">{t.aToZ || "A-Z"}</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="overflow-y-auto flex-1 pr-2 -mr-2">
                   <div className="bg-white rounded-xl border border-stone-200/60 overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
@@ -239,15 +284,26 @@ const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
-                          {cars.map((car: Car) => (
+                          {sortedCars.map((car: Car) => (
                             <tr key={car.id} className="hover:bg-stone-50/80 transition-colors group">
                               <td className="px-6 py-4 font-semibold text-stone-800">
-                                <div className="flex flex-col">
-                                  <span>{car.name}</span>
-                                  <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
+                                <div className="flex items-center gap-3.5">
+                                  {/* Small crisp car thumbnail */}
+                                  <div className="w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-stone-200 bg-stone-50 shrink-0 shadow-xs group-hover:border-amber-500/30 transition-all relative">
+                                    <img
+                                      src={car.thumbnail || car.image}
+                                      alt={car.name}
+                                      className="w-full h-full object-cover"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="text-stone-900 group-hover:text-[#4C0027] transition-colors">{car.name}</span>
+                                    <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
+                                  </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 text-center text-stone-500">{car.category}</td>
+                              <td className="px-6 py-4 text-center text-stone-550">{car.category}</td>
                               <td className="px-6 py-4 text-center text-stone-900 font-bold font-mono">
                                 ${car.price.toLocaleString()}/mo
                               </td>
@@ -338,9 +394,21 @@ const ContractRequirementSection = React.memo(({ t, cars }: { t: any, cars: Car[
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
-              {cars.map((car: Car) => (
+              {sortedCars.map((car: Car) => (
                 <tr key={car.id} className="bg-white">
-                  <td className="px-5 py-3 font-bold text-stone-900">{car.name}</td>
+                  <td className="px-5 py-3 font-bold text-stone-900">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-8 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0">
+                        <img
+                          src={car.thumbnail || car.image}
+                          alt={car.name}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <span>{car.name}</span>
+                    </div>
+                  </td>
                   <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.category}</td>
                   <td className="px-5 py-3 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
                   <td className="px-5 py-3 text-center text-stone-850 font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
@@ -1572,7 +1640,7 @@ export default function App() {
           </div>
 
           {/* Contract Requirement Visual Highlight Board */}
-          <ContractRequirementSection t={t} cars={cars} />
+          <ContractRequirementSection t={t} cars={cars} lang={lang} />
         </section>
 
         {/* Catalog Anchor Target */}

@@ -424,6 +424,17 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return !!(car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster);
   }, [car.thumbnail, videoPoster, youtubeThumbnail, generatedPoster]);
 
+  // Autoplay silent background video smoothly on hover
+  useEffect(() => {
+    if (hasVideo) {
+      if (isHovered) {
+        setIsPlaying(true);
+      } else {
+        setIsPlaying(false);
+      }
+    }
+  }, [isHovered, hasVideo]);
+
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingMode, setBookingMode] = useState<"enquire" | "book">("enquire");
@@ -760,7 +771,7 @@ Description: ${formattedDesc}`;
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 1.02 }}
                       transition={{ duration: 0.15, ease: "easeInOut" }}
-                      className="w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
+                      className="premium-video-preview w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsPlaying(false);
@@ -806,7 +817,7 @@ Description: ${formattedDesc}`;
                       }}
                       exit={{ opacity: 0, scale: 1.02 }}
                       transition={{ duration: 0.15, ease: "easeInOut" }}
-                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
+                      className="premium-video-preview w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsPlaying(true);
