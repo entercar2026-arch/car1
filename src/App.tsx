@@ -119,7 +119,7 @@ const getCarImageSrc = (car: Car) => {
     }
   }
 
-  if (!url) {
+  if (!url || url.includes("photo-1555215695")) {
     const name = car.name.toLowerCase();
     const category = (car.category || "").toLowerCase();
     
@@ -147,7 +147,15 @@ const getCarImageSrc = (car: Car) => {
     else if (name.includes("tesla") || name.includes("model s") || name.includes("plaid") || name.includes("model 3") || name.includes("model y") || name.includes("model x")) {
       url = "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600";
     }
-    // 7. General Lexus / Toyota Camry / Sedans / Hatchback
+    // 7. Toyota Camry and Daily/Family Sedans (dedicated gray Toyota Camry image!)
+    else if (name.includes("camry") || name.includes("toyota")) {
+      url = "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&q=80&w=600";
+    }
+    // 8. Lexus and executive brand luxury sedans (classy high-end black luxury executive sedan!)
+    else if (name.includes("lexus") || name.includes("gs 300") || name.includes("gs300") || name.includes("mercedes") || name.includes("audi") || name.includes("bmw")) {
+      url = "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=600";
+    }
+    // 9. General fallback
     else {
       url = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
     }

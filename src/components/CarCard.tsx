@@ -127,7 +127,15 @@ const getFallbackCarThumbnail = (carName: string, category: string): string => {
   if (name.includes("tesla") || name.includes("model s") || name.includes("plaid") || name.includes("model 3") || name.includes("model y") || name.includes("model x")) {
     return "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=600";
   }
-  // 7. General Lexus / Toyota Camry / Sedans / Hatchback
+  // 7. Toyota Camry and Daily/Family Sedans (dedicated gray Toyota Camry image!)
+  if (name.includes("camry") || name.includes("toyota")) {
+    return "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&q=80&w=600";
+  }
+  // 8. Lexus and executive brand luxury sedans (classy high-end black luxury executive sedan!)
+  if (name.includes("lexus") || name.includes("gs 300") || name.includes("gs300") || name.includes("mercedes") || name.includes("audi") || name.includes("bmw")) {
+    return "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=600";
+  }
+  // 9. General fallback
   return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
 };
 
@@ -307,7 +315,10 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     if (car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com")) && car.photos?.length) {
       return car.photos[0];
     }
-    return car.image || getFallbackCarThumbnail(car.name, car.category);
+    if (!car.image || car.image.includes("photo-1555215695")) {
+      return getFallbackCarThumbnail(car.name, car.category);
+    }
+    return car.image;
   }, [car.thumbnail, car.image, car.photos, car.name, car.category]);
   const primaryImageSrc = useMemo(() => getOptimizedImageUrl(primaryImage, windowWidth, 'cover', connectionStatus), [primaryImage, windowWidth, connectionStatus]);
   const currentImage = allPhotos.length > 0 ? allPhotos[currentPhotoIndex] : primaryImage;
