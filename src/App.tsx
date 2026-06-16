@@ -110,12 +110,13 @@ const generateSessionToken = (): string => {
 
 
 
-const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars: Car[], lang: string }) => {
+const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }: { t: any, cars: Car[], lang: string, likedCars?: string[] }) => {
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "type-asc" | "type-desc">("default");
+  const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "type-asc" | "type-desc" | "fuel-asc" | "fuel-desc">("default");
   const [selectedCarIds, setSelectedCarIds] = useState<Record<string, boolean>>({});
   const [includeContract, setIncludeContract] = useState(false);
+  const [quoteSearchQuery, setQuoteSearchQuery] = useState("");
 
   // High-Resolution Lightbox Gallery State
   const [lightboxCar, setLightboxCar] = useState<Car | null>(null);
@@ -152,33 +153,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [lightboxCar, lightboxIndex]);
 
-  // Reset or initialize selections when cars change or modal is shown
-  useEffect(() => {
-    if (cars && cars.length > 0) {
-      const initial: Record<string, boolean> = {};
-      cars.forEach((car) => {
-        initial[car.id] = true;
-      });
-      setSelectedCarIds(initial);
-    }
-  }, [cars]);
-
-  const toggleSelectCar = (id: string) => {
-    setSelectedCarIds((prev) => ({
-      ...prev,
-      [id]: prev[id] === false ? true : false,
-    }));
-  };
-
-  const toggleSelectAll = () => {
-    const allSelected = cars.every((car) => selectedCarIds[car.id] !== false);
-    const newState: Record<string, boolean> = {};
-    cars.forEach((car) => {
-      newState[car.id] = !allSelected;
-    });
-    setSelectedCarIds(newState);
-  };
-
   const sortedCars = useMemo(() => {
     const list = [...cars];
     if (sortBy === "price-asc") {
@@ -196,8 +170,60 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
     if (sortBy === "type-desc") {
       return list.sort((a, b) => b.category.localeCompare(a.category));
     }
+    if (sortBy === "fuel-asc") {
+      return list.sort((a, b) => (a.fuelType || "Gasoline").localeCompare(b.fuelType || "Gasoline"));
+    }
+    if (sortBy === "fuel-desc") {
+      return list.sort((a, b) => (b.fuelType || "Gasoline").localeCompare(a.fuelType || "Gasoline"));
+    }
     return list;
   }, [cars, sortBy]);
+
+  const displayedCars = useMemo(() => {
+    if (!quoteSearchQuery) return sortedCars;
+    const query = quoteSearchQuery.toLowerCase().trim();
+    return sortedCars.filter(car => 
+      car.name.toLowerCase().includes(query) || 
+      car.category.toLowerCase().includes(query) ||
+      (car.fuelType && car.fuelType.toLowerCase().includes(query))
+    );
+  }, [sortedCars, quoteSearchQuery]);
+
+  // Reset or initialize selections when cars change or when the quotation modal opens
+  useEffect(() => {
+    if (cars && cars.length > 0) {
+      const initial: Record<string, boolean> = {};
+      const hasLikedCars = cars.some(car => likedCars?.includes(car.id));
+      
+      cars.forEach((car) => {
+        if (hasLikedCars) {
+          // Default select ONLY the wishlist/liked cars!
+          initial[car.id] = likedCars?.includes(car.id) || false;
+        } else {
+          // If no wishlist cars, default select all
+          initial[car.id] = true;
+        }
+      });
+      setSelectedCarIds(initial);
+    }
+  }, [cars, likedCars, isQuotationModalOpen]);
+
+  const toggleSelectCar = (id: string) => {
+    setSelectedCarIds((prev) => ({
+      ...prev,
+      [id]: prev[id] === false ? true : false,
+    }));
+  };
+
+  const toggleSelectAll = () => {
+    const targetCars = quoteSearchQuery ? displayedCars : cars;
+    const allSelected = targetCars.every((car) => selectedCarIds[car.id] !== false);
+    const newState: Record<string, boolean> = { ...selectedCarIds };
+    targetCars.forEach((car) => {
+      newState[car.id] = !allSelected;
+    });
+    setSelectedCarIds(newState);
+  };
 
   const printedCars = useMemo(() => {
     return sortedCars.filter((car) => selectedCarIds[car.id] !== false);
@@ -284,15 +310,42 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                   </button>
                 </div>
 
-                {/* Sorting Controls Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-2 shrink-0">
-                  <span className="text-xs text-stone-550 font-medium">
-                    {printedCars.length} / {sortedCars.length} {t.resultsFound || "vehicles selected"}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="quote-sort" className="text-xs font-bold text-stone-700 font-sans uppercase tracking-wider flex items-center gap-1 shrink-0">
+                {/* Search & Sorting Controls Bar */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between items-stretch gap-4 mb-4 pb-3 border-b border-stone-150 shrink-0 select-none">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 flex-1">
+                    {/* Quotation Search Bar */}
+                    <div className="relative flex-1 max-w-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Search className="h-4 w-4 text-stone-400" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder={lang === "kh" ? "ស្វែងរករថយន្ត..." : lang === "zh" ? "搜索车型..." : "Search vehicles..."}
+                        value={quoteSearchQuery}
+                        onChange={(e) => setQuoteSearchQuery(e.target.value)}
+                        className="block w-full pl-9 pr-8 py-2 bg-stone-50 border border-stone-200 text-stone-800 text-xs font-medium rounded-xl focus:ring-1 focus:ring-[#4C0027] focus:border-[#4C0027] transition-all outline-hidden shadow-2xs placeholder-stone-400"
+                      />
+                      {quoteSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setQuoteSearchQuery("")}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <span className="text-xs text-stone-500 font-medium font-sans">
+                      {printedCars.length} / {sortedCars.length} {t.resultsFound || "vehicles selected"}
+                      {quoteSearchQuery && ` (${displayedCars.length} matching search)`}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start md:self-auto">
+                    <label htmlFor="quote-sort" className="text-xs font-bold text-stone-600 font-sans uppercase tracking-wider flex items-center gap-1.5 shrink-0">
                       <SlidersHorizontal className="w-3.5 h-3.5 text-[#4C0027]" />
-                      {t.filters || "Sort"}:
+                      {(t.sortByLabel || "Sort by")}:
                     </label>
                     <select
                       id="quote-sort"
@@ -301,15 +354,24 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                       className="bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-800 text-xs font-semibold rounded-lg focus:ring-1 focus:ring-[#4C0027] focus:border-[#4C0027] p-1.5 pr-8 transition-colors outline-hidden cursor-pointer"
                     >
                       <option value="default">{t.defaultOrder || "Default Order"}</option>
-                      <option value="price-asc">{t.sortByPrice || "Price"}: {t.lowestToHighest || "Lowest to Highest"}</option>
-                      <option value="price-desc">{t.sortByPrice || "Price"}: {t.highestToLowest || "Highest to Lowest"}</option>
                       <option value="type-asc">
-                        {t.category || "Body Type"}: {lang === "kh" ? "ក-អ" : lang === "zh" ? "从A-Z" : "A-Z"}
+                        {(t.category || "Body Type")}: {lang === "kh" ? "ក-អ" : lang === "zh" ? "A-Z" : "A-Z"}
                       </option>
                       <option value="type-desc">
-                        {t.category || "Body Type"}: {lang === "kh" ? "អ-ក" : lang === "zh" ? "从Z-A" : "Z-A"}
+                        {(t.category || "Body Type")}: {lang === "kh" ? "អ-ក" : lang === "zh" ? "Z-A" : "Z-A"}
                       </option>
-                      <option value="name-asc">{t.aToZ || "A-Z"}</option>
+                      <option value="fuel-asc">
+                        {(t.fuelType || "Fuel Type")}: {lang === "kh" ? "ក-អ" : lang === "zh" ? "A-Z" : "A-Z"}
+                      </option>
+                      <option value="fuel-desc">
+                        {(t.fuelType || "Fuel Type")}: {lang === "kh" ? "អ-ក" : lang === "zh" ? "Z-A" : "Z-A"}
+                      </option>
+                      <option value="price-asc">
+                        {lang === "kh" ? "តម្លៃជួល: ពីទាបទៅខ្ពស់" : lang === "zh" ? "租金: 低到高" : "Monthly Rent: Low to High"}
+                      </option>
+                      <option value="price-desc">
+                        {lang === "kh" ? "តម្លៃជួល: ពីខ្ពស់ទៅទាប" : lang === "zh" ? "租金: 高到低" : "Monthly Rent: High to Low"}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -323,19 +385,20 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                             <th className="px-4 py-4 font-bold tracking-wider text-xs uppercase w-12 text-center">
                               <input
                                 type="checkbox"
-                                checked={cars.length > 0 && cars.every((car) => selectedCarIds[car.id] !== false)}
+                                checked={displayedCars.length > 0 && displayedCars.every((car) => selectedCarIds[car.id] !== false)}
                                 onChange={toggleSelectAll}
                                 className="w-4 h-4 text-[#4C0527] bg-white border-stone-300 rounded focus:ring-[#4C0027] cursor-pointer"
                               />
                             </th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
+                            <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Fuel Type</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Deposit</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
-                          {sortedCars.map((car: Car) => (
+                          {displayedCars.map((car: Car) => (
                             <tr key={car.id} className={`hover:bg-stone-50/80 transition-colors group ${selectedCarIds[car.id] === false ? "opacity-50" : ""}`}>
                               <td className="px-4 py-4 text-center">
                                 <input
@@ -343,6 +406,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                                   checked={selectedCarIds[car.id] !== false}
                                   onChange={() => toggleSelectCar(car.id)}
                                   className="w-4 h-4 text-[#4C0027] bg-white border-stone-300 rounded focus:ring-[#4C0027] cursor-pointer"
+                                  id={`quote-checkbox-${car.id}`}
                                 />
                               </td>
                               <td className="px-6 py-4 font-semibold text-stone-800">
@@ -373,6 +437,11 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-center text-stone-550">{car.category}</td>
+                              <td className="px-6 py-4 text-center">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-stone-605 border border-stone-150 tracking-wide uppercase">
+                                  {car.fuelType || "Gasoline"}
+                                </span>
+                              </td>
                               <td className="px-6 py-4 text-center text-stone-900 font-bold font-mono">
                                 ${car.price.toLocaleString()}/mo
                               </td>
@@ -395,23 +464,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                         <span className="text-stone-300">•</span>
                         <span className="text-xs font-semibold text-stone-700">1 month deposit</span>
                       </div>
-                    </div>
-
-                    <div className="h-px w-full sm:h-8 sm:w-px bg-stone-200 hidden sm:block" />
-
-                    {/* PDF Append Toggle for Contract Doc */}
-                    <div className="flex items-center gap-2.5 bg-white border border-stone-200 px-3 py-1.5 rounded-xl select-none shadow-2xs">
-                      <input
-                        id="toggle-include-contract"
-                        type="checkbox"
-                        checked={includeContract}
-                        onChange={(e) => setIncludeContract(e.target.checked)}
-                        className="w-4 h-4 text-emerald-600 bg-white border-stone-300 rounded focus:ring-emerald-500 cursor-pointer accent-[#4C0027]"
-                      />
-                      <label htmlFor="toggle-include-contract" className="text-xs font-bold text-stone-700 cursor-pointer flex items-center gap-1.5 font-sans">
-                        <FileSignature className="w-3.5 h-3.5 text-[#4C0027]" />
-                        {lang === "kh" ? "រួមបញ្ចូលគំរូកិច្ចសន្យា" : lang === "zh" ? "附带租赁合同" : "Include Contract Template"}
-                      </label>
                     </div>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
@@ -575,6 +627,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
               <tr className="bg-[#4C0027] text-white">
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-left border-b border-stone-300">Vehicle Model Description</th>
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Body Type</th>
+                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Fuel Type</th>
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Monthly Rent (USD)</th>
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Refundable Deposit</th>
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Min. Commitment</th>
@@ -607,8 +660,9 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                     </div>
                   </td>
                   <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.category}</td>
+                  <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
                   <td className="px-5 py-3 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
-                  <td className="px-5 py-3 text-center text-stone-850 font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-center text-stone-855 font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
                   <td className="px-5 py-3 text-center text-stone-600 font-bold">6 Months</td>
                 </tr>
               ))}
@@ -1855,7 +1909,7 @@ export default function App() {
           </div>
 
           {/* Contract Requirement Visual Highlight Board */}
-          <ContractRequirementSection t={t} cars={cars} lang={lang} />
+          <ContractRequirementSection t={t} cars={cars} lang={lang} likedCars={likedCars} />
         </section>
 
         {/* Catalog Anchor Target */}
