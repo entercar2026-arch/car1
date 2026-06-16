@@ -108,18 +108,56 @@ export const getCarImageSrc = (car: Car): string => {
     return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
   }
 
-  let url = car.thumbnail || "";
-  
-  if (!url) {
-    const isUnsplash = car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com"));
-    if (isUnsplash && car.photos && car.photos.length > 0) {
-      url = car.photos[0];
-    } else {
-      url = car.image || "";
+  // 1. Resolve primaryImage exactly like CarCard
+  const primaryImage = (() => {
+    if (car.thumbnail) {
+      return car.thumbnail;
     }
-  }
+    if (car.image && (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com")) && car.photos?.length) {
+      return car.photos[0];
+    }
+    if (!car.image || car.image.includes("photo-1555215695")) {
+      return getFallbackCarThumbnail(car.name, car.category);
+    }
+    return car.image;
+  })();
 
-  // If we have an empty, invalid, or generic white sedan placeholder, trigger fallback based on name/category
+  // 2. Resolve allPhotos exactly like CarCard
+  const allPhotos = (() => {
+    if (!car.image) {
+      return car.photos?.length ? car.photos : [];
+    }
+    
+    if (car.photos?.length) {
+      const cleanUrl = (u: string) => u.split('?')[0].trim();
+      const targetClean = cleanUrl(car.image);
+      const firstPhotoClean = cleanUrl(car.photos[0]);
+      
+      if (car.image.includes("unsplash.com") || car.image.includes("images.unsplash.com")) {
+        return car.photos;
+      }
+      
+      if (targetClean !== firstPhotoClean) {
+        const cleanedPhotos = car.photos.map(p => cleanUrl(p));
+        const indexInPhotos = cleanedPhotos.indexOf(targetClean);
+        if (indexInPhotos > -1) {
+          const rearranged = [...car.photos];
+          const [moved] = rearranged.splice(indexInPhotos, 1);
+          return [moved, ...rearranged];
+        } else {
+          return [car.image, ...car.photos];
+        }
+      }
+      return car.photos;
+    }
+    
+    return [car.image, car.altImage].filter(Boolean) as string[];
+  })();
+
+  // 3. Obtain initial image source (currentPhotoIndex = 0)
+  let url = allPhotos.length > 0 ? allPhotos[0] : primaryImage;
+
+  // 4. Double check fallback placeholder conditions
   const isDefaultPlaceholder = !url || 
     url.trim() === "" || 
     url.includes("photo-1555215695") || 
@@ -131,7 +169,7 @@ export const getCarImageSrc = (car: Car): string => {
     url = getFallbackCarThumbnail(car.name, car.category);
   }
   
-  // Handle Google Drive links
+  // 5. Google Drive direct link handling
   let driveId = "";
   if (url.includes("drive.google.com")) {
     const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);

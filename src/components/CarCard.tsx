@@ -47,6 +47,17 @@ const getOptimizedImageUrl = (
   connectionStatus: 'slow' | 'moderate' | 'good' = 'good'
 ) => {
   if (!rawUrl) return rawUrl;
+
+  const isVideo = !!(
+    rawUrl.toLowerCase().match(/\.(mp4|webm|ogg|quicktime|mov)(\?.*)?$/i) || 
+    rawUrl.toLowerCase().includes("video") || 
+    rawUrl.startsWith("data:video/") || 
+    rawUrl.includes("youtube.com") || 
+    rawUrl.includes("youtu.be")
+  );
+  if (isVideo) {
+    return rawUrl;
+  }
   
   let url = rawUrl;
   if (rawUrl.includes("drive.google.com")) {
@@ -152,14 +163,15 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.play().catch(() => setIsPlaying(false));
-    } else {
-      videoRef.current.pause();
+  const videoRef = React.useCallback((node: HTMLVideoElement | null) => {
+    if (node) {
+      if (isPlaying) {
+        node.play().catch((err) => {
+          console.warn("Playback failed", err);
+        });
+      } else {
+        node.pause();
+      }
     }
   }, [isPlaying]);
 
@@ -321,14 +333,52 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return () => clearTimeout(preloadTimeout);
   }, [allPhotos, windowWidth, connectionStatus, currentPhotoIndex]);
 
-  const isVideoMedia = (url?: string) => {
+  const isVideoUrl = (url?: string) => {
     if (!url) return false;
-    return !!(url.match(/\.(mp4|webm|ogg|quicktime)(\?.*)?$/i) || url.toLowerCase().includes("video") || url.startsWith("data:video/"));
+    const lower = url.toLowerCase();
+    return !!(
+      lower.match(/\.(mp4|webm|ogg|quicktime|mov)(\?.*)?$/i) || 
+      lower.includes("video") || 
+      lower.startsWith("data:video/") || 
+      lower.includes("youtube.com") || 
+      lower.includes("youtu.be") || 
+      (lower.includes("drive.google.com") && (lower.includes("/file/") || lower.includes("id=")))
+    );
   };
 
   const hasVideo = useMemo(() => {
-    if (currentPhotoIndex === 0 && effectiveVideoUrl) return true;
-    return isVideoMedia(currentImage);
+    if (currentPhotoIndex === 0 && effectiveVideoUrl) {
+      return isVideoUrl(effectiveVideoUrl);
+    }
+    return isVideoUrl(currentImage);
+  }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
+
+  const youtubeId = useMemo(() => {
+    const getYoutubeId = (url?: string): string | null => {
+      if (!url) return null;
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    };
+    if (currentPhotoIndex === 0 && effectiveVideoUrl) {
+      const ytId = getYoutubeId(effectiveVideoUrl);
+      if (ytId) return ytId;
+    }
+    return getYoutubeId(currentImage);
+  }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
+
+  const googleDriveVideoId = useMemo(() => {
+    const url = currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage;
+    if (!url || !url.includes("drive.google.com")) return null;
+    const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileDMatch && fileDMatch[1]) {
+      return fileDMatch[1];
+    }
+    const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idParamMatch && idParamMatch[1]) {
+      return idParamMatch[1];
+    }
+    return null;
   }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
 
   const videoSource = useMemo(() => {
@@ -340,8 +390,8 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return getOptimizedImageUrl(videoSource, windowWidth, 'cover', connectionStatus);
   }, [videoSource, windowWidth, connectionStatus]);
 
-  const isGoogleDrive = currentImage.includes("drive.google.com/uc");
-  const driveId = isGoogleDrive ? currentImage.match(/id=([^&]+)/)?.[1] : null;
+  const isGoogleDrive = currentImage.includes("drive.google.com");
+  const driveId = googleDriveVideoId || (isGoogleDrive ? currentImage.match(/id=([^&]+)/)?.[1] : null);
 
   const videoPoster = useMemo(() => {
     if (currentImage.includes("upload/") && currentImage.match(/\.(mp4|webm|ogg)$/i)) {
@@ -428,14 +478,14 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   // Autoplay silent background video smoothly on hover
   useEffect(() => {
-    if (hasVideo) {
+    if (hasVideo && !youtubeId && !googleDriveVideoId) {
       if (isHovered) {
         setIsPlaying(true);
       } else {
         setIsPlaying(false);
       }
     }
-  }, [isHovered, hasVideo]);
+  }, [isHovered, hasVideo, youtubeId, googleDriveVideoId]);
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -756,35 +806,82 @@ Description: ${formattedDesc}`;
               <AnimatePresence mode="wait" initial={false}>
                 {hasVideo ? (
                   isPlaying ? (
-                    <motion.video
-                      id={`car-photo-${car.id}`}
-                      key={`video-playing-${car.id}-${currentPhotoIndex}`}
-                      ref={videoRef as any}
-                      src={optimizedVideoSource}
-                      poster={hasRealPoster ? finalVideoPoster : undefined}
-                      preload="auto"
-                      loop
-                      muted
-                      playsInline
-                      autoPlay
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 1.02 }}
-                      transition={{ duration: 0.15, ease: "easeInOut" }}
-                      className="premium-video-preview w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsPlaying(false);
-                      }}
-                      onLoadStart={() => setIsVideoLoading(true)}
-                      onWaiting={() => setIsVideoLoading(true)}
-                      onPlaying={() => setIsVideoLoading(false)}
-                      onCanPlay={() => setIsVideoLoading(false)}
-                    />
+                    youtubeId ? (
+                      <motion.iframe
+                        id={`car-photo-${car.id}`}
+                        key={`yt-playing-${car.id}-${currentPhotoIndex}`}
+                        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=${youtubeId}&rel=0&iv_load_policy=3`}
+                        className="w-full h-full object-cover bg-stone-100 border-none select-none"
+                        allow="autoplay; encrypted-media"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.15 }}
+                      />
+                    ) : googleDriveVideoId ? (
+                      <motion.iframe
+                        id={`car-photo-${car.id}`}
+                        key={`drive-playing-${car.id}-${currentPhotoIndex}`}
+                        src={`https://drive.google.com/file/d/${googleDriveVideoId}/preview?autoplay=1`}
+                        className="w-full h-full object-cover bg-stone-100 border-none select-none"
+                        allow="autoplay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                      />
+                    ) : (
+                      <motion.video
+                        id={`car-photo-${car.id}`}
+                        key={`video-playing-${car.id}-${currentPhotoIndex}`}
+                        ref={videoRef}
+                        src={optimizedVideoSource}
+                        poster={hasRealPoster ? finalVideoPoster : undefined}
+                        preload="auto"
+                        loop
+                        muted
+                        playsInline
+                        autoPlay
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.15, ease: "easeInOut" }}
+                        className="premium-video-preview w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsPlaying(false);
+                        }}
+                        onLoadStart={() => setIsVideoLoading(true)}
+                        onWaiting={() => setIsVideoLoading(true)}
+                        onPlaying={() => setIsVideoLoading(false)}
+                        onCanPlay={() => setIsVideoLoading(false)}
+                      />
+                    )
                   ) : hasRealPoster ? (
                     <motion.img
                       id={`car-photo-${car.id}`}
                       key={`video-poster-${car.id}-${currentPhotoIndex}`}
+                      src={finalVideoPoster}
+                      alt={car.name}
+                      loading="lazy"
+                      decoding="async"
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{
+                        scale: isHovered ? 1.08 : 1,
+                        opacity: 1,
+                      }}
+                      exit={{ opacity: 0, scale: 1.02 }}
+                      transition={{ duration: 0.15, ease: "easeInOut" }}
+                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPlaying(true);
+                      }}
+                    />
+                  ) : youtubeId || googleDriveVideoId ? (
+                    <motion.img
+                      id={`car-photo-${car.id}`}
+                      key={`video-placeholder-${car.id}-${currentPhotoIndex}`}
                       src={finalVideoPoster}
                       alt={car.name}
                       loading="lazy"
@@ -978,7 +1075,7 @@ Description: ${formattedDesc}`;
                             onClick={(e) => {
                               e.stopPropagation();
                               setCurrentPhotoIndex(idx);
-                              const hasVideoAtZero = !!effectiveVideoUrl || (allPhotos[0] && isVideoMedia(allPhotos[0]));
+                              const hasVideoAtZero = !!effectiveVideoUrl || (allPhotos[0] && isVideoUrl(allPhotos[0]));
                               if (hasVideoAtZero) {
                                 if (isActive) {
                                   setIsPlaying((prev) => !prev);
@@ -1947,18 +2044,44 @@ Description: ${formattedDesc}`;
                   {/* Media Rendering */}
                   <AnimatePresence mode="wait" initial={false}>
                     {hasVideo ? (
-                      <motion.video
-                        key={`video-${car.id}-${currentPhotoIndex}`}
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.02 }}
-                        transition={{ duration: 0.15, ease: "easeInOut" }}
-                        src={currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage}
-                        controls
-                        autoPlay
-                        loop
-                        className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
-                      />
+                      youtubeId ? (
+                        <motion.iframe
+                          key={`yt-modal-${car.id}-${currentPhotoIndex}`}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&controls=1&rel=0`}
+                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                        />
+                      ) : googleDriveVideoId ? (
+                        <motion.iframe
+                          key={`drive-modal-${car.id}-${currentPhotoIndex}`}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          src={`https://drive.google.com/file/d/${googleDriveVideoId}/preview`}
+                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <motion.video
+                          key={`video-${car.id}-${currentPhotoIndex}`}
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 1.02 }}
+                          transition={{ duration: 0.15, ease: "easeInOut" }}
+                          src={currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage}
+                          controls
+                          autoPlay
+                          loop
+                          className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        />
+                      )
                     ) : imageError && isGoogleDrive && driveId ? (
                       <motion.iframe
                         key={`iframe-${car.id}-${currentPhotoIndex}`}
