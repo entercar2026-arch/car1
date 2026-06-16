@@ -752,14 +752,6 @@ Description: ${formattedDesc}`;
                 setIsPhotosOpen(true);
               }}
             >
-              {/* Zoom-in interactive hover label */}
-              <div className="absolute inset-0 bg-stone-950/20 opacity-0 group-hover/media:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none z-10">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/65 text-white text-[10px] uppercase tracking-widest rounded-full shadow-lg backdrop-blur-md transform scale-95 group-hover/media:scale-100 transition-all duration-300 font-sans font-bold">
-                  <Images className="w-3.5 h-3.5 text-white" />
-                  <span>{t.viewPhotos || "View Photos"}</span>
-                </div>
-              </div>
-
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               <AnimatePresence mode="wait" initial={false}>
                 {hasVideo ? (

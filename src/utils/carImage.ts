@@ -10,17 +10,72 @@ export const getFallbackCarThumbnail = (carName: string, category: string): stri
   }
   
   // 2. Pickup Trucks (Raptor, F-150, Tundra, Hilux, Pickup, etc.)
-  if (cat === "pickup" || name.includes("pickup") || name.includes("raptor") || name.includes("hilux") || name.includes("tundra") || name.includes("f-150") || name.includes("f150") || name.includes("truck")) {
+  if (
+    cat === "pickup" || 
+    cat === "double cab" || 
+    cat === "double-cab" ||
+    name.includes("pickup") || 
+    name.includes("raptor") || 
+    name.includes("hilux") || 
+    name.includes("tundra") || 
+    name.includes("f-150") || 
+    name.includes("f150") || 
+    name.includes("ranger") || 
+    name.includes("triton") || 
+    name.includes("l200") || 
+    name.includes("navara") || 
+    name.includes("d-max") || 
+    name.includes("dmax") || 
+    name.includes("colorado") || 
+    name.includes("musso") || 
+    name.includes("actyon") || 
+    name.includes("ssang yong") || 
+    name.includes("ssangyong") || 
+    name.includes("bt-50") || 
+    name.includes("bt50")
+  ) {
     return "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600";
   }
   
   // 3. MPV / Vans (Alphard, Starex, MPV, Van, etc.)
-  if (cat === "mpv" || cat === "van" || name.includes("alphard") || name.includes("starex") || name.includes("van") || name.includes("mpv")) {
+  if (
+    cat === "mpv" || 
+    cat === "van" || 
+    name.includes("alphard") || 
+    name.includes("starex") || 
+    name.includes("van") || 
+    name.includes("mpv") || 
+    name.includes("h1") || 
+    name.includes("h-1") || 
+    name.includes("staria") || 
+    name.includes("sienna") || 
+    name.includes("hiace") || 
+    name.includes("vellfire")
+  ) {
     return "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=600";
   }
   
   // 4. SUVs
-  if (cat === "suv" || name.includes("suv") || name.includes("range rover") || name.includes("discovery") || name.includes("land cruiser") || name.includes("jeep") || name.includes("lexus rx") || name.includes("rx")) {
+  if (
+    cat === "suv" || 
+    name.includes("suv") || 
+    name.includes("range rover") || 
+    name.includes("discovery") || 
+    name.includes("defender") || 
+    name.includes("land cruiser") || 
+    name.includes("prado") || 
+    name.includes("jeep") || 
+    name.includes("lexus rx") || 
+    name.includes("rx") || 
+    name.includes("fortuner") || 
+    name.includes("highlander") || 
+    name.includes("rav4") || 
+    name.includes("crv") || 
+    name.includes("cr-v") || 
+    name.includes("montero") || 
+    name.includes("pajero") || 
+    name.includes("everest")
+  ) {
     return "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&q=80&w=600";
   }
   

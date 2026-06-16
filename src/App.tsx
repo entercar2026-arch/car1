@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import { Car, ViewMode, CatalogFilters, Booking, Review } from "./types";
 import { INITIAL_CARS } from "./data";
-import { getCarImageSrc } from "./utils/carImage";
+import { getCarImageSrc, getFallbackCarThumbnail } from "./utils/carImage";
 import { BrandLogo } from "./components/BrandLogo";
 import { CarCard } from "./components/CarCard";
 import { AdminLogin } from "./components/AdminLogin";
@@ -362,7 +362,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                                       className="w-full h-full object-cover"
                                       referrerPolicy="no-referrer"
                                       onError={(e) => {
-                                        e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
+                                        e.currentTarget.src = getFallbackCarThumbnail(car.name, car.category);
                                       }}
                                     />
                                   </div>
@@ -599,7 +599,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"
                           onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=200";
+                            e.currentTarget.src = getFallbackCarThumbnail(car.name, car.category);
                           }}
                         />
                       </div>
