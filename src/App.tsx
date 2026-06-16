@@ -391,7 +391,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                               />
                             </th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs uppercase">Vehicle Model</th>
-                            <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Body Type</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Fuel Type</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Monthly Rent</th>
                             <th className="px-6 py-4 font-bold tracking-wider text-xs text-center uppercase">Deposit</th>
@@ -436,7 +435,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 text-center text-stone-550">{car.category}</td>
                               <td className="px-6 py-4 text-center">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-stone-605 border border-stone-150 tracking-wide uppercase">
                                   {car.fuelType || "Gasoline"}
@@ -626,7 +624,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
             <thead>
               <tr className="bg-[#4C0027] text-white">
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-left border-b border-stone-300">Vehicle Model Description</th>
-                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Body Type</th>
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Fuel Type</th>
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Monthly Rent (USD)</th>
                 <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Refundable Deposit</th>
@@ -659,7 +656,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                       <span>{car.name}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.category}</td>
                   <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
                   <td className="px-5 py-3 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
                   <td className="px-5 py-3 text-center text-stone-855 font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
@@ -865,6 +861,33 @@ export default function App() {
     });
   }, []);
 
+  const [searchText, setSearchText] = useState(() => filters.searchTerm);
+
+  // Sync back if filters.searchTerm changes from outside (e.g. clear filters or clicking suggestion)
+  useEffect(() => {
+    setSearchText(filters.searchTerm);
+  }, [filters.searchTerm]);
+
+  const debouncedSetSearchTerm = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSearchChange = (val: string) => {
+    setSearchText(val);
+    if (debouncedSetSearchTerm.current) {
+      clearTimeout(debouncedSetSearchTerm.current);
+    }
+    debouncedSetSearchTerm.current = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, searchTerm: val }));
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (debouncedSetSearchTerm.current) {
+        clearTimeout(debouncedSetSearchTerm.current);
+      }
+    };
+  }, []);
+
   // Sorting state
   const [sortByRaw, setSortByRaw] = useState<"default" | "price-asc" | "price-desc" | "alphabetical">("default");
   const sortBy = sortByRaw;
@@ -875,9 +898,9 @@ export default function App() {
   }, []);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const searchSuggestions = filters.searchTerm
+  const searchSuggestions = searchText
     ? cars
-        .filter((c) => c.name.toLowerCase().includes(filters.searchTerm.toLowerCase()))
+        .filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
         .slice(0, 4)
     : cars.slice(0, 4);
 
@@ -1481,15 +1504,10 @@ export default function App() {
                 id="global-input-search-desktop"
                 type="text"
                 placeholder={t.searchBox}
-                value={filters.searchTerm}
+                value={searchText}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    searchTerm: e.target.value,
-                  }))
-                }
+                onChange={(e) => handleSearchChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     scrollToAnchor("category-filter-container");
@@ -1497,10 +1515,10 @@ export default function App() {
                 }}
                 className="w-full pl-[38px] pr-10 py-2 bg-stone-50 border border-stone-200 rounded-full text-stone-800 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-2 focus:ring-[#4C0027]/20 transition-all font-sans font-medium placeholder:text-stone-400"
               />
-              {filters.searchTerm && (
+              {searchText && (
                 <button
                   type="button"
-                  onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
+                  onClick={() => handleSearchChange("")}
                   className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
                 >
                   <X className="h-4 w-4" />
@@ -1749,15 +1767,10 @@ export default function App() {
                     id="global-input-search-mobile"
                     type="text"
                     placeholder={t.searchBox}
-                    value={filters.searchTerm}
+                    value={searchText}
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        searchTerm: e.target.value,
-                      }))
-                    }
+                    onChange={(e) => handleSearchChange(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         scrollToAnchor("category-filter-container");
@@ -1766,10 +1779,10 @@ export default function App() {
                     }}
                     className="w-full pl-[38px] pr-10 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
                   />
-                  {filters.searchTerm && (
+                  {searchText && (
                     <button
                       type="button"
-                      onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
+                      onClick={() => handleSearchChange("")}
                       className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
                     >
                       <X className="h-4 w-4" />
@@ -1967,19 +1980,14 @@ export default function App() {
                       id="filter-input-search"
                       type="text"
                       placeholder={t.searchPlaceholder}
-                      value={filters.searchTerm}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          searchTerm: e.target.value,
-                        }))
-                      }
+                      value={searchText}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       className="w-full pl-11 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400 shadow-sm"
                     />
-                    {filters.searchTerm && (
+                    {searchText && (
                       <button
                         type="button"
-                        onClick={() => setFilters(prev => ({ ...prev, searchTerm: "" }))}
+                        onClick={() => handleSearchChange("")}
                         className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
                       >
                         <X className="h-5 w-5" />
