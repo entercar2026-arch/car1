@@ -115,6 +115,13 @@ input[type="range"] {
     margin: 0.5in !important;
   }
 
+  /* Prevent blocks from breaking across pages */
+  .no-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    break-inside: avoid !important;
+  }
+
   /* Hide the contract modal completely by default unless in contract print mode */
   body:not([data-print-mode="contract"]) .print-only-modal {
     display: none !important;
@@ -147,9 +154,26 @@ input[type="range"] {
     opacity: 1 !important;
   }
 
-  body[data-print-mode="quotation"] #khmer-printable-contract,
-  body[data-print-mode="quotation"] #khmer-printable-contract * {
-    display: none !important;
+  /* CONTRACT & APPENDED CONTRACT DISPLAY RULES */
+  body[data-print-mode="contract"] #khmer-printable-contract,
+  body[data-print-mode="quotation"] .print-contract-append #khmer-printable-contract {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: #1a1513 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    border: none !important;
+  }
+
+  body[data-print-mode="contract"] #khmer-printable-contract *,
+  body[data-print-mode="quotation"] .print-contract-append #khmer-printable-contract * {
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   /* Prevent extra blank pages by completely hiding all other core sections from layout flow */
@@ -188,28 +212,9 @@ input[type="range"] {
     box-shadow: none !important;
   }
 
-  body[data-print-mode="contract"] #khmer-printable-contract {
-    display: block !important;
-    position: relative !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-    color: #1a1513 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    overflow: visible !important;
-    border: none !important;
-  }
-
-  body[data-print-mode="contract"] #khmer-printable-contract * {
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-
-  /* Ensure each contract page splits on an exact page boundary for both modes */
-  body[data-print-mode="contract"] .pdf-page,
-  body[data-print-mode="quotation"] .pdf-page {
+  /* Ensure each contract page splits on an exact page boundary ONLY when rendered inside active mode containers */
+  body[data-print-mode="contract"] .print-only-modal .pdf-page,
+  body[data-print-mode="quotation"] .print-contract-append .pdf-page {
     display: block !important;
     page-break-after: always !important;
     break-after: page !important;
@@ -224,8 +229,8 @@ input[type="range"] {
     min-height: 0 !important;
   }
 
-  body[data-print-mode="contract"] .pdf-page:last-child,
-  body[data-print-mode="quotation"] .pdf-page:last-child {
+  body[data-print-mode="contract"] .print-only-modal .pdf-page:last-child,
+  body[data-print-mode="quotation"] .print-contract-append .pdf-page:last-child {
     page-break-after: avoid !important;
     break-after: avoid !important;
     margin-bottom: 0 !important;

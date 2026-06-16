@@ -115,7 +115,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "type-asc" | "type-desc">("default");
   const [selectedCarIds, setSelectedCarIds] = useState<Record<string, boolean>>({});
-  const [includeContract, setIncludeContract] = useState(true);
+  const [includeContract, setIncludeContract] = useState(false);
 
   // High-Resolution Lightbox Gallery State
   const [lightboxCar, setLightboxCar] = useState<Car | null>(null);
@@ -630,27 +630,30 @@ const ContractRequirementSection = React.memo(({ t, cars, lang }: { t: any, cars
           </ol>
         </div>
 
-        {/* Corporate Sign-off blocks */}
-        <div className="mt-16 pt-10 border-t border-stone-200 grid grid-cols-2 gap-12 no-break">
-          <div className="flex flex-col">
-            <p className="text-xs font-bold text-stone-500 mb-16 uppercase tracking-wider">Authorized Officer – ENTER Car Rental</p>
-            <div className="border-b border-stone-400 w-56 mb-2"></div>
-            <p className="text-xs font-black text-[#4C0027]">Sourcing & Leasing Department</p>
-            <p className="text-[10px] text-stone-400 font-mono">ENTER CAR RENTAL Co., Ltd.</p>
+        {/* Sign-off & Footer Container (Guaranteed to stay cohesive on print) */}
+        <div className="no-break mt-8 pt-6 border-t border-stone-200">
+          {/* Corporate Sign-off blocks */}
+          <div className="grid grid-cols-2 gap-8">
+            <div className="flex flex-col">
+              <p className="text-xs font-bold text-stone-500 mb-8 uppercase tracking-wider">Authorized Officer – ENTER Car Rental</p>
+              <div className="border-b border-stone-400 w-56 mb-2"></div>
+              <p className="text-xs font-black text-[#4C0027]">Sourcing & Leasing Department</p>
+              <p className="text-[10px] text-stone-400 font-mono">ENTER CAR RENTAL Co., Ltd.</p>
+            </div>
+            <div className="flex flex-col items-end text-right">
+              <p className="text-xs font-bold text-stone-500 mb-8 uppercase tracking-wider">Accepted & Acknowledged – Client</p>
+              <div className="border-b border-stone-400 w-56 mb-2"></div>
+              <p className="text-xs font-black text-stone-850">Authorized Client Signature</p>
+              <p className="text-[10px] text-stone-400 font-mono">Date signed: ______ / ______ / 2026</p>
+            </div>
           </div>
-          <div className="flex flex-col items-end text-right">
-            <p className="text-xs font-bold text-stone-500 mb-16 uppercase tracking-wider">Accepted & Acknowledged – Client</p>
-            <div className="border-b border-stone-400 w-56 mb-2"></div>
-            <p className="text-xs font-black text-stone-850">Authorized Client Signature</p>
-            <p className="text-[10px] text-stone-400 font-mono">Date signed: ______ / ______ / 2026</p>
-          </div>
-        </div>
 
-        {/* Footer disclaimer */}
-        <div className="mt-12 text-center border-t border-stone-100 pt-4">
-          <p className="text-[9px] text-stone-400 font-mono tracking-wider">
-            Thank you for choosing ENTER Car Rental. We value your business and look forward to safe journeys together.
-          </p>
+          {/* Footer disclaimer */}
+          <div className="mt-8 text-center border-t border-stone-100 pt-4">
+            <p className="text-[9px] text-stone-400 font-mono tracking-wider">
+              Thank you for choosing ENTER Car Rental. We value your business and look forward to safe journeys together.
+            </p>
+          </div>
         </div>
 
         {/* Localized Car Rental Lease Contract Appended */}
