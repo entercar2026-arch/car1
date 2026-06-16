@@ -108,6 +108,11 @@ export const getCarImageSrc = (car: Car): string => {
     return "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=600";
   }
 
+  // If there is an explicit thumbnail set on the car card, use it directly for the quotation thumbnail
+  if (car.thumbnail) {
+    return car.thumbnail;
+  }
+
   // 1. Resolve primaryImage exactly like CarCard
   const primaryImage = (() => {
     if (car.thumbnail) {

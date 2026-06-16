@@ -348,7 +348,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   const hasVideo = useMemo(() => {
     if (currentPhotoIndex === 0 && effectiveVideoUrl) {
-      return isVideoUrl(effectiveVideoUrl);
+      return true;
     }
     return isVideoUrl(currentImage);
   }, [currentImage, effectiveVideoUrl, currentPhotoIndex]);
@@ -387,8 +387,11 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   }, [primaryImage, effectiveVideoUrl, currentPhotoIndex]);
 
   const optimizedVideoSource = useMemo(() => {
+    if (currentPhotoIndex === 0 && effectiveVideoUrl) {
+      return effectiveVideoUrl;
+    }
     return getOptimizedImageUrl(videoSource, windowWidth, 'cover', connectionStatus);
-  }, [videoSource, windowWidth, connectionStatus]);
+  }, [videoSource, effectiveVideoUrl, currentPhotoIndex, windowWidth, connectionStatus]);
 
   const isGoogleDrive = currentImage.includes("drive.google.com");
   const driveId = googleDriveVideoId || (isGoogleDrive ? currentImage.match(/id=([^&]+)/)?.[1] : null);
