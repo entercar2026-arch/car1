@@ -163,7 +163,9 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const localVideoRef = React.useRef<HTMLVideoElement | null>(null);
   const videoRef = React.useCallback((node: HTMLVideoElement | null) => {
+    localVideoRef.current = node;
     if (node) {
       if (isPlaying) {
         node.play().catch((err) => {
@@ -171,6 +173,19 @@ const CarCardComponent: React.FC<CarCardProps> = ({
         });
       } else {
         node.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const video = localVideoRef.current;
+    if (video) {
+      if (isPlaying) {
+        video.play().catch((err) => {
+          console.warn("Playback failed", err);
+        });
+      } else {
+        video.pause();
       }
     }
   }, [isPlaying]);
@@ -797,8 +812,8 @@ Description: ${formattedDesc}`;
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
               <AnimatePresence mode="wait" initial={false}>
                 {hasVideo ? (
-                  isPlaying ? (
-                    youtubeId ? (
+                  youtubeId ? (
+                    isPlaying ? (
                       <motion.iframe
                         id={`car-photo-${car.id}`}
                         key={`yt-playing-${car.id}-${currentPhotoIndex}`}
@@ -810,7 +825,30 @@ Description: ${formattedDesc}`;
                         exit={{ opacity: 0, scale: 1.02 }}
                         transition={{ duration: 0.15 }}
                       />
-                    ) : googleDriveVideoId ? (
+                    ) : (
+                      <motion.img
+                        id={`car-photo-${car.id}`}
+                        key={`yt-poster-${car.id}-${currentPhotoIndex}`}
+                        src={finalVideoPoster}
+                        alt={car.name}
+                        loading="lazy"
+                        decoding="async"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{
+                          scale: isHovered ? 1.08 : 1,
+                          opacity: 1,
+                        }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.15, ease: "easeInOut" }}
+                        className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsPlaying(true);
+                        }}
+                      />
+                    )
+                  ) : googleDriveVideoId ? (
+                    isPlaying ? (
                       <motion.iframe
                         id={`car-photo-${car.id}`}
                         key={`drive-playing-${car.id}-${currentPhotoIndex}`}
@@ -823,80 +861,36 @@ Description: ${formattedDesc}`;
                         transition={{ duration: 0.15 }}
                       />
                     ) : (
-                      <motion.video
+                      <motion.img
                         id={`car-photo-${car.id}`}
-                        key={`video-playing-${car.id}-${currentPhotoIndex}`}
-                        ref={videoRef}
-                        src={optimizedVideoSource}
-                        poster={hasRealPoster ? finalVideoPoster : undefined}
-                        preload="auto"
-                        loop
-                        muted
-                        playsInline
-                        autoPlay
+                        key={`drive-poster-${car.id}-${currentPhotoIndex}`}
+                        src={finalVideoPoster}
+                        alt={car.name}
+                        loading="lazy"
+                        decoding="async"
                         initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        animate={{
+                          scale: isHovered ? 1.08 : 1,
+                          opacity: 1,
+                        }}
                         exit={{ opacity: 0, scale: 1.02 }}
                         transition={{ duration: 0.15, ease: "easeInOut" }}
-                        className="premium-video-preview w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
+                        className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setIsPlaying(false);
+                          setIsPlaying(true);
                         }}
-                        onLoadStart={() => setIsVideoLoading(true)}
-                        onWaiting={() => setIsVideoLoading(true)}
-                        onPlaying={() => setIsVideoLoading(false)}
-                        onCanPlay={() => setIsVideoLoading(false)}
                       />
                     )
-                  ) : hasRealPoster ? (
-                    <motion.img
-                      id={`car-photo-${car.id}`}
-                      key={`video-poster-${car.id}-${currentPhotoIndex}`}
-                      src={finalVideoPoster}
-                      alt={car.name}
-                      loading="lazy"
-                      decoding="async"
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{
-                        scale: isHovered ? 1.08 : 1,
-                        opacity: 1,
-                      }}
-                      exit={{ opacity: 0, scale: 1.02 }}
-                      transition={{ duration: 0.15, ease: "easeInOut" }}
-                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsPlaying(true);
-                      }}
-                    />
-                  ) : youtubeId || googleDriveVideoId ? (
-                    <motion.img
-                      id={`car-photo-${car.id}`}
-                      key={`video-placeholder-${car.id}-${currentPhotoIndex}`}
-                      src={finalVideoPoster}
-                      alt={car.name}
-                      loading="lazy"
-                      decoding="async"
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{
-                        scale: isHovered ? 1.08 : 1,
-                        opacity: 1,
-                      }}
-                      exit={{ opacity: 0, scale: 1.02 }}
-                      transition={{ duration: 0.15, ease: "easeInOut" }}
-                      className="w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsPlaying(true);
-                      }}
-                    />
                   ) : (
                     <motion.video
                       id={`car-photo-${car.id}`}
-                      key={`video-preview-${car.id}-${currentPhotoIndex}`}
-                      src={optimizedVideoSource ? (optimizedVideoSource.includes("#") ? optimizedVideoSource : `${optimizedVideoSource}#t=0.1`) : ""}
-                      preload="metadata"
+                      key={`video-element-${car.id}-${currentPhotoIndex}`}
+                      ref={videoRef}
+                      src={optimizedVideoSource}
+                      poster={finalVideoPoster}
+                      preload="auto"
+                      loop
                       muted
                       playsInline
                       initial={{ opacity: 0, scale: 0.98 }}
@@ -906,14 +900,14 @@ Description: ${formattedDesc}`;
                       }}
                       exit={{ opacity: 0, scale: 1.02 }}
                       transition={{ duration: 0.15, ease: "easeInOut" }}
-                      className="premium-video-preview w-full h-full object-cover select-none bg-stone-100 cursor-pointer"
+                      className="premium-video-preview w-full h-full object-cover bg-stone-100 select-none cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setIsPlaying(true);
+                        setIsPlaying(prev => !prev);
                       }}
                       onLoadStart={() => setIsVideoLoading(true)}
                       onWaiting={() => setIsVideoLoading(true)}
-                      onLoadedData={() => setIsVideoLoading(false)}
+                      onPlaying={() => setIsVideoLoading(false)}
                       onCanPlay={() => setIsVideoLoading(false)}
                     />
                   )
