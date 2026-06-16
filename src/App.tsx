@@ -46,10 +46,262 @@ import {
   Printer,
   FileSignature,
   Images,
+  Eye,
+  ArrowLeft,
+  ZoomIn,
+  ZoomOut,
+  Download,
 } from "lucide-react";
+import html2canvas from "html2canvas";
 import { PrintContractDoc } from "./components/PrintContractDoc";
+import { QuotationDocumentContent } from "./components/QuotationDocumentContent";
 
 const SECURE_TOKEN_KEY = "enter_admin_session_token";
+
+class SearchService {
+  private static value = "";
+  private static listeners = new Set<(val: string) => void>();
+
+  static get() {
+    return this.value;
+  }
+
+  static set(val: string) {
+    if (val !== this.value) {
+      this.value = val;
+      this.listeners.forEach(l => l(val));
+    }
+  }
+
+  static subscribe(listener: (val: string) => void) {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+}
+
+function useSearchValue() {
+  const [val, setVal] = useState(() => SearchService.get());
+  useEffect(() => {
+    return SearchService.subscribe((newVal) => {
+      setVal(newVal);
+    });
+  }, []);
+  return [val, SearchService.set.bind(SearchService)] as const;
+}
+
+const DesktopSearchBar = React.memo(({
+  t,
+  cars,
+  setFilters,
+  scrollToAnchor,
+}: {
+  t: any;
+  cars: Car[];
+  setFilters: React.Dispatch<React.SetStateAction<any>>;
+  scrollToAnchor: (id: string) => void;
+}) => {
+  const [searchText, setSearchText] = useSearchValue();
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const searchSuggestions = useMemo(() => {
+    if (!searchText) return cars.slice(0, 4);
+    return cars
+      .filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
+      .slice(0, 4);
+  }, [cars, searchText]);
+
+  return (
+    <div className="relative w-36 focus-within:w-72 xl:focus-within:w-80 ml-4 group transition-all duration-300 ease-in-out">
+      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+        <Search className="h-4 w-4 text-stone-400 group-focus-within:text-[#4C0027] transition-colors" />
+      </div>
+      <input
+        id="global-input-search-desktop"
+        type="text"
+        placeholder={t.searchBox}
+        value={searchText}
+        onFocus={() => setIsSearchFocused(true)}
+        onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+        onChange={(e) => setSearchText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            scrollToAnchor("category-filter-container");
+          }
+        }}
+        className="w-full pl-[38px] pr-10 py-2 bg-stone-50 border border-stone-200 rounded-full text-stone-800 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-2 focus:ring-[#4C0027]/20 transition-all font-sans font-medium placeholder:text-stone-400"
+      />
+      {searchText && (
+        <button
+          type="button"
+          onClick={() => setSearchText("")}
+          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+      <AnimatePresence>
+        {isSearchFocused && searchSuggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 py-1"
+          >
+            {searchSuggestions.map((suggestion) => (
+              <button
+                key={suggestion.id}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setFilters((prev: any) => ({ ...prev, searchTerm: suggestion.name }));
+                  scrollToAnchor("category-filter-container");
+                  setIsSearchFocused(false);
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
+              >
+                <span className="text-sm font-semibold text-stone-800 group-hover/item:text-[#4C0027]">
+                  {suggestion.name}
+                </span>
+                <span className="text-xs text-stone-500 font-mono">
+                  ${suggestion.price}/mo
+                </span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
+const MobileSearchBar = React.memo(({
+  t,
+  cars,
+  setFilters,
+  scrollToAnchor,
+  setIsMobileMenuOpen,
+}: {
+  t: any;
+  cars: Car[];
+  setFilters: React.Dispatch<React.SetStateAction<any>>;
+  scrollToAnchor: (id: string) => void;
+  setIsMobileMenuOpen: (open: boolean) => void;
+}) => {
+  const [searchText, setSearchText] = useSearchValue();
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const searchSuggestions = useMemo(() => {
+    if (!searchText) return cars.slice(0, 4);
+    return cars
+      .filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
+      .slice(0, 4);
+  }, [cars, searchText]);
+
+  return (
+    <div className="relative w-full mb-2 group">
+      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+        <Search className="h-4 w-4 text-stone-400 group-focus-within:text-[#4C0027] transition-colors" />
+      </div>
+      <input
+        id="global-input-search-mobile"
+        type="text"
+        placeholder={t.searchBox}
+        value={searchText}
+        onFocus={() => setIsSearchFocused(true)}
+        onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+        onChange={(e) => setSearchText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            scrollToAnchor("category-filter-container");
+            setIsMobileMenuOpen(false);
+          }
+        }}
+        className="w-full pl-[38px] pr-10 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
+      />
+      {searchText && (
+        <button
+          type="button"
+          onClick={() => setSearchText("")}
+          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+      <AnimatePresence>
+        {isSearchFocused && searchSuggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 py-1"
+          >
+            {searchSuggestions.map((suggestion) => (
+              <button
+                key={suggestion.id}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setFilters((prev: any) => ({ ...prev, searchTerm: suggestion.name }));
+                  scrollToAnchor("category-filter-container");
+                  setIsSearchFocused(false);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
+              >
+                <span className="text-sm font-semibold text-stone-800 group-hover/item:text-[#4C0027]">
+                  {suggestion.name}
+                </span>
+                <span className="text-xs text-stone-500 font-mono">
+                  ${suggestion.price}/mo
+                </span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
+const FilterSectionSearchBar = React.memo(({
+  t,
+}: {
+  t: any;
+}) => {
+  const [searchText, setSearchText] = useSearchValue();
+
+  return (
+    <div className="w-full flex flex-col justify-center" onClick={(e) => e.stopPropagation()}>
+      <label className="text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono pl-1">
+        {t.searchModelKeywords}
+      </label>
+      <div className="relative">
+        <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-stone-400">
+          <Search className="h-4 w-4" />
+        </span>
+        <input
+          id="filter-input-search"
+          type="text"
+          placeholder={t.searchPlaceholder}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="w-full pl-11 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400 shadow-sm"
+        />
+        {searchText && (
+          <button
+            type="button"
+            onClick={() => setSearchText("")}
+            className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+});
 
 const safeStorage = {
   getItem: (key: string) => {
@@ -110,12 +362,263 @@ const generateSessionToken = (): string => {
 
 
 
+const PrintPreviewOverlay = React.memo(({
+  isOpen,
+  onClose,
+  printedCars,
+  includeContract,
+  setIncludeContract,
+  lang,
+  t,
+  setLightboxCar,
+  setLightboxIndex,
+  showWatermark,
+  setShowWatermark,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  printedCars: Car[];
+  includeContract: boolean;
+  setIncludeContract: (val: boolean) => void;
+  lang: string;
+  t: any;
+  setLightboxCar: (car: Car) => void;
+  setLightboxIndex: (idx: number) => void;
+  showWatermark: boolean;
+  setShowWatermark: (val: boolean) => void;
+}) => {
+  const [zoom, setZoom] = useState(85);
+  const [isExporting, setIsExporting] = useState(false);
+  const quotationRef = useRef<HTMLDivElement>(null);
+
+  if (!isOpen) return null;
+
+  const handlePrint = () => {
+    document.body.setAttribute("data-print-mode", "quotation");
+    window.print();
+  };
+
+  const handleExportPNG = async () => {
+    if (!quotationRef.current) return;
+    setIsExporting(true);
+
+    const parent = quotationRef.current.parentElement;
+    const originalTransform = parent ? parent.style.transform : "";
+
+    try {
+      // Revert any scale temporarily to ensure html2canvas captures full-resolution without cropping
+      if (parent) {
+        parent.style.transform = "none";
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const canvas = await html2canvas(quotationRef.current, {
+        scale: 2, // High resolution PNG capture
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.download = `ENTER_Car_Rental_Quotation_${dateStr}.png`;
+      link.href = imgData;
+      link.click();
+    } catch (err) {
+      console.error("Failed to export quotation as image:", err);
+    } finally {
+      if (parent) {
+        parent.style.transform = originalTransform;
+      }
+      setIsExporting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col bg-stone-950/95 backdrop-blur-md select-none no-print font-sans">
+      {/* Top Control Bar / Toolbar */}
+      <div className="h-16 border-b border-stone-850 bg-stone-900/60 px-4 sm:px-6 flex items-center justify-between z-10 shrink-0">
+        {/* Left: Back button */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 text-stone-300 hover:text-white text-xs sm:text-sm font-bold bg-stone-800 hover:bg-stone-700 px-3.5 py-2 rounded-xl transition-all cursor-pointer border border-stone-700/50"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+          <div className="hidden md:flex flex-col">
+            <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest font-mono">Document Drawer</span>
+            <span className="text-xs font-bold text-white uppercase tracking-wider">PDF Quotation Preview</span>
+          </div>
+        </div>
+
+        {/* Center: Interactive Zoom and Page Stats */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 bg-stone-950/60 p-1.5 rounded-lg border border-stone-800">
+            <button
+              disabled={zoom <= 50}
+              onClick={() => setZoom(Math.max(50, zoom - 10))}
+              className="p-1 rounded-md text-stone-400 hover:text-white hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer border-none bg-transparent"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <span className="text-xs font-mono font-bold text-amber-400 min-w-[42px] text-center select-none">
+              {zoom}%
+            </span>
+            <button
+              disabled={zoom >= 130}
+              onClick={() => setZoom(Math.min(130, zoom + 10))}
+              className="p-1 rounded-md text-stone-400 hover:text-white hover:bg-stone-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer border-none bg-transparent"
+              title="Zoom In"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Page Count Badge */}
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-[11px] font-mono font-bold text-stone-300 uppercase">
+            Pages: <span className="text-amber-400">{includeContract ? "1 + Contract" : "1 Page"}</span>
+          </span>
+        </div>
+
+        {/* Right: Toggle Options & Action Buttons */}
+        <div className="flex items-center gap-3">
+          {/* Live Toggle Contract */}
+          <label className="flex items-center gap-2 cursor-pointer bg-stone-950/30 hover:bg-stone-950/50 p-2 sm:p-2.5 rounded-xl border border-stone-800 transition-all select-none">
+            <input
+              type="checkbox"
+              checked={includeContract}
+              onChange={(e) => setIncludeContract(e.target.checked)}
+              className="w-4 h-4 text-[#4C0027] bg-stone-800 border-stone-700 rounded focus:ring-[#4C0027] cursor-pointer"
+            />
+            <span className="text-[10px] sm:text-xs font-bold text-stone-300 select-none uppercase tracking-wider">
+              Append Contract
+            </span>
+          </label>
+
+          {/* Live Toggle Watermark */}
+          <label className="flex items-center gap-2 cursor-pointer bg-stone-950/30 hover:bg-stone-950/50 p-2 sm:p-2.5 rounded-xl border border-stone-800 transition-all select-none">
+            <input
+              type="checkbox"
+              checked={showWatermark}
+              onChange={(e) => setShowWatermark(e.target.checked)}
+              className="w-4 h-4 text-red-650 bg-stone-800 border-stone-700 rounded focus:ring-red-650 cursor-pointer"
+            />
+            <span className="text-[10px] sm:text-xs font-bold text-red-400 select-none uppercase tracking-wider">
+              Confidential Watermark
+            </span>
+          </label>
+
+          {/* Export PNG Button */}
+          <button
+            onClick={handleExportPNG}
+            disabled={isExporting}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-stone-800 hover:bg-stone-700 disabled:bg-stone-800 disabled:opacity-50 text-stone-100 text-xs sm:text-sm font-extrabold rounded-xl shadow-lg hover:shadow-stone-750/10 uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-stone-700/50"
+          >
+            {isExporting ? (
+              <>
+                <div className="w-4.5 h-4.5 border-2 border-stone-100 border-t-transparent rounded-full animate-spin"></div>
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Export PNG</span>
+              </>
+            )}
+          </button>
+
+          {/* Main Action Trigger */}
+          <button
+            onClick={handlePrint}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs sm:text-sm font-extrabold rounded-xl shadow-lg hover:shadow-amber-400/10 uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-amber-500/20"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Print PDF</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Outer scrolling canvas area */}
+      <div className="flex-1 overflow-y-auto px-4 py-8 flex flex-col items-center bg-stone-900/40">
+        {/* Realistic PDF View Container which acts as a desktop printer sheet */}
+        <div
+          className="w-full max-w-4xl transition-all duration-200 ease-out flex flex-col gap-10 items-center mt-4"
+          style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
+        >
+          {/* PAGE 1: THE ACTIVE QUOTE */}
+          <div ref={quotationRef} className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-200 rounded-sm w-[210mm] max-w-full p-12 relative flex flex-col justify-between min-h-[297mm]">
+            {/* Paper Watermark Ornament for Premium Presentation */}
+            <div className="absolute right-8 top-8 opacity-[0.03] select-none pointer-events-none">
+              <span className="font-black text-6xl text-stone-950">ENTER</span>
+            </div>
+
+            <div>
+              <QuotationDocumentContent
+                printedCars={printedCars}
+                includeContract={false}
+                lang={lang}
+                t={t}
+                setLightboxCar={setLightboxCar}
+                setLightboxIndex={setLightboxIndex}
+                showWatermark={showWatermark}
+              />
+            </div>
+
+            {/* Real-time Document Status Bar */}
+            <div className="w-full mt-10 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
+              <span>Ref: QT-2787-8ef4-31fc</span>
+              <span>Page 1 of {includeContract ? "4" : "1"}</span>
+              <span>Printed via ENTER VIP Client Services</span>
+            </div>
+          </div>
+
+          {/* PAGES 2, 3, 4: LOCALIZED LEASE CONTRACT */}
+          {includeContract && (
+            <>
+              {/* Visual Inter-page Sheet Divider */}
+              <div className="w-full max-w-[210mm] flex items-center justify-between border-t border-dashed border-stone-700/60 py-2 select-none pointer-events-none">
+                <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-stone-500">PAGE BREAK</span>
+                <div className="w-4 h-4 rounded-full border border-stone-700/60 flex items-center justify-center p-0.5">
+                  <div className="w-2 h-2 rounded-full bg-stone-700/60"></div>
+                </div>
+                <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-stone-500">LEASE CONTRACT INCLUDED</span>
+              </div>
+
+              {/* Simulated Contract Document Pages */}
+              <div className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-200 rounded-sm w-[210mm] max-w-full p-12 relative min-h-[297mm] flex flex-col justify-between">
+                <div>
+                  <PrintContractDoc lang={lang as any} />
+                </div>
+
+                {/* Real-time Document Status Bar */}
+                <div className="w-full mt-10 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
+                  <span>Cambodian Standard Lease Agreement</span>
+                  <span className="text-[#4C0027] font-bold uppercase">Legal Exhibit Append</span>
+                  <span>ENTER Co., Ltd. Confidential</span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }: { t: any, cars: Car[], lang: string, likedCars?: string[] }) => {
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"default" | "price-asc" | "price-desc" | "name-asc" | "type-asc" | "type-desc" | "fuel-asc" | "fuel-desc">("default");
   const [selectedCarIds, setSelectedCarIds] = useState<Record<string, boolean>>({});
   const [includeContract, setIncludeContract] = useState(false);
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  const [showWatermark, setShowWatermark] = useState(false);
   const [quoteSearchQuery, setQuoteSearchQuery] = useState("");
 
   // High-Resolution Lightbox Gallery State
@@ -468,13 +971,12 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                     <button
                       type="button"
                       onClick={() => {
-                        document.body.setAttribute("data-print-mode", "quotation");
-                        window.print();
+                        setIsPrintPreviewOpen(true);
                       }}
                       className="w-full sm:w-auto px-6 py-3 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-extrabold rounded-xl shadow-md uppercase tracking-wider transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2 border border-amber-500/20"
                     >
-                      <Printer className="w-4 h-4 shrink-0 text-stone-950" />
-                      Download PDF Quote
+                      <Eye className="w-4 h-4 shrink-0 text-stone-950" />
+                      Preview & Print PDF
                     </button>
                     <button
                       type="button"
@@ -489,6 +991,21 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
             </div>
           )}
         </AnimatePresence>
+
+        {/* Print Preview Overlay */}
+        <PrintPreviewOverlay
+          isOpen={isPrintPreviewOpen}
+          onClose={() => setIsPrintPreviewOpen(false)}
+          printedCars={printedCars}
+          includeContract={includeContract}
+          setIncludeContract={setIncludeContract}
+          lang={lang}
+          t={t}
+          setLightboxCar={setLightboxCar}
+          setLightboxIndex={setLightboxIndex}
+          showWatermark={showWatermark}
+          setShowWatermark={setShowWatermark}
+        />
 
         {/* High-Resolution Gallery Lightbox */}
         <AnimatePresence>
@@ -589,129 +1106,15 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
 
       {/* Printable Quotation Document (Beautifully styled & optimized exclusively for Print / Save to PDF) */}
       <div id="print-section" className="print-only-layout p-12 bg-white text-stone-900">
-        {/* Header Ribbon / Enterprise Meta */}
-        <div className="flex justify-between items-start border-b-2 border-[#4C0027] pb-6 mb-8">
-          <div>
-            <h1 className="text-3xl font-black text-[#4C0027] tracking-wider uppercase">ENTER CAR RENTAL</h1>
-            <p className="text-xs font-mono font-bold tracking-wider text-stone-500 mt-1 uppercase">Premium Fleet Sourcing & Long-Term Leases</p>
-            <div className="mt-4 text-xs space-y-1 text-stone-600 font-sans">
-              <p>Email: <span className="font-semibold text-[#4C0027]">entercar2026@gmail.com</span></p>
-              <p>Web Inquiry Portal: <span className="font-semibold text-stone-800">enter.v1</span></p>
-              <p>Phnom Penh, Kingdom of Cambodia</p>
-            </div>
-          </div>
-          <div className="text-right flex flex-col items-end">
-            <span className="bg-[#4C0027]/10 text-[#4C0027] px-3 py-1 text-[10px] font-black tracking-widest uppercase rounded">Official Quotation</span>
-            <p className="text-xs font-mono font-bold text-stone-700 mt-3">Ref No: <span className="text-[#4C0027] font-extrabold">QT-2787-8ef4-31fc</span></p>
-            <p className="text-xs text-stone-500 mt-1">Date Issued: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <p className="text-xs text-stone-500">Validity Period: 30 Calendar Days</p>
-          </div>
-        </div>
-
-        {/* Professional Cover Letter Intro */}
-        <div className="mb-8 text-xs text-stone-700 space-y-3 leading-relaxed">
-          <p>
-            Dear Valued Customer,
-          </p>
-          <p>
-            In reference to your recent catalog inquiry and rental preferences, we are pleased to submit our official vehicle leasing terms and pricing proposal. We cooperate directly with specialized car owners to ensure you receive the pristine quality vehicles requested under the most flexible conditions.
-          </p>
-        </div>
-
-        {/* Print specific pricing table */}
-        <div className="mb-8 overflow-hidden border border-stone-300 rounded-lg">
-          <table className="w-full text-xs text-left border-collapse">
-            <thead>
-              <tr className="bg-[#4C0027] text-white">
-                <th className="px-5 py-3 font-bold uppercase tracking-wider text-left border-b border-stone-300">Vehicle Model Description</th>
-                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Fuel Type</th>
-                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Monthly Rent (USD)</th>
-                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Refundable Deposit</th>
-                <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Min. Commitment</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-200">
-              {printedCars.map((car: Car) => (
-                <tr key={car.id} className="bg-white">
-                  <td className="px-5 py-3 font-bold text-stone-900">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        onClick={() => {
-                          setLightboxCar(car);
-                          setLightboxIndex(0);
-                        }}
-                        className="w-12 h-8 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0 cursor-zoom-in hover:border-[#4C0027] hover:scale-105 transition-all"
-                        title="Click to zoom gallery lightbox"
-                      >
-                        <img
-                          src={getCarImageSrc(car)}
-                          alt={car.name}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            e.currentTarget.src = getFallbackCarThumbnail(car.name, car.category);
-                          }}
-                        />
-                      </div>
-                      <span>{car.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
-                  <td className="px-5 py-3 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
-                  <td className="px-5 py-3 text-center text-stone-855 font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
-                  <td className="px-5 py-3 text-center text-stone-600 font-bold">6 Months</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Terms and Conditions Callout */}
-        <div className="mb-10 p-6 bg-stone-50 rounded-xl border border-stone-200 no-break">
-          <h3 className="text-xs font-black text-[#4C0027] uppercase tracking-widest border-b-2 border-stone-300 pb-2 mb-3">
-            Corporate Rental Guidelines & General Terms
-          </h3>
-          <ol className="list-decimal list-inside text-[11px] text-stone-700 space-y-2 leading-relaxed">
-            <li><strong className="text-stone-900">Minimum Rental Term:</strong> All active vehicles listed in this quotation are subject to a standard minimum contract period of six (6) months.</li>
-            <li><strong className="text-stone-900">Refundable Deposit Clause:</strong> A security deposit equivalent to exactly one (1) month of the specified rental rate is due immediately upon execution of the final lease agreement. This sum is held in escrow and is fully refundable at contract termination, subject to satisfactory vehicle inspection.</li>
-            <li><strong className="text-stone-900">Advanced Billing:</strong> Standard rental billing cycles are processed in advance at the start of each operating month.</li>
-            <li><strong className="text-stone-900">Premium Comprehensive Care:</strong> The monthly leasing fee includes standard recurring maintenance checks, parts wear replacements, and premium vehicle liability protection.</li>
-            <li><strong className="text-stone-900">Official Non-Binding nature:</strong> This quotation is structured solely for informative and budgeting purposes. Vehicle availability is confirmed only upon signing the binding Contract Agreement.</li>
-          </ol>
-        </div>
-
-        {/* Sign-off & Footer Container (Guaranteed to stay cohesive on print) */}
-        <div className="no-break mt-8 pt-6 border-t border-stone-200">
-          {/* Corporate Sign-off blocks */}
-          <div className="grid grid-cols-2 gap-8">
-            <div className="flex flex-col">
-              <p className="text-xs font-bold text-stone-500 mb-8 uppercase tracking-wider">Authorized Officer – ENTER Car Rental</p>
-              <div className="border-b border-stone-400 w-56 mb-2"></div>
-              <p className="text-xs font-black text-[#4C0027]">Sourcing & Leasing Department</p>
-              <p className="text-[10px] text-stone-400 font-mono">ENTER CAR RENTAL Co., Ltd.</p>
-            </div>
-            <div className="flex flex-col items-end text-right">
-              <p className="text-xs font-bold text-stone-500 mb-8 uppercase tracking-wider">Accepted & Acknowledged – Client</p>
-              <div className="border-b border-stone-400 w-56 mb-2"></div>
-              <p className="text-xs font-black text-stone-850">Authorized Client Signature</p>
-              <p className="text-[10px] text-stone-400 font-mono">Date signed: ______ / ______ / 2026</p>
-            </div>
-          </div>
-
-          {/* Footer disclaimer */}
-          <div className="mt-8 text-center border-t border-stone-100 pt-4">
-            <p className="text-[9px] text-stone-400 font-mono tracking-wider">
-              Thank you for choosing ENTER Car Rental. We value your business and look forward to safe journeys together.
-            </p>
-          </div>
-        </div>
-
-        {/* Localized Car Rental Lease Contract Appended */}
-        {includeContract && (
-          <div className="print-contract-append mt-12 pt-8" style={{ pageBreakBefore: "always", breakBefore: "page" }}>
-            <PrintContractDoc lang={lang} />
-          </div>
-        )}
+        <QuotationDocumentContent
+          printedCars={printedCars}
+          includeContract={includeContract}
+          lang={lang}
+          t={t}
+          setLightboxCar={setLightboxCar}
+          setLightboxIndex={setLightboxIndex}
+          showWatermark={showWatermark}
+        />
       </div>
     </>
   );
@@ -861,30 +1264,28 @@ export default function App() {
     });
   }, []);
 
-  const [searchText, setSearchText] = useState(() => filters.searchTerm);
-
-  // Sync back if filters.searchTerm changes from outside (e.g. clear filters or clicking suggestion)
+  // Synchronizing filters.searchTerm with SearchService on external updates
   useEffect(() => {
-    setSearchText(filters.searchTerm);
+    if (filters.searchTerm !== SearchService.get()) {
+      SearchService.set(filters.searchTerm);
+    }
   }, [filters.searchTerm]);
 
-  const debouncedSetSearchTerm = useRef<NodeJS.Timeout | null>(null);
-
-  const handleSearchChange = (val: string) => {
-    setSearchText(val);
-    if (debouncedSetSearchTerm.current) {
-      clearTimeout(debouncedSetSearchTerm.current);
-    }
-    debouncedSetSearchTerm.current = setTimeout(() => {
-      setFilters((prev) => ({ ...prev, searchTerm: val }));
-    }, 150);
-  };
-
+  // Debounced subscription to SearchService to apply changes to state without input lag
   useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    const unsubscribe = SearchService.subscribe((val) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        setFilters((prev) => {
+          if (prev.searchTerm === val) return prev;
+          return { ...prev, searchTerm: val };
+        });
+      }, 150);
+    });
     return () => {
-      if (debouncedSetSearchTerm.current) {
-        clearTimeout(debouncedSetSearchTerm.current);
-      }
+      unsubscribe();
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
@@ -896,13 +1297,6 @@ export default function App() {
       setSortByRaw(val);
     });
   }, []);
-
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const searchSuggestions = searchText
-    ? cars
-        .filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
-        .slice(0, 4)
-    : cars.slice(0, 4);
 
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -1307,41 +1701,53 @@ export default function App() {
   }, [sortBy]);
 
   const filteredCars = useMemo(() => {
+    const searchPattern = activeFilters.searchTerm.trim().toLowerCase();
+    const activeCategory = activeFilters.category;
+    const activeMaxPrice = activeFilters.maxPrice;
+    const activeTrans = activeFilters.transmission;
+    const activeFuel = activeFilters.fuelType;
+    const activeSeats = String(activeFilters.seats);
+    const activeBrand = activeFilters.brand.toLowerCase();
+    const activeLikedOnly = activeFilters.likedOnly;
+
     const results = cars.filter((car) => {
-      const matchSearch =
-        car.name.toLowerCase().includes(activeFilters.searchTerm.toLowerCase()) ||
-        (car.description &&
-          car.description
-            .toLowerCase()
-            .includes(activeFilters.searchTerm.toLowerCase()));
-      const matchCategory =
-        activeFilters.category === "All" || car.category === activeFilters.category;
-      const matchPrice = car.price <= activeFilters.maxPrice;
-      const matchTrans =
-        activeFilters.transmission === "All" ||
-        car.transmission === activeFilters.transmission;
-      const matchFuel =
-        activeFilters.fuelType === "All" || car.fuelType === activeFilters.fuelType;
-      const matchSeats =
-        activeFilters.seats === "All" || String(car.seats) === String(activeFilters.seats);
+      // 1. Price check (numeric check is extremely fast, do first to exit early)
+      if (car.price > activeMaxPrice) return false;
 
-      const carBrand = getBrandFromName(car.name);
-      const matchBrand =
-        activeFilters.brand === "All" ||
-        carBrand.toLowerCase() === activeFilters.brand.toLowerCase();
+      // 2. Category check
+      if (activeCategory !== "All" && car.category !== activeCategory) return false;
 
-      const matchLiked = !activeFilters.likedOnly || likedCars.includes(car.id);
+      // 3. Transmission check
+      if (activeTrans !== "All" && car.transmission !== activeTrans) return false;
 
-      return (
-        matchSearch &&
-        matchCategory &&
-        matchPrice &&
-        matchTrans &&
-        matchFuel &&
-        matchSeats &&
-        matchBrand &&
-        matchLiked
-      );
+      // 4. Fuel check
+      if (activeFuel !== "All" && car.fuelType !== activeFuel) return false;
+
+      // 5. Seats check
+      if (activeSeats !== "All" && String(car.seats) !== activeSeats) return false;
+
+      // 6. Brand check
+      if (activeBrand !== "all") {
+        const carBrand = getBrandFromName(car.name).toLowerCase();
+        if (carBrand !== activeBrand) return false;
+      }
+
+      // 7. Liked only check
+      if (activeLikedOnly && !likedCars.includes(car.id)) return false;
+
+      // 8. Search check (do string operations last as they are computationally heavier)
+      if (searchPattern) {
+        const nameMatch = car.name.toLowerCase().includes(searchPattern);
+        if (nameMatch) return true;
+
+        if (car.description) {
+          const descMatch = car.description.toLowerCase().includes(searchPattern);
+          if (descMatch) return true;
+        }
+        return false;
+      }
+
+      return true;
     });
 
     if (sortBy === "price-asc") {
@@ -1496,62 +1902,12 @@ export default function App() {
             </button>
 
             {/* Desktop Global Search Bar */}
-            <div className="relative w-36 focus-within:w-72 xl:focus-within:w-80 ml-4 group transition-all duration-300 ease-in-out">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-stone-400 group-focus-within:text-[#4C0027] transition-colors" />
-              </div>
-              <input
-                id="global-input-search-desktop"
-                type="text"
-                placeholder={t.searchBox}
-                value={searchText}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    scrollToAnchor("category-filter-container");
-                  }
-                }}
-                className="w-full pl-[38px] pr-10 py-2 bg-stone-50 border border-stone-200 rounded-full text-stone-800 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-2 focus:ring-[#4C0027]/20 transition-all font-sans font-medium placeholder:text-stone-400"
-              />
-              {searchText && (
-                <button
-                  type="button"
-                  onClick={() => handleSearchChange("")}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-              <AnimatePresence>
-                {isSearchFocused && searchSuggestions.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 py-1"
-                  >
-                    {searchSuggestions.map((suggestion) => (
-                      <button
-                        key={suggestion.id}
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setFilters((prev) => ({ ...prev, searchTerm: suggestion.name }));
-                          scrollToAnchor("category-filter-container");
-                          setIsSearchFocused(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
-                      >
-                        <span className="text-sm font-semibold text-stone-800 group-hover/item:text-[#4C0027]">{suggestion.name}</span>
-                        <span className="text-xs text-stone-500 font-mono">${suggestion.price}/mo</span>
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <DesktopSearchBar
+              t={t}
+              cars={cars}
+              setFilters={setFilters}
+              scrollToAnchor={scrollToAnchor}
+            />
           </nav>
 
           {/* Desktop Right Actions Container (visible only on lg screens & up) */}
@@ -1759,64 +2115,13 @@ export default function App() {
             >
               <div className="px-4 py-5 space-y-4">
                 {/* Mobile Global Search Bar */}
-                <div className="relative w-full mb-2 group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Search className="h-4 w-4 text-stone-400 group-focus-within:text-[#4C0027] transition-colors" />
-                  </div>
-                  <input
-                    id="global-input-search-mobile"
-                    type="text"
-                    placeholder={t.searchBox}
-                    value={searchText}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        scrollToAnchor("category-filter-container");
-                        setIsMobileMenuOpen(false);
-                      }
-                    }}
-                    className="w-full pl-[38px] pr-10 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
-                  />
-                  {searchText && (
-                    <button
-                      type="button"
-                      onClick={() => handleSearchChange("")}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
-                  <AnimatePresence>
-                    {isSearchFocused && searchSuggestions.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden z-50 py-1"
-                      >
-                        {searchSuggestions.map((suggestion) => (
-                          <button
-                            key={suggestion.id}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setFilters((prev) => ({ ...prev, searchTerm: suggestion.name }));
-                              scrollToAnchor("category-filter-container");
-                              setIsSearchFocused(false);
-                              setIsMobileMenuOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
-                          >
-                            <span className="text-sm font-semibold text-stone-800 group-hover/item:text-[#4C0027]">{suggestion.name}</span>
-                            <span className="text-xs text-stone-500 font-mono">${suggestion.price}/mo</span>
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                <MobileSearchBar
+                  t={t}
+                  cars={cars}
+                  setFilters={setFilters}
+                  scrollToAnchor={scrollToAnchor}
+                  setIsMobileMenuOpen={setIsMobileMenuOpen}
+                />
 
                 <a
                   id="mobile-link-home"
@@ -1968,33 +2273,7 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 w-full">
                 {/* Search Box - Now in header */}
-                <div className="w-full flex flex-col justify-center" onClick={(e) => e.stopPropagation()}>
-                  <label className="text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono pl-1">
-                    {t.searchModelKeywords}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-stone-400">
-                      <Search className="h-4 w-4" />
-                    </span>
-                    <input
-                      id="filter-input-search"
-                      type="text"
-                      placeholder={t.searchPlaceholder}
-                      value={searchText}
-                      onChange={(e) => handleSearchChange(e.target.value)}
-                      className="w-full pl-11 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400 shadow-sm"
-                    />
-                    {searchText && (
-                      <button
-                        type="button"
-                        onClick={() => handleSearchChange("")}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                <FilterSectionSearchBar t={t} />
 
                 {/* Max Monthly Fee Slider - Now in header */}
                 <div className="w-full flex flex-col justify-center bg-stone-50 rounded-xl px-5 py-3 border border-stone-100 shadow-sm" onClick={(e) => e.stopPropagation()}>
