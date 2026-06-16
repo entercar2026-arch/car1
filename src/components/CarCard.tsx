@@ -163,33 +163,6 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const localVideoRef = React.useRef<HTMLVideoElement | null>(null);
-  const videoRef = React.useCallback((node: HTMLVideoElement | null) => {
-    localVideoRef.current = node;
-    if (node) {
-      if (isPlaying) {
-        node.play().catch((err) => {
-          console.warn("Playback failed", err);
-        });
-      } else {
-        node.pause();
-      }
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    const video = localVideoRef.current;
-    if (video) {
-      if (isPlaying) {
-        video.play().catch((err) => {
-          console.warn("Playback failed", err);
-        });
-      } else {
-        video.pause();
-      }
-    }
-  }, [isPlaying]);
-
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
 
   useEffect(() => {
@@ -398,15 +371,34 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   const videoSource = useMemo(() => {
     if (currentPhotoIndex === 0 && effectiveVideoUrl) return effectiveVideoUrl;
+    if (currentImage && isVideoUrl(currentImage)) return currentImage;
     return primaryImage;
-  }, [primaryImage, effectiveVideoUrl, currentPhotoIndex]);
+  }, [primaryImage, effectiveVideoUrl, currentImage, currentPhotoIndex]);
 
   const optimizedVideoSource = useMemo(() => {
     if (currentPhotoIndex === 0 && effectiveVideoUrl) {
       return effectiveVideoUrl;
     }
+    if (videoSource && isVideoUrl(videoSource) && !videoSource.includes("unsplash.com")) {
+      return videoSource;
+    }
     return getOptimizedImageUrl(videoSource, windowWidth, 'cover', connectionStatus);
   }, [videoSource, effectiveVideoUrl, currentPhotoIndex, windowWidth, connectionStatus]);
+
+  const videoRef = React.useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      if (isPlaying) {
+        video.play().catch((err) => {
+          console.warn("Playback failed", err);
+        });
+      } else {
+        video.pause();
+      }
+    }
+  }, [isPlaying, optimizedVideoSource]);
 
   const isGoogleDrive = currentImage.includes("drive.google.com");
   const driveId = googleDriveVideoId || (isGoogleDrive ? currentImage.match(/id=([^&]+)/)?.[1] : null);
