@@ -476,17 +476,6 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return !!(car.thumbnail || videoPoster || youtubeThumbnail || generatedPoster);
   }, [car.thumbnail, videoPoster, youtubeThumbnail, generatedPoster]);
 
-  // Autoplay silent background video smoothly on hover
-  useEffect(() => {
-    if (hasVideo && !youtubeId && !googleDriveVideoId) {
-      if (isHovered) {
-        setIsPlaying(true);
-      } else {
-        setIsPlaying(false);
-      }
-    }
-  }, [isHovered, hasVideo, youtubeId, googleDriveVideoId]);
-
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingMode, setBookingMode] = useState<"enquire" | "book">("enquire");
