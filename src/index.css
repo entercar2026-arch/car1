@@ -115,9 +115,15 @@ input[type="range"] {
     margin: 0.5in !important;
   }
 
+  /* Hide the contract modal completely by default unless in contract print mode */
+  body:not([data-print-mode="contract"]) .print-only-modal {
+    display: none !important;
+  }
+
   /* Display custom print layouts depending on print mode */
   body:not([data-print-mode]) #print-section,
-  body:not([data-print-mode]) #khmer-printable-contract {
+  body:not([data-print-mode]) #khmer-printable-contract,
+  body:not([data-print-mode]) .print-only-modal {
     display: none !important;
   }
 
@@ -146,10 +152,40 @@ input[type="range"] {
     display: none !important;
   }
 
+  /* Prevent extra blank pages by completely hiding all other core sections from layout flow */
+  body[data-print-mode="quotation"] main > section:not(#home-panel),
+  body[data-print-mode="quotation"] #main-public-header,
+  body[data-print-mode="quotation"] #global-theme-footer {
+    display: none !important;
+  }
+
   /* CONTRACT MODE */
   body[data-print-mode="contract"] #print-section,
   body[data-print-mode="contract"] #print-section * {
     display: none !important;
+  }
+
+  body[data-print-mode="contract"] main > section:not(#home-panel),
+  body[data-print-mode="contract"] #main-public-header,
+  body[data-print-mode="contract"] #global-theme-footer {
+    display: none !important;
+  }
+
+  /* Expand modal view container hierarchy cleanly under print */
+  body[data-print-mode="contract"] .print-only-modal,
+  body[data-print-mode="contract"] .print-only-modal > div,
+  body[data-print-mode="contract"] .print-only-modal > div > div {
+    display: block !important;
+    position: relative !important;
+    background: white !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   body[data-print-mode="contract"] #khmer-printable-contract {
@@ -171,8 +207,9 @@ input[type="range"] {
     opacity: 1 !important;
   }
 
-  /* Ensure each contract page splits on an exact page boundary */
-  body[data-print-mode="contract"] .pdf-page {
+  /* Ensure each contract page splits on an exact page boundary for both modes */
+  body[data-print-mode="contract"] .pdf-page,
+  body[data-print-mode="quotation"] .pdf-page {
     display: block !important;
     page-break-after: always !important;
     break-after: page !important;
@@ -187,7 +224,8 @@ input[type="range"] {
     min-height: 0 !important;
   }
 
-  body[data-print-mode="contract"] .pdf-page:last-child {
+  body[data-print-mode="contract"] .pdf-page:last-child,
+  body[data-print-mode="quotation"] .pdf-page:last-child {
     page-break-after: avoid !important;
     break-after: avoid !important;
     margin-bottom: 0 !important;

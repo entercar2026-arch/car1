@@ -97,6 +97,7 @@ export const KhmerContractPDFModal: React.FC<KhmerContractPDFModalProps> = ({ is
   };
 
   const handlePrint = () => {
+    document.body.setAttribute("data-print-mode", "contract");
     window.print();
   };
 
@@ -167,7 +168,7 @@ Articles 1 to 14 in compliance with the laws of Cambodia.
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-stone-900 border border-stone-800 shadow-2xl overflow-hidden font-sans no-print select-none">
+    <div className="fixed inset-0 z-50 flex flex-col bg-stone-900 border border-stone-800 shadow-2xl overflow-hidden font-sans select-none print-only-modal">
       
       {/* 1. TOP BAR TOOLBAR (Adobe Reader style sleek desktop header) */}
       <header className="h-14 bg-stone-950 text-stone-200 px-4 flex items-center justify-between border-b border-stone-800 shrink-0 z-10 shadow-md">
