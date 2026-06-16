@@ -2,6 +2,7 @@ import React from "react";
 import { Car } from "../types";
 import { getCarImageSrc, getFallbackCarThumbnail } from "../utils/carImage";
 import { PrintContractDoc } from "./PrintContractDoc";
+import { QRCodeSVG } from "qrcode.react";
 
 interface QuotationDocumentContentProps {
   printedCars: Car[];
@@ -22,6 +23,8 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
   setLightboxIndex,
   showWatermark = false,
 }) => {
+  const catalogUrl = typeof window !== "undefined" ? window.location.origin : "https://enter.v1";
+
   return (
     <>
       {/* Confidential Watermark Overlay */}
@@ -146,11 +149,34 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           </div>
         </div>
 
-        {/* Footer disclaimer */}
-        <div className="mt-8 text-center border-t border-stone-100 pt-4">
-          <p className="text-[9px] text-stone-400 font-mono tracking-wider">
-            Thank you for choosing ENTER Car Rental. We value your business and look forward to safe journeys together.
-          </p>
+        {/* Professional Footer & Catalog Access QR Code Row */}
+        <div className="mt-8 pt-4 border-t border-stone-100 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4 text-left">
+            <div className="flex flex-col items-center gap-1 shrink-0 text-center">
+              <div className="p-1.5 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
+                <QRCodeSVG 
+                  value={catalogUrl} 
+                  size={56} 
+                  level="M" 
+                  includeMargin={false} 
+                  fgColor="#4C0027"
+                />
+              </div>
+              <span className="text-[7.5px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan to View Fleet</span>
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan to View Online Catalog</p>
+              <p className="text-[9px] text-stone-500 font-medium leading-relaxed max-w-md mt-1">
+                Access our real-time interactive fleet page, explore high-resolution image galleries, 360° panoramas, and check dynamic availability.
+              </p>
+              <p className="text-[8px] text-stone-400 font-mono mt-0.5 select-all">{catalogUrl}</p>
+            </div>
+          </div>
+          <div className="text-right max-w-xs md:ml-auto">
+            <p className="text-[9px] text-stone-400 font-mono tracking-wider leading-relaxed">
+              Thank you for choosing ENTER Car Rental. We value your business and look forward to safe, premier journeys together.
+            </p>
+          </div>
         </div>
       </div>
 
