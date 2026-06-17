@@ -61,7 +61,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
               const base64Fallback = await convertUrlToBase64(fallbackSrc);
               urls[car.id] = base64Fallback;
             } catch {
-              urls[car.id] = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="100%" height="100%" fill="%23f5f5f4"/><text x="50%" y="50%" font-family="sans-serif" font-size="8" fill="%234C0027" font-weight="bold" text-anchor="middle" dominant-baseline="middle">ENTER CAR RENTAL</text></svg>`;
+              urls[car.id] = "data:image/svg+xml;base64," + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="100%" height="100%" fill="#f5f5f4"/><text x="50%" y="50%" font-family="sans-serif" font-size="8" fill="#4C0027" font-weight="bold" text-anchor="middle" dominant-baseline="middle">ENTER CAR RENTAL</text></svg>`);
             }
           }
         })

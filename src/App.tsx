@@ -409,19 +409,15 @@ const PrintPreviewOverlay = React.memo(({
         parent.style.transform = "none";
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const canvas = await html2canvas(quotationRef.current, {
         scale: 2, // High resolution capture
         useCORS: true,
         allowTaint: false,
         backgroundColor: "#ffffff",
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        imageTimeout: 5000,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight,
+        logging: true,
+        imageTimeout: 10000,
       });
 
       // A4 dimensions: 210mm x 297mm
@@ -429,7 +425,7 @@ const PrintPreviewOverlay = React.memo(({
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
       const pdf = new jsPDF("p", "mm", "a4");
       
       let heightLeft = imgHeight;
@@ -451,6 +447,7 @@ const PrintPreviewOverlay = React.memo(({
       pdf.save(`ENTER_Car_Rental_Quotation_${dateStr}.pdf`);
     } catch (err) {
       console.error("Failed to export quotation as PDF:", err);
+      alert("Failed to export as PDF. Please print via the Print PDF button as an alternative.");
     } finally {
       if (parent) {
         parent.style.transform = originalTransform;
@@ -472,19 +469,15 @@ const PrintPreviewOverlay = React.memo(({
         parent.style.transform = "none";
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const canvas = await html2canvas(quotationRef.current, {
         scale: 2, // High resolution PNG capture
         useCORS: true,
         allowTaint: false,
         backgroundColor: "#ffffff",
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        imageTimeout: 5000,
-        windowWidth: document.documentElement.offsetWidth,
-        windowHeight: document.documentElement.offsetHeight,
+        logging: true,
+        imageTimeout: 10000,
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -495,6 +488,7 @@ const PrintPreviewOverlay = React.memo(({
       link.click();
     } catch (err) {
       console.error("Failed to export quotation as image:", err);
+      alert("Failed to export as PNG. Please print via the Print PDF button as an alternative.");
     } finally {
       if (parent) {
         parent.style.transform = originalTransform;
