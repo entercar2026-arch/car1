@@ -364,52 +364,82 @@ const generateSessionToken = (): string => {
 
 
 
-const applyOklchProxy = () => {
-  const originalGetComputedStyle = window.getComputedStyle;
+const oklchToRgb = (l: number, c: number, h: number, alpha: number | undefined): string => {
+  const hRad = (h * Math.PI) / 180;
+  const oklch_a = c * Math.cos(hRad);
+  const oklch_b = c * Math.sin(hRad);
 
-  function oklchToRgb(l: number, c: number, h: number, alpha: number | undefined): string {
-    const hRad = (h * Math.PI) / 180;
-    const oklch_a = c * Math.cos(hRad);
-    const oklch_b = c * Math.sin(hRad);
+  const l_ = l + 0.3963377774 * oklch_a + 0.2158037573 * oklch_b;
+  const m_ = l - 0.1055613458 * oklch_a - 0.0638541728 * oklch_b;
+  const s_ = l - 0.0894841775 * oklch_a - 1.2914855480 * oklch_b;
 
-    const l_ = l + 0.3963377774 * oklch_a + 0.2158037573 * oklch_b;
-    const m_ = l - 0.1055613458 * oklch_a - 0.0638541728 * oklch_b;
-    const s_ = l - 0.0894841775 * oklch_a - 1.2914855480 * oklch_b;
+  const l3 = l_ * l_ * l_;
+  const m3 = m_ * m_ * m_;
+  const s3 = s_ * s_ * s_;
 
-    const l3 = l_ * l_ * l_;
-    const m3 = m_ * m_ * m_;
-    const s3 = s_ * s_ * s_;
+  let rLinear = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+  let gLinear = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+  let bLinear = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
 
-    let rLinear = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
-    let gLinear = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
-    let bLinear = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+  const gamma = (val: number) => {
+    const clamped = Math.max(0, Math.min(1, val));
+    return clamped <= 0.0031308
+      ? 12.92 * clamped
+      : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
+  };
 
-    const gamma = (val: number) => {
-      const clamped = Math.max(0, Math.min(1, val));
-      return clamped <= 0.0031308
-        ? 12.92 * clamped
-        : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
-    };
+  const r = Math.round(gamma(rLinear) * 255);
+  const g = Math.round(gamma(gLinear) * 255);
+  const b = Math.round(gamma(bLinear) * 255);
 
-    const r = Math.round(gamma(rLinear) * 255);
-    const g = Math.round(gamma(gLinear) * 255);
-    const b = Math.round(gamma(bLinear) * 255);
+  if (alpha !== undefined) {
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return `rgb(${r}, ${g}, ${b})`;
+};
 
-    if (alpha !== undefined) {
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
-    return `rgb(${r}, ${g}, ${b})`;
+const oklabToRgb = (l: number, oklch_a: number, oklch_b: number, alpha: number | undefined): string => {
+  const l_ = l + 0.3963377774 * oklch_a + 0.2158037573 * oklch_b;
+  const m_ = l - 0.1055613458 * oklch_a - 0.0638541728 * oklch_b;
+  const s_ = l - 0.0894841775 * oklch_a - 1.2914855480 * oklch_b;
+
+  const l3 = l_ * l_ * l_;
+  const m3 = m_ * m_ * m_;
+  const s3 = s_ * s_ * s_;
+
+  let rLinear = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+  let gLinear = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+  let bLinear = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+
+  const gamma = (val: number) => {
+    const clamped = Math.max(0, Math.min(1, val));
+    return clamped <= 0.0031308
+      ? 12.92 * clamped
+      : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
+  };
+
+  const r = Math.round(gamma(rLinear) * 255);
+  const g = Math.round(gamma(gLinear) * 255);
+  const b = Math.round(gamma(bLinear) * 255);
+
+  if (alpha !== undefined) {
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+const parseAndConvertOklch = (value: string): string => {
+  if (!value || typeof value !== "string" || (!value.includes("oklch") && !value.includes("oklab"))) {
+    return value;
   }
 
-  function parseAndConvertOklch(value: string): string {
-    if (!value || typeof value !== "string" || !value.includes("oklch")) {
-      return value;
-    }
+  let result = value;
 
-    return value.replace(/oklch\(([^)]+)\)/g, (match, matchContent) => {
+  if (result.includes("oklch")) {
+    result = result.replace(/oklch\(([^)]+)\)/g, (match, matchContent) => {
       try {
-        const parts = matchContent.trim().split(/[\s,]+/);
-        const cleanParts = parts.filter((p: string) => p !== "/" && p !== "");
+        const parts = matchContent.trim().split(/[\s,/]+/);
+        const cleanParts = parts.filter((p: string) => p !== "");
         
         if (cleanParts.length < 3) return match;
 
@@ -447,6 +477,50 @@ const applyOklchProxy = () => {
     });
   }
 
+  if (result.includes("oklab")) {
+    result = result.replace(/oklab\(([^)]+)\)/g, (match, matchContent) => {
+      try {
+        const parts = matchContent.trim().split(/[\s,/]+/);
+        const cleanParts = parts.filter((p: string) => p !== "");
+        
+        if (cleanParts.length < 3) return match;
+
+        let lVal = parseFloat(cleanParts[0]);
+        if (cleanParts[0].includes("%")) {
+          lVal = lVal / 100;
+        }
+
+        let aVal = parseFloat(cleanParts[1]);
+        if (cleanParts[1].includes("%")) {
+          aVal = aVal / 100;
+        }
+
+        let bVal = parseFloat(cleanParts[2]);
+        if (cleanParts[2].includes("%")) {
+          bVal = bVal / 100;
+        }
+
+        let alphaVal: number | undefined;
+        if (cleanParts.length >= 4) {
+          alphaVal = parseFloat(cleanParts[3]);
+          if (cleanParts[3].includes("%")) {
+            alphaVal = alphaVal / 100;
+          }
+        }
+
+        return oklabToRgb(lVal, aVal, bVal, alphaVal);
+      } catch {
+        return match;
+      }
+    });
+  }
+
+  return result;
+};
+
+const applyOklchProxy = () => {
+  const originalGetComputedStyle = window.getComputedStyle;
+
   window.getComputedStyle = function (elt, pseudoElt) {
     const style = originalGetComputedStyle(elt, pseudoElt);
     
@@ -455,7 +529,7 @@ const applyOklchProxy = () => {
         if (prop === "getPropertyValue") {
           return function(propertyName: string) {
             const val = target.getPropertyValue(propertyName);
-            if (typeof val === "string" && val.includes("oklch")) {
+            if (typeof val === "string" && (val.includes("oklch") || val.includes("oklab"))) {
               return parseAndConvertOklch(val);
             }
             return val;
@@ -464,7 +538,7 @@ const applyOklchProxy = () => {
 
         if (prop === "cssText") {
           const val = target.cssText;
-          if (typeof val === "string" && val.includes("oklch")) {
+          if (typeof val === "string" && (val.includes("oklch") || val.includes("oklab"))) {
             return parseAndConvertOklch(val);
           }
           return val;
@@ -472,7 +546,7 @@ const applyOklchProxy = () => {
 
         const realValue = target[prop as any];
 
-        if (typeof realValue === "string" && realValue.includes("oklch")) {
+        if (typeof realValue === "string" && (realValue.includes("oklch") || realValue.includes("oklab"))) {
           return parseAndConvertOklch(realValue);
         }
 
@@ -557,6 +631,28 @@ const PrintPreviewOverlay = React.memo(({
         logging: true,
         imageTimeout: 10000,
         onclone: (clonedDoc) => {
+          try {
+            // Scrub inline style attributes for any oklch/oklab styles that html2canvas fails to parse
+            const elementsWithStyles = clonedDoc.querySelectorAll("[style]");
+            elementsWithStyles.forEach((el) => {
+              const styleAttr = el.getAttribute("style");
+              if (styleAttr && (styleAttr.includes("oklch") || styleAttr.includes("oklab"))) {
+                el.setAttribute("style", parseAndConvertOklch(styleAttr));
+              }
+            });
+
+            // Scrub internal stylesheets for any oklch/oklab rules that html2canvas fails to parse
+            const styleElements = clonedDoc.querySelectorAll("style");
+            styleElements.forEach((el) => {
+              const cssText = el.innerHTML;
+              if (cssText && (cssText.includes("oklch") || cssText.includes("oklab"))) {
+                el.innerHTML = parseAndConvertOklch(cssText);
+              }
+            });
+          } catch (e) {
+            console.warn("CSS oklch/oklab scrubbing error failed in clone sandbox:", e);
+          }
+
           const styleOverride = clonedDoc.createElement("style");
           styleOverride.innerHTML = `
             * {
@@ -654,6 +750,28 @@ const PrintPreviewOverlay = React.memo(({
         logging: true,
         imageTimeout: 10000,
         onclone: (clonedDoc) => {
+          try {
+            // Scrub inline style attributes for any oklch/oklab styles that html2canvas fails to parse
+            const elementsWithStyles = clonedDoc.querySelectorAll("[style]");
+            elementsWithStyles.forEach((el) => {
+              const styleAttr = el.getAttribute("style");
+              if (styleAttr && (styleAttr.includes("oklch") || styleAttr.includes("oklab"))) {
+                el.setAttribute("style", parseAndConvertOklch(styleAttr));
+              }
+            });
+
+            // Scrub internal stylesheets for any oklch/oklab rules that html2canvas fails to parse
+            const styleElements = clonedDoc.querySelectorAll("style");
+            styleElements.forEach((el) => {
+              const cssText = el.innerHTML;
+              if (cssText && (cssText.includes("oklch") || cssText.includes("oklab"))) {
+                el.innerHTML = parseAndConvertOklch(cssText);
+              }
+            });
+          } catch (e) {
+            console.warn("CSS oklch/oklab scrubbing error failed in clone sandbox:", e);
+          }
+
           const styleOverride = clonedDoc.createElement("style");
           styleOverride.innerHTML = `
             * {
