@@ -414,6 +414,11 @@ const PrintPreviewOverlay = React.memo(({
         allowTaint: false,
         backgroundColor: "#ffffff",
         logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        imageTimeout: 5000,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight,
       });
 
       const imgData = canvas.toDataURL("image/png");

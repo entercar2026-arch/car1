@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Car } from "../types";
 import { getCarImageSrc, getFallbackCarThumbnail } from "../utils/carImage";
 import { QRCodeCanvas } from "qrcode.react";
@@ -11,6 +11,28 @@ interface QuotationDocumentContentProps {
   setLightboxIndex?: (idx: number) => void;
 }
 
+const convertUrlToBase64 = async (url: string): Promise<string> => {
+  try {
+    const response = await fetch(url, { mode: 'cors' });
+    if (!response.ok) throw new Error("Fetch failed");
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error("Failed to convert blob to base64 string"));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> = ({
   printedCars,
   lang,
@@ -19,6 +41,42 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
   setLightboxIndex,
 }) => {
   const catalogUrl = typeof window !== "undefined" ? window.location.origin : "https://enter.v1";
+  const [resolvedImages, setResolvedImages] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    const loadImages = async () => {
+      const urls: Record<string, string> = {};
+      
+      await Promise.all(
+        printedCars.map(async (car) => {
+          const primarySrc = getCarImageSrc(car);
+          try {
+            const base64 = await convertUrlToBase64(primarySrc);
+            urls[car.id] = base64;
+          } catch {
+            const fallbackSrc = getFallbackCarThumbnail(car.name, car.category);
+            try {
+              const base64Fallback = await convertUrlToBase64(fallbackSrc);
+              urls[car.id] = base64Fallback;
+            } catch {
+              urls[car.id] = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="100%" height="100%" fill="%23f5f5f4"/><text x="50%" y="50%" font-family="sans-serif" font-size="8" fill="%234C0027" font-weight="bold" text-anchor="middle" dominant-baseline="middle">ENTER CAR RENTAL</text></svg>`;
+            }
+          }
+        })
+      );
+      
+      if (isMounted) {
+        setResolvedImages(urls);
+      }
+    };
+    
+    loadImages();
+    return () => {
+      isMounted = false;
+    };
+  }, [printedCars]);
 
   return (
     <>
@@ -56,16 +114,17 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
         <table className="w-full text-xs text-left border-collapse">
           <thead>
             <tr className="bg-[#4C0027] text-white">
+              <th className="px-4 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300 w-12">No.</th>
               <th className="px-5 py-3 font-bold uppercase tracking-wider text-left border-b border-stone-300">Vehicle Model Description</th>
               <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Fuel Type</th>
               <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Monthly Rent (USD)</th>
               <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Refundable Deposit</th>
-              <th className="px-5 py-3 font-bold uppercase tracking-wider text-center border-b border-stone-300">Min. Commitment</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-200">
-            {printedCars.map((car: Car) => (
+            {printedCars.map((car: Car, index: number) => (
               <tr key={car.id} className="bg-white hover:bg-stone-50/50 transition-colors">
+                <td className="px-4 py-3 text-center text-stone-500 font-mono font-bold border-r border-stone-200 w-12 bg-stone-50/20">{index + 1}</td>
                 <td className="px-5 py-3 font-bold text-stone-900">
                   <div className="flex items-center gap-3">
                     <div 
@@ -81,23 +140,25 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
                       title="Click to zoom gallery lightbox"
                     >
                       <img
-                        src={getCarImageSrc(car)}
+                        src={resolvedImages[car.id] || getCarImageSrc(car)}
                         alt={car.name}
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
+                        crossOrigin={(resolvedImages[car.id] || getCarImageSrc(car)).startsWith("data:") ? undefined : "anonymous"}
                         onError={(e) => {
                           e.currentTarget.src = getFallbackCarThumbnail(car.name, car.category);
                         }}
                       />
                     </div>
-                    <span>{car.name}</span>
+                    <div className="flex flex-col">
+                      <span className="block font-bold text-stone-900 leading-tight">{car.name}</span>
+                      <span className="block text-[10px] text-[#4C0027] font-bold uppercase tracking-wider mt-1">Min. Commitment: 6 Months</span>
+                    </div>
                   </div>
                 </td>
                 <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
                 <td className="px-5 py-3 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
                 <td className="px-5 py-3 text-center text-[#4C0027] font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
-                <td className="px-5 py-3 text-center text-stone-600 font-bold">6 Months</td>
               </tr>
             ))}
           </tbody>

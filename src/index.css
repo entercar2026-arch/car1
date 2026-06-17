@@ -83,7 +83,7 @@ input[type="range"] {
   }
 
   /* Universal print hides for floating structures, actions, widgets, and header/footers */
-  header, footer, button, select, input:not([type="checkbox"]), label, svg, iframe,
+  header, footer, button, select, input:not([type="checkbox"]), label, svg:not(#print-section *, #khmer-printable-contract *), iframe,
   .fixed,
   .absolute:not(#print-section *, #khmer-printable-contract *) {
     display: none !important;
