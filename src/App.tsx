@@ -447,78 +447,6 @@ const applyOklchProxy = () => {
     });
   }
 
-  function oklabToRgb(l: number, a: number, b: number, alpha: number | undefined): string {
-    const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
-    const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
-    const s_ = l - 0.0894841775 * a - 1.2914855480 * b;
-
-    const l3 = l_ * l_ * l_;
-    const m3 = m_ * m_ * m_;
-    const s3 = s_ * s_ * s_;
-
-    let rLinear = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
-    let gLinear = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
-    let bLinear = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
-
-    const gamma = (val: number) => {
-      const clamped = Math.max(0, Math.min(1, val));
-      return clamped <= 0.0031308
-        ? 12.92 * clamped
-        : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
-    };
-
-    const rChan = Math.round(gamma(rLinear) * 255);
-    const gChan = Math.round(gamma(gLinear) * 255);
-    const bChan = Math.round(gamma(bLinear) * 255);
-
-    if (alpha !== undefined) {
-      return `rgba(${rChan}, ${gChan}, ${bChan}, ${alpha})`;
-    }
-    return `rgb(${rChan}, ${gChan}, ${bChan})`;
-  }
-
-  function parseAndConvertOklab(value: string): string {
-    if (!value || typeof value !== "string" || !value.includes("oklab")) {
-      return value;
-    }
-
-    return value.replace(/oklab\(([^)]+)\)/g, (match, matchContent) => {
-      try {
-        const parts = matchContent.trim().split(/[\s,]+/);
-        const cleanParts = parts.filter((p: string) => p !== "/" && p !== "");
-        
-        if (cleanParts.length < 3) return match;
-
-        let lVal = parseFloat(cleanParts[0]);
-        if (cleanParts[0].includes("%")) {
-          lVal = lVal / 100;
-        }
-
-        let aVal = parseFloat(cleanParts[1]);
-        if (cleanParts[1].includes("%")) {
-          aVal = aVal / 100;
-        }
-
-        let bVal = parseFloat(cleanParts[2]);
-        if (cleanParts[2].includes("%")) {
-          bVal = bVal / 100;
-        }
-
-        let alphaVal: number | undefined;
-        if (cleanParts.length >= 4) {
-          alphaVal = parseFloat(cleanParts[3]);
-          if (cleanParts[3].includes("%")) {
-            alphaVal = alphaVal / 100;
-          }
-        }
-
-        return oklabToRgb(lVal, aVal, bVal, alphaVal);
-      } catch {
-        return match;
-      }
-    });
-  }
-
   window.getComputedStyle = function (elt, pseudoElt) {
     const style = originalGetComputedStyle(elt, pseudoElt);
     
@@ -526,41 +454,26 @@ const applyOklchProxy = () => {
       get(target, prop, receiver) {
         if (prop === "getPropertyValue") {
           return function(propertyName: string) {
-            let val = target.getPropertyValue(propertyName);
-            if (typeof val === "string") {
-              if (val.includes("oklch")) {
-                val = parseAndConvertOklch(val);
-              }
-              if (val.includes("oklab")) {
-                val = parseAndConvertOklab(val);
-              }
+            const val = target.getPropertyValue(propertyName);
+            if (typeof val === "string" && val.includes("oklch")) {
+              return parseAndConvertOklch(val);
             }
             return val;
           };
         }
 
         if (prop === "cssText") {
-          let val = target.cssText;
-          if (typeof val === "string") {
-            if (val.includes("oklch")) {
-              val = parseAndConvertOklch(val);
-            }
-            if (val.includes("oklab")) {
-              val = parseAndConvertOklab(val);
-            }
+          const val = target.cssText;
+          if (typeof val === "string" && val.includes("oklch")) {
+            return parseAndConvertOklch(val);
           }
           return val;
         }
 
-        let realValue = target[prop as any];
+        const realValue = target[prop as any];
 
-        if (typeof realValue === "string") {
-          if (realValue.includes("oklch")) {
-            realValue = parseAndConvertOklch(realValue);
-          }
-          if (realValue.includes("oklab")) {
-            realValue = parseAndConvertOklab(realValue);
-          }
+        if (typeof realValue === "string" && realValue.includes("oklch")) {
+          return parseAndConvertOklch(realValue);
         }
 
         if (typeof realValue === "function") {
@@ -636,83 +549,56 @@ const PrintPreviewOverlay = React.memo(({
 
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      const pages = quotationRef.current.querySelectorAll(".pdf-page-container");
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      if (pages && pages.length > 0) {
-        for (let i = 0; i < pages.length; i++) {
-          const pageEl = pages[i] as HTMLElement;
-          const canvas = await html2canvas(pageEl, {
-            scale: 2, // High resolution capture
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: "#ffffff",
-            logging: true,
-            imageTimeout: 10000,
-            onclone: (clonedDoc) => {
-              const styleOverride = clonedDoc.createElement("style");
-              styleOverride.innerHTML = `
-                * {
-                  --color-stone-50: #fafaf9 !important;
-                  --color-stone-100: #f5f5f4 !important;
-                  --color-stone-200: #e7e5e4 !important;
-                  --color-stone-300: #d6d3d1 !important;
-                  --color-stone-400: #a8a29e !important;
-                  --color-stone-500: #78716c !important;
-                  --color-stone-600: #57534e !important;
-                  --color-stone-700: #44403c !important;
-                  --color-stone-800: #292524 !important;
-                  --color-stone-900: #1c1917 !important;
-                  --color-emerald-500: #10b981 !important;
-                  --color-emerald-600: #059669 !important;
-                }
-              `;
-              clonedDoc.head.appendChild(styleOverride);
+      const canvas = await html2canvas(quotationRef.current, {
+        scale: 2, // High resolution capture
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#ffffff",
+        logging: true,
+        imageTimeout: 10000,
+        onclone: (clonedDoc) => {
+          const styleOverride = clonedDoc.createElement("style");
+          styleOverride.innerHTML = `
+            * {
+              --color-stone-50: #fafaf9 !important;
+              --color-stone-100: #f5f5f4 !important;
+              --color-stone-200: #e7e5e4 !important;
+              --color-stone-300: #d6d3d1 !important;
+              --color-stone-400: #a8a29e !important;
+              --color-stone-500: #78716c !important;
+              --color-stone-600: #57534e !important;
+              --color-stone-700: #44403c !important;
+              --color-stone-800: #292524 !important;
+              --color-stone-900: #1c1917 !important;
+              --color-emerald-500: #10b981 !important;
+              --color-emerald-600: #059669 !important;
             }
-          });
-
-          const imgData = canvas.toDataURL("image/jpeg", 0.95);
-          if (i > 0) {
-            pdf.addPage();
-          }
-          pdf.addImage(imgData, "JPEG", 0, 0, 210, 297, undefined, "FAST");
+          `;
+          clonedDoc.head.appendChild(styleOverride);
         }
-      } else {
-        // Fallback to single page capture if container is layout-skewed or empty
-        const canvas = await html2canvas(quotationRef.current, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: "#ffffff",
-          logging: true,
-          imageTimeout: 10000,
-          onclone: (clonedDoc) => {
-            const styleOverride = clonedDoc.createElement("style");
-            styleOverride.innerHTML = `
-              * {
-                --color-stone-50: #fafaf9 !important;
-                --color-stone-100: #f5f5f4 !important;
-                --color-stone-200: #e7e5e4 !important;
-                --color-stone-300: #d6d3d1 !important;
-                --color-stone-400: #a8a29e !important;
-                --color-stone-500: #78716c !important;
-                --color-stone-600: #57534e !important;
-                --color-stone-700: #44403c !important;
-                --color-stone-800: #292524 !important;
-                --color-stone-900: #1c1917 !important;
-                --color-emerald-500: #10b981 !important;
-                --color-emerald-600: #059669 !important;
-              }
-            `;
-            clonedDoc.head.appendChild(styleOverride);
-          }
-        });
+      });
 
-        const imgWidth = 210;
-        const pageHeight = 297;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        const imgData = canvas.toDataURL("image/jpeg", 0.95);
-        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
+      // A4 dimensions: 210mm x 297mm
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const pdf = new jsPDF("p", "mm", "a4");
+      
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+      heightLeft -= pageHeight;
+
+      // Check for multi-page overflow
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+        heightLeft -= pageHeight;
       }
 
       const dateStr = new Date().toISOString().slice(0, 10);
@@ -896,18 +782,47 @@ const PrintPreviewOverlay = React.memo(({
           className="w-full max-w-4xl transition-all duration-200 ease-out flex flex-col gap-10 items-center mt-4"
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
         >
-          {/* THE GENERATED QUOTE PAGES */}
+          {/* PAGE 1: THE ACTIVE QUOTE */}
           <div 
             ref={quotationRef} 
-            className="w-full flex flex-col gap-10 items-center"
+            className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] max-w-full p-8 md:p-10 print:p-8 relative flex flex-col justify-between min-h-[297mm]"
+            style={{
+              backgroundImage: "linear-gradient(to right, rgba(76, 0, 39, 0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(76, 0, 39, 0.012) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+              backgroundColor: "#ffffff"
+            }}
           >
-            <QuotationDocumentContent
-              printedCars={printedCars}
-              lang={lang}
-              t={t}
-              setLightboxCar={setLightboxCar}
-              setLightboxIndex={setLightboxIndex}
-            />
+            {/* Elegant Double Border Frame for Polished Stationery */}
+            <div className="absolute inset-3.5 border-2 border-[#4C0027]/12 pointer-events-none" />
+            <div className="absolute inset-[17px] border border-[#4C0027]/5 pointer-events-none" />
+
+            {/* Corner Ornaments */}
+            <div className="absolute top-3.5 left-3.5 w-4 h-4 border-t border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute top-3.5 right-3.5 w-4 h-4 border-t border-r border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-3.5 left-3.5 w-4 h-4 border-b border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-3.5 right-3.5 w-4 h-4 border-b border-r border-[#4C0027]/40 pointer-events-none" />
+
+            {/* Paper Watermark Ornament for Premium Presentation */}
+            <div className="absolute right-12 top-12 opacity-[0.03] select-none pointer-events-none">
+              <span className="font-black text-6xl text-stone-950 tracking-widest uppercase">ENTER</span>
+            </div>
+
+            <div>
+              <QuotationDocumentContent
+                printedCars={printedCars}
+                lang={lang}
+                t={t}
+                setLightboxCar={setLightboxCar}
+                setLightboxIndex={setLightboxIndex}
+              />
+            </div>
+
+            {/* Real-time Document Status Bar */}
+            <div className="w-full mt-10 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
+              <span>Ref: QT-2787-8ef4-31fc</span>
+              <span>Page 1 of 1</span>
+              <span>Printed via ENTER VIP Client Services</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1405,7 +1320,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
       </div>
 
       {/* Printable Quotation Document (Beautifully styled & optimized exclusively for Print / Save to PDF) */}
-      <div id="print-section" className="print-only-layout w-full max-w-full">
+      <div id="print-section" className="print-only-layout p-12 bg-white text-stone-900">
         <QuotationDocumentContent
           printedCars={printedCars}
           lang={lang}
