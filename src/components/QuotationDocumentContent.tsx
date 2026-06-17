@@ -86,6 +86,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           <h1 className="text-3xl font-black text-[#4C0027] tracking-wider uppercase">ENTER CAR RENTAL</h1>
           <p className="text-xs font-mono font-bold tracking-wider text-stone-500 mt-1 uppercase">Premium Fleet Sourcing & Long-Term Leases</p>
           <div className="mt-4 text-xs space-y-1 text-stone-600 font-sans">
+            <p>Tel/Telegram: <span className="font-semibold text-[#4C0027]">096 671 4442</span></p>
             <p>Email: <span className="font-semibold text-[#4C0027]">entercar2026@gmail.com</span></p>
             <p>Web Inquiry Portal: <span className="font-semibold text-stone-800">enter.v1</span></p>
             <p>Phnom Penh, Kingdom of Cambodia</p>

@@ -470,14 +470,14 @@ const applyOklchProxy = () => {
           return val;
         }
 
-        const realValue = Reflect.get(target, prop, receiver);
+        const realValue = target[prop as any];
 
         if (typeof realValue === "string" && realValue.includes("oklch")) {
           return parseAndConvertOklch(realValue);
         }
 
         if (typeof realValue === "function") {
-          return realValue.bind(target);
+          return (realValue as any).bind(target);
         }
 
         return realValue;
@@ -556,6 +556,26 @@ const PrintPreviewOverlay = React.memo(({
         backgroundColor: "#ffffff",
         logging: true,
         imageTimeout: 10000,
+        onclone: (clonedDoc) => {
+          const styleOverride = clonedDoc.createElement("style");
+          styleOverride.innerHTML = `
+            * {
+              --color-stone-50: #fafaf9 !important;
+              --color-stone-100: #f5f5f4 !important;
+              --color-stone-200: #e7e5e4 !important;
+              --color-stone-300: #d6d3d1 !important;
+              --color-stone-400: #a8a29e !important;
+              --color-stone-500: #78716c !important;
+              --color-stone-600: #57534e !important;
+              --color-stone-700: #44403c !important;
+              --color-stone-800: #292524 !important;
+              --color-stone-900: #1c1917 !important;
+              --color-emerald-500: #10b981 !important;
+              --color-emerald-600: #059669 !important;
+            }
+          `;
+          clonedDoc.head.appendChild(styleOverride);
+        }
       });
 
       // A4 dimensions: 210mm x 297mm
@@ -633,6 +653,26 @@ const PrintPreviewOverlay = React.memo(({
         backgroundColor: "#ffffff",
         logging: true,
         imageTimeout: 10000,
+        onclone: (clonedDoc) => {
+          const styleOverride = clonedDoc.createElement("style");
+          styleOverride.innerHTML = `
+            * {
+              --color-stone-50: #fafaf9 !important;
+              --color-stone-100: #f5f5f4 !important;
+              --color-stone-200: #e7e5e4 !important;
+              --color-stone-300: #d6d3d1 !important;
+              --color-stone-400: #a8a29e !important;
+              --color-stone-500: #78716c !important;
+              --color-stone-600: #57534e !important;
+              --color-stone-700: #44403c !important;
+              --color-stone-800: #292524 !important;
+              --color-stone-900: #1c1917 !important;
+              --color-emerald-500: #10b981 !important;
+              --color-emerald-600: #059669 !important;
+            }
+          `;
+          clonedDoc.head.appendChild(styleOverride);
+        }
       });
 
       const imgData = canvas.toDataURL("image/png");
