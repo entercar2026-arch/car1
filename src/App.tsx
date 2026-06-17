@@ -2751,16 +2751,20 @@ export default function App() {
                       <motion.div
                         key={car.id}
                         layout="position"
-                        initial={{ opacity: 0, y: 50 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "100px 0px -50px 0px" }}
+                        initial={{ opacity: 0, y: 70, scale: 0.95, rotateX: 6, rotateY: -1 }}
+                        whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0, rotateY: 0 }}
+                        viewport={{ once: true, margin: "0px 0px -60px 0px", amount: 0.05 }}
                         exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                         transition={{
                           layout: { type: "spring", stiffness: 350, damping: 30 },
-                          opacity: { duration: 0.5, ease: "easeOut" },
-                          y: { duration: 0.5, ease: "easeOut", type: "spring", stiffness: 100, damping: 15 },
-                          delay: index % 12 * 0.05
+                          opacity: { duration: 0.65, ease: [0.16, 1, 0.3, 1] },
+                          scale: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+                          rotateX: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+                          rotateY: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+                          y: { type: "spring", stiffness: 75, damping: 14, mass: 1.1 },
+                          delay: (index % 3) * 0.08
                         }}
+                        style={{ perspective: 1200 }}
                         className="h-full pt-2 pb-2"
                       >
                         <CarCard

@@ -885,6 +885,9 @@ Description: ${formattedDesc}`;
                       loop
                       muted
                       playsInline
+                      autoPlay={isPlaying}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{
                         scale: isHovered ? 1.08 : 1,
@@ -989,16 +992,21 @@ Description: ${formattedDesc}`;
 
               {/* Video Actions overlay */}
               <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                {hasVideo && (
+                {(hasVideo || !!effectiveVideoUrl) && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsPlaying(prev => !prev);
+                      if (currentPhotoIndex !== 0) {
+                        setCurrentPhotoIndex(0);
+                        setIsPlaying(true);
+                      } else {
+                        setIsPlaying(prev => !prev);
+                      }
                     }}
                     className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-white/80 backdrop-blur-sm text-stone-700 border border-stone-200 hover:bg-white shadow-sm"
-                    title={isPlaying ? "Pause Video" : "Play Video"}
+                    title={currentPhotoIndex === 0 && isPlaying ? "Pause Video" : "Play Video"}
                   >
-                    {isPlaying ? (
+                    {currentPhotoIndex === 0 && isPlaying ? (
                       <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
                     ) : (
                       <Play className="w-3.5 h-3.5 fill-current text-stone-700 ml-0.5" />
@@ -2004,6 +2012,31 @@ Description: ${formattedDesc}`;
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="relative w-full group flex items-center justify-center min-h-[40vh]">
+                  {/* Floating Video Actions inside modal */}
+                  {!!effectiveVideoUrl && (
+                    <div className="absolute top-4 right-4 sm:right-16 flex items-center gap-1.5 z-30">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (currentPhotoIndex !== 0) {
+                            setCurrentPhotoIndex(0);
+                            setIsPlaying(true);
+                          } else {
+                            setIsPlaying(prev => !prev);
+                          }
+                        }}
+                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer bg-black/60 backdrop-blur-md text-white border border-white/15 hover:bg-black/80 hover:scale-105 active:scale-95 shadow-md"
+                        title={currentPhotoIndex === 0 && isPlaying ? "Pause Video" : "Play Video"}
+                      >
+                        {currentPhotoIndex === 0 && isPlaying ? (
+                          <span className="text-xs font-black select-none tracking-tighter">⏸</span>
+                        ) : (
+                          <Play className="w-3.5 h-3.5 fill-current text-white ml-0.5" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+
                   {/* Left Arrow Button */}
                   {allPhotos.length > 1 && (
                     <button
@@ -2055,7 +2088,9 @@ Description: ${formattedDesc}`;
                           transition={{ duration: 0.15, ease: "easeInOut" }}
                           src={currentPhotoIndex === 0 && effectiveVideoUrl ? effectiveVideoUrl : currentImage}
                           controls
-                          autoPlay
+                          autoPlay={isPlaying}
+                          onPlay={() => setIsPlaying(true)}
+                          onPause={() => setIsPlaying(false)}
                           loop
                           className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         />
