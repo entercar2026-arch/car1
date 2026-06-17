@@ -447,6 +447,78 @@ const applyOklchProxy = () => {
     });
   }
 
+  function oklabToRgb(l: number, a: number, b: number, alpha: number | undefined): string {
+    const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
+    const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
+    const s_ = l - 0.0894841775 * a - 1.2914855480 * b;
+
+    const l3 = l_ * l_ * l_;
+    const m3 = m_ * m_ * m_;
+    const s3 = s_ * s_ * s_;
+
+    let rLinear = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+    let gLinear = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+    let bLinear = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+
+    const gamma = (val: number) => {
+      const clamped = Math.max(0, Math.min(1, val));
+      return clamped <= 0.0031308
+        ? 12.92 * clamped
+        : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
+    };
+
+    const rChan = Math.round(gamma(rLinear) * 255);
+    const gChan = Math.round(gamma(gLinear) * 255);
+    const bChan = Math.round(gamma(bLinear) * 255);
+
+    if (alpha !== undefined) {
+      return `rgba(${rChan}, ${gChan}, ${bChan}, ${alpha})`;
+    }
+    return `rgb(${rChan}, ${gChan}, ${bChan})`;
+  }
+
+  function parseAndConvertOklab(value: string): string {
+    if (!value || typeof value !== "string" || !value.includes("oklab")) {
+      return value;
+    }
+
+    return value.replace(/oklab\(([^)]+)\)/g, (match, matchContent) => {
+      try {
+        const parts = matchContent.trim().split(/[\s,]+/);
+        const cleanParts = parts.filter((p: string) => p !== "/" && p !== "");
+        
+        if (cleanParts.length < 3) return match;
+
+        let lVal = parseFloat(cleanParts[0]);
+        if (cleanParts[0].includes("%")) {
+          lVal = lVal / 100;
+        }
+
+        let aVal = parseFloat(cleanParts[1]);
+        if (cleanParts[1].includes("%")) {
+          aVal = aVal / 100;
+        }
+
+        let bVal = parseFloat(cleanParts[2]);
+        if (cleanParts[2].includes("%")) {
+          bVal = bVal / 100;
+        }
+
+        let alphaVal: number | undefined;
+        if (cleanParts.length >= 4) {
+          alphaVal = parseFloat(cleanParts[3]);
+          if (cleanParts[3].includes("%")) {
+            alphaVal = alphaVal / 100;
+          }
+        }
+
+        return oklabToRgb(lVal, aVal, bVal, alphaVal);
+      } catch {
+        return match;
+      }
+    });
+  }
+
   window.getComputedStyle = function (elt, pseudoElt) {
     const style = originalGetComputedStyle(elt, pseudoElt);
     
@@ -454,26 +526,41 @@ const applyOklchProxy = () => {
       get(target, prop, receiver) {
         if (prop === "getPropertyValue") {
           return function(propertyName: string) {
-            const val = target.getPropertyValue(propertyName);
-            if (typeof val === "string" && val.includes("oklch")) {
-              return parseAndConvertOklch(val);
+            let val = target.getPropertyValue(propertyName);
+            if (typeof val === "string") {
+              if (val.includes("oklch")) {
+                val = parseAndConvertOklch(val);
+              }
+              if (val.includes("oklab")) {
+                val = parseAndConvertOklab(val);
+              }
             }
             return val;
           };
         }
 
         if (prop === "cssText") {
-          const val = target.cssText;
-          if (typeof val === "string" && val.includes("oklch")) {
-            return parseAndConvertOklch(val);
+          let val = target.cssText;
+          if (typeof val === "string") {
+            if (val.includes("oklch")) {
+              val = parseAndConvertOklch(val);
+            }
+            if (val.includes("oklab")) {
+              val = parseAndConvertOklab(val);
+            }
           }
           return val;
         }
 
-        const realValue = target[prop as any];
+        let realValue = target[prop as any];
 
-        if (typeof realValue === "string" && realValue.includes("oklch")) {
-          return parseAndConvertOklch(realValue);
+        if (typeof realValue === "string") {
+          if (realValue.includes("oklch")) {
+            realValue = parseAndConvertOklch(realValue);
+          }
+          if (realValue.includes("oklab")) {
+            realValue = parseAndConvertOklab(realValue);
+          }
         }
 
         if (typeof realValue === "function") {
