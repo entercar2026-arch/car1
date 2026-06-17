@@ -1,41 +1,27 @@
 import React from "react";
 import { Car } from "../types";
 import { getCarImageSrc, getFallbackCarThumbnail } from "../utils/carImage";
-import { PrintContractDoc } from "./PrintContractDoc";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 
 interface QuotationDocumentContentProps {
   printedCars: Car[];
-  includeContract: boolean;
   lang: string;
   t: any;
   setLightboxCar?: (car: Car) => void;
   setLightboxIndex?: (idx: number) => void;
-  showWatermark?: boolean;
 }
 
 export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> = ({
   printedCars,
-  includeContract,
   lang,
   t,
   setLightboxCar,
   setLightboxIndex,
-  showWatermark = false,
 }) => {
   const catalogUrl = typeof window !== "undefined" ? window.location.origin : "https://enter.v1";
 
   return (
     <>
-      {/* Confidential Watermark Overlay */}
-      {showWatermark && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center z-0 select-none">
-          <div className="text-[#4C0027]/7 print:text-[#4C0027]/7 text-7xl md:text-8xl font-sans font-black uppercase tracking-[0.2em] -rotate-35 border-8 border-[#4C0027]/7 p-6 md:p-8 rounded-[2rem] whitespace-nowrap">
-            CONFIDENTIAL
-          </div>
-        </div>
-      )}
-
       {/* Header Ribbon / Enterprise Meta */}
       <div className="flex justify-between items-start border-b-2 border-[#4C0027] pb-6 mb-8 text-stone-900 font-sans">
         <div>
@@ -99,6 +85,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
                         alt={car.name}
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
                         onError={(e) => {
                           e.currentTarget.src = getFallbackCarThumbnail(car.name, car.category);
                         }}
@@ -155,7 +142,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           <div className="flex items-center gap-4 text-left">
             <div className="flex flex-col items-center gap-1 shrink-0 text-center">
               <div className="p-1.5 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
-                <QRCodeSVG 
+                <QRCodeCanvas 
                   value={catalogUrl} 
                   size={52} 
                   level="M" 
@@ -192,13 +179,6 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           </div>
         </div>
       </div>
-
-      {/* Localized Car Rental Lease Contract Appended */}
-      {includeContract && (
-        <div className="print-contract-append mt-12 pt-8" style={{ pageBreakBefore: "always", breakBefore: "page" }}>
-          <PrintContractDoc lang={lang as any} />
-        </div>
-      )}
     </>
   );
 };

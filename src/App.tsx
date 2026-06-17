@@ -366,30 +366,25 @@ const PrintPreviewOverlay = React.memo(({
   isOpen,
   onClose,
   printedCars,
-  includeContract,
-  setIncludeContract,
   lang,
   t,
   setLightboxCar,
   setLightboxIndex,
-  showWatermark,
-  setShowWatermark,
 }: {
   isOpen: boolean;
   onClose: () => void;
   printedCars: Car[];
-  includeContract: boolean;
-  setIncludeContract: (val: boolean) => void;
   lang: string;
   t: any;
   setLightboxCar: (car: Car) => void;
   setLightboxIndex: (idx: number) => void;
-  showWatermark: boolean;
-  setShowWatermark: (val: boolean) => void;
 }) => {
   const [zoom, setZoom] = useState(85);
   const [isExporting, setIsExporting] = useState(false);
   const quotationRef = useRef<HTMLDivElement>(null);
+
+  const includeContract = false;
+  const showWatermark = false;
 
   if (!isOpen) return null;
 
@@ -480,39 +475,10 @@ const PrintPreviewOverlay = React.memo(({
             </button>
           </div>
 
-          {/* Page Count Badge */}
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-[11px] font-mono font-bold text-stone-300 uppercase">
-            Pages: <span className="text-amber-400">{includeContract ? "1 + Contract" : "1 Page"}</span>
-          </span>
         </div>
 
-        {/* Right: Toggle Options & Action Buttons */}
+        {/* Right: Action Buttons */}
         <div className="flex items-center gap-3">
-          {/* Live Toggle Contract */}
-          <label className="flex items-center gap-2 cursor-pointer bg-stone-950/30 hover:bg-stone-950/50 p-2 sm:p-2.5 rounded-xl border border-stone-800 transition-all select-none">
-            <input
-              type="checkbox"
-              checked={includeContract}
-              onChange={(e) => setIncludeContract(e.target.checked)}
-              className="w-4 h-4 text-[#4C0027] bg-stone-800 border-stone-700 rounded focus:ring-[#4C0027] cursor-pointer"
-            />
-            <span className="text-[10px] sm:text-xs font-bold text-stone-300 select-none uppercase tracking-wider">
-              Append Contract
-            </span>
-          </label>
-
-          {/* Live Toggle Watermark */}
-          <label className="flex items-center gap-2 cursor-pointer bg-stone-950/30 hover:bg-stone-950/50 p-2 sm:p-2.5 rounded-xl border border-stone-800 transition-all select-none">
-            <input
-              type="checkbox"
-              checked={showWatermark}
-              onChange={(e) => setShowWatermark(e.target.checked)}
-              className="w-4 h-4 text-red-650 bg-stone-800 border-stone-700 rounded focus:ring-red-650 cursor-pointer"
-            />
-            <span className="text-[10px] sm:text-xs font-bold text-red-400 select-none uppercase tracking-wider">
-              Confidential Watermark
-            </span>
-          </label>
 
           {/* Export PNG Button */}
           <button
@@ -561,50 +527,20 @@ const PrintPreviewOverlay = React.memo(({
             <div>
               <QuotationDocumentContent
                 printedCars={printedCars}
-                includeContract={false}
                 lang={lang}
                 t={t}
                 setLightboxCar={setLightboxCar}
                 setLightboxIndex={setLightboxIndex}
-                showWatermark={showWatermark}
               />
             </div>
 
             {/* Real-time Document Status Bar */}
             <div className="w-full mt-10 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
               <span>Ref: QT-2787-8ef4-31fc</span>
-              <span>Page 1 of {includeContract ? "4" : "1"}</span>
+              <span>Page 1 of 1</span>
               <span>Printed via ENTER VIP Client Services</span>
             </div>
           </div>
-
-          {/* PAGES 2, 3, 4: LOCALIZED LEASE CONTRACT */}
-          {includeContract && (
-            <>
-              {/* Visual Inter-page Sheet Divider */}
-              <div className="w-full max-w-[210mm] flex items-center justify-between border-t border-dashed border-stone-700/60 py-2 select-none pointer-events-none">
-                <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-stone-500">PAGE BREAK</span>
-                <div className="w-4 h-4 rounded-full border border-stone-700/60 flex items-center justify-center p-0.5">
-                  <div className="w-2 h-2 rounded-full bg-stone-700/60"></div>
-                </div>
-                <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-stone-500">LEASE CONTRACT INCLUDED</span>
-              </div>
-
-              {/* Simulated Contract Document Pages */}
-              <div className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-200 rounded-sm w-[210mm] max-w-full p-12 relative min-h-[297mm] flex flex-col justify-between">
-                <div>
-                  <PrintContractDoc lang={lang as any} />
-                </div>
-
-                {/* Real-time Document Status Bar */}
-                <div className="w-full mt-10 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
-                  <span>Cambodian Standard Lease Agreement</span>
-                  <span className="text-[#4C0027] font-bold uppercase">Legal Exhibit Append</span>
-                  <span>ENTER Co., Ltd. Confidential</span>
-                </div>
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>
@@ -997,14 +933,10 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
           isOpen={isPrintPreviewOpen}
           onClose={() => setIsPrintPreviewOpen(false)}
           printedCars={printedCars}
-          includeContract={includeContract}
-          setIncludeContract={setIncludeContract}
           lang={lang}
           t={t}
           setLightboxCar={setLightboxCar}
           setLightboxIndex={setLightboxIndex}
-          showWatermark={showWatermark}
-          setShowWatermark={setShowWatermark}
         />
 
         {/* High-Resolution Gallery Lightbox */}
@@ -1108,12 +1040,10 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
       <div id="print-section" className="print-only-layout p-12 bg-white text-stone-900">
         <QuotationDocumentContent
           printedCars={printedCars}
-          includeContract={includeContract}
           lang={lang}
           t={t}
           setLightboxCar={setLightboxCar}
           setLightboxIndex={setLightboxIndex}
-          showWatermark={showWatermark}
         />
       </div>
     </>
