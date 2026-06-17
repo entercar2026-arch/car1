@@ -96,6 +96,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           <p className="text-xs font-mono font-bold text-stone-700 mt-3">Ref No: <span className="text-[#4C0027] font-extrabold">QT-2787-8ef4-31fc</span></p>
           <p className="text-xs text-stone-500 mt-1">Date Issued: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           <p className="text-xs text-stone-500">Validity Period: 30 Calendar Days</p>
+          <p className="text-xs text-stone-700 mt-1 font-semibold">Min. Commitment: <span className="text-[#4C0027] font-bold">6 Months</span></p>
         </div>
       </div>
 
@@ -150,10 +151,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
                         }}
                       />
                     </div>
-                    <div className="flex flex-col">
-                      <span className="block font-bold text-stone-900 leading-tight">{car.name}</span>
-                      <span className="block text-[10px] text-[#4C0027] font-bold uppercase tracking-wider mt-1">Min. Commitment: 6 Months</span>
-                    </div>
+                    <span className="block font-bold text-stone-900 leading-tight">{car.name}</span>
                   </div>
                 </td>
                 <td className="px-5 py-3 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>

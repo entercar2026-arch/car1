@@ -51,8 +51,10 @@ import {
   ZoomIn,
   ZoomOut,
   Download,
+  FileDown,
 } from "lucide-react";
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { PrintContractDoc } from "./components/PrintContractDoc";
 import { QuotationDocumentContent } from "./components/QuotationDocumentContent";
 
@@ -381,6 +383,7 @@ const PrintPreviewOverlay = React.memo(({
 }) => {
   const [zoom, setZoom] = useState(85);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
   const quotationRef = useRef<HTMLDivElement>(null);
 
   const includeContract = false;
@@ -391,6 +394,69 @@ const PrintPreviewOverlay = React.memo(({
   const handlePrint = () => {
     document.body.setAttribute("data-print-mode", "quotation");
     window.print();
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!quotationRef.current) return;
+    setIsExportingPDF(true);
+
+    const parent = quotationRef.current.parentElement;
+    const originalTransform = parent ? parent.style.transform : "";
+
+    try {
+      // Revert any scale temporarily to ensure html2canvas captures full-resolution without cropping
+      if (parent) {
+        parent.style.transform = "none";
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const canvas = await html2canvas(quotationRef.current, {
+        scale: 2, // High resolution capture
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: "#ffffff",
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        imageTimeout: 5000,
+        windowWidth: document.documentElement.offsetWidth,
+        windowHeight: document.documentElement.offsetHeight,
+      });
+
+      // A4 dimensions: 210mm x 297mm
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      const pdf = new jsPDF("p", "mm", "a4");
+      
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+      heightLeft -= pageHeight;
+
+      // Check for multi-page overflow
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+        heightLeft -= pageHeight;
+      }
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      pdf.save(`ENTER_Car_Rental_Quotation_${dateStr}.pdf`);
+    } catch (err) {
+      console.error("Failed to export quotation as PDF:", err);
+    } finally {
+      if (parent) {
+        parent.style.transform = originalTransform;
+      }
+      setIsExportingPDF(false);
+    }
   };
 
   const handleExportPNG = async () => {
@@ -484,6 +550,25 @@ const PrintPreviewOverlay = React.memo(({
 
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-3">
+
+          {/* Download PDF Button */}
+          <button
+            onClick={handleDownloadPDF}
+            disabled={isExportingPDF}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-stone-800 hover:bg-stone-700 disabled:bg-stone-800 disabled:opacity-50 text-stone-100 text-xs sm:text-sm font-extrabold rounded-xl shadow-lg hover:shadow-stone-750/10 uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-stone-700/50"
+          >
+            {isExportingPDF ? (
+              <>
+                <div className="w-4.5 h-4.5 border-2 border-stone-100 border-t-transparent rounded-full animate-spin"></div>
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4 text-rose-400" />
+                <span>Download PDF</span>
+              </>
+            )}
+          </button>
 
           {/* Export PNG Button */}
           <button
