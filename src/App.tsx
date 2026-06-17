@@ -745,6 +745,25 @@ const PrintPreviewOverlay = React.memo(({
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-3">
 
+          {/* Direct Download/Export PDF Button */}
+          <button
+            onClick={handleDownloadPDF}
+            disabled={isExportingPDF}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-stone-800 hover:bg-stone-700 disabled:bg-stone-800 disabled:opacity-50 text-stone-100 text-xs sm:text-sm font-extrabold rounded-xl shadow-lg hover:shadow-stone-750/10 uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-stone-700/50"
+          >
+            {isExportingPDF ? (
+              <>
+                <div className="w-4 h-4 border-2 border-stone-100 border-t-transparent rounded-full animate-spin"></div>
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <FileDown className="w-4 h-4 text-rose-400" />
+                <span>Export PDF</span>
+              </>
+            )}
+          </button>
+
           {/* Main Action Trigger - Highly Reliable Print and Save PDF */}
           <button
             onClick={handlePrint}
