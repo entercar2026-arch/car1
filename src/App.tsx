@@ -3072,39 +3072,53 @@ export default function App() {
                 { question: t.q4Title, answer: t.q4Desc },
                 { question: t.q5Title, answer: t.q5Desc },
               ].map((faq, index) => (
-                <div 
+                <motion.div 
                   key={index} 
-                  className={`border border-stone-200 rounded-2xl overflow-hidden shadow-xs transition-all duration-300 hover:shadow-sm ${
-                    openFaq === index ? "bg-amber-50/50" : "bg-white"
+                  layout="position"
+                  className={`border rounded-2xl overflow-hidden shadow-xs transition-all duration-300 ${
+                    openFaq === index 
+                      ? "border-amber-200/80 bg-amber-50/20 shadow-xs" 
+                      : "border-stone-200 bg-white hover:border-stone-300/80 hover:shadow-sm"
                   }`}
                 >
                   <button
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="w-full flex items-center justify-between p-5 text-left transition duration-300 focus:outline-none"
+                    className="w-full flex items-center justify-between p-5 text-left transition duration-300 focus:outline-none group"
                   >
-                    <span className="font-bold text-stone-900 pr-4">{faq.question}</span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-[#4C0027] shrink-0 transition-transform duration-300 ${
-                        openFaq === index ? "rotate-180" : ""
-                      }`}
-                      style={{ color: brandPlum }}
-                    />
+                    <span className="font-bold text-stone-900 pr-4 transition-colors duration-200 group-hover:text-[#4C0027]">{faq.question}</span>
+                    <motion.div
+                      animate={{ rotate: openFaq === index ? 180 : 0 }}
+                      transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                      className="shrink-0"
+                    >
+                      <ChevronDown
+                        className="w-5 h-5 text-[#4C0027]"
+                        style={{ color: brandPlum }}
+                      />
+                    </motion.div>
                   </button>
                   <AnimatePresence initial={false}>
                     {openFaq === index && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
+                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
                       >
-                        <div className="p-5 pt-0 border-t border-stone-100 text-stone-500 text-sm leading-relaxed">
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                          className="p-5 pt-0 border-t border-stone-100 text-stone-500 text-sm leading-relaxed"
+                        >
                           {faq.answer}
-                        </div>
+                        </motion.div>
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
