@@ -92,7 +92,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           </div>
         </div>
         <div className="text-right flex flex-col items-end">
-          <span className="bg-[#4C0027]/10 text-[#4C0027] px-3 py-1 text-[10px] font-black tracking-widest uppercase rounded">Official Quotation</span>
+          <span className="bg-[#4C0027]/10 text-[#4C0027] px-3 py-1 text-[10px] font-black tracking-widest uppercase rounded">Official Quotation for 6 Months</span>
           <p className="text-xs font-mono font-bold text-stone-700 mt-3">Ref No: <span className="text-[#4C0027] font-extrabold">QT-2787-8ef4-31fc</span></p>
           <p className="text-xs text-stone-500 mt-1">Date Issued: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           <p className="text-xs text-stone-500">Validity Period: 30 Calendar Days</p>
