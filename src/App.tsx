@@ -364,6 +364,132 @@ const generateSessionToken = (): string => {
 
 
 
+const applyOklchProxy = () => {
+  const originalGetComputedStyle = window.getComputedStyle;
+
+  function oklchToRgb(l: number, c: number, h: number, alpha: number | undefined): string {
+    const hRad = (h * Math.PI) / 180;
+    const oklch_a = c * Math.cos(hRad);
+    const oklch_b = c * Math.sin(hRad);
+
+    const l_ = l + 0.3963377774 * oklch_a + 0.2158037573 * oklch_b;
+    const m_ = l - 0.1055613458 * oklch_a - 0.0638541728 * oklch_b;
+    const s_ = l - 0.0894841775 * oklch_a - 1.2914855480 * oklch_b;
+
+    const l3 = l_ * l_ * l_;
+    const m3 = m_ * m_ * m_;
+    const s3 = s_ * s_ * s_;
+
+    let rLinear = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+    let gLinear = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+    let bLinear = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+
+    const gamma = (val: number) => {
+      const clamped = Math.max(0, Math.min(1, val));
+      return clamped <= 0.0031308
+        ? 12.92 * clamped
+        : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
+    };
+
+    const r = Math.round(gamma(rLinear) * 255);
+    const g = Math.round(gamma(gLinear) * 255);
+    const b = Math.round(gamma(bLinear) * 255);
+
+    if (alpha !== undefined) {
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function parseAndConvertOklch(value: string): string {
+    if (!value || typeof value !== "string" || !value.includes("oklch")) {
+      return value;
+    }
+
+    return value.replace(/oklch\(([^)]+)\)/g, (match, matchContent) => {
+      try {
+        const parts = matchContent.trim().split(/[\s,]+/);
+        const cleanParts = parts.filter((p: string) => p !== "/" && p !== "");
+        
+        if (cleanParts.length < 3) return match;
+
+        let lVal = parseFloat(cleanParts[0]);
+        if (cleanParts[0].includes("%")) {
+          lVal = lVal / 100;
+        }
+
+        let cVal = parseFloat(cleanParts[1]);
+        if (cleanParts[1].includes("%")) {
+          cVal = cVal / 100;
+        }
+
+        let hVal = parseFloat(cleanParts[2]);
+        if (cleanParts[2].includes("rad")) {
+          hVal = (parseFloat(cleanParts[2]) * 180) / Math.PI;
+        } else if (cleanParts[2].includes("turn")) {
+          hVal = parseFloat(cleanParts[2]) * 360;
+        } else if (cleanParts[2].includes("deg")) {
+          hVal = parseFloat(cleanParts[2]);
+        }
+
+        let alphaVal: number | undefined;
+        if (cleanParts.length >= 4) {
+          alphaVal = parseFloat(cleanParts[3]);
+          if (cleanParts[3].includes("%")) {
+            alphaVal = alphaVal / 100;
+          }
+        }
+
+        return oklchToRgb(lVal, cVal, hVal, alphaVal);
+      } catch {
+        return match;
+      }
+    });
+  }
+
+  window.getComputedStyle = function (elt, pseudoElt) {
+    const style = originalGetComputedStyle(elt, pseudoElt);
+    
+    return new Proxy(style, {
+      get(target, prop, receiver) {
+        if (prop === "getPropertyValue") {
+          return function(propertyName: string) {
+            const val = target.getPropertyValue(propertyName);
+            if (typeof val === "string" && val.includes("oklch")) {
+              return parseAndConvertOklch(val);
+            }
+            return val;
+          };
+        }
+
+        if (prop === "cssText") {
+          const val = target.cssText;
+          if (typeof val === "string" && val.includes("oklch")) {
+            return parseAndConvertOklch(val);
+          }
+          return val;
+        }
+
+        const realValue = Reflect.get(target, prop, receiver);
+
+        if (typeof realValue === "string" && realValue.includes("oklch")) {
+          return parseAndConvertOklch(realValue);
+        }
+
+        if (typeof realValue === "function") {
+          return realValue.bind(target);
+        }
+
+        return realValue;
+      }
+    });
+  };
+
+  return () => {
+    window.getComputedStyle = originalGetComputedStyle;
+  };
+};
+
 const PrintPreviewOverlay = React.memo(({
   isOpen,
   onClose,
@@ -400,6 +526,7 @@ const PrintPreviewOverlay = React.memo(({
     if (!quotationRef.current) return;
     setIsExportingPDF(true);
 
+    const restoreOklchProxy = applyOklchProxy();
     const parent = quotationRef.current.parentElement;
     const originalTransform = parent ? parent.style.transform : "";
     const imagesToRestore: { img: HTMLImageElement; originalSrc: string }[] = [];
@@ -467,6 +594,7 @@ const PrintPreviewOverlay = React.memo(({
       if (parent) {
         parent.style.transform = originalTransform;
       }
+      restoreOklchProxy();
       setIsExportingPDF(false);
     }
   };
@@ -475,6 +603,7 @@ const PrintPreviewOverlay = React.memo(({
     if (!quotationRef.current) return;
     setIsExporting(true);
 
+    const restoreOklchProxy = applyOklchProxy();
     const parent = quotationRef.current.parentElement;
     const originalTransform = parent ? parent.style.transform : "";
     const imagesToRestore: { img: HTMLImageElement; originalSrc: string }[] = [];
@@ -523,6 +652,7 @@ const PrintPreviewOverlay = React.memo(({
       if (parent) {
         parent.style.transform = originalTransform;
       }
+      restoreOklchProxy();
       setIsExporting(false);
     }
   };
