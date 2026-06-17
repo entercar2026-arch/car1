@@ -745,45 +745,7 @@ const PrintPreviewOverlay = React.memo(({
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-3">
 
-          {/* Download PDF Button */}
-          <button
-            onClick={handleDownloadPDF}
-            disabled={isExportingPDF}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-stone-800 hover:bg-stone-700 disabled:bg-stone-800 disabled:opacity-50 text-stone-100 text-xs sm:text-sm font-extrabold rounded-xl shadow-lg hover:shadow-stone-750/10 uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-stone-700/50"
-          >
-            {isExportingPDF ? (
-              <>
-                <div className="w-4.5 h-4.5 border-2 border-stone-100 border-t-transparent rounded-full animate-spin"></div>
-                <span>Generating...</span>
-              </>
-            ) : (
-              <>
-                <FileDown className="w-4 h-4 text-rose-400" />
-                <span>Download PDF</span>
-              </>
-            )}
-          </button>
-
-          {/* Export PNG Button */}
-          <button
-            onClick={handleExportPNG}
-            disabled={isExporting}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-stone-800 hover:bg-stone-700 disabled:bg-stone-800 disabled:opacity-50 text-stone-100 text-xs sm:text-sm font-extrabold rounded-xl shadow-lg hover:shadow-stone-750/10 uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-stone-700/50"
-          >
-            {isExporting ? (
-              <>
-                <div className="w-4.5 h-4.5 border-2 border-stone-100 border-t-transparent rounded-full animate-spin"></div>
-                <span>Exporting...</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                <span>Export PNG</span>
-              </>
-            )}
-          </button>
-
-          {/* Main Action Trigger */}
+          {/* Main Action Trigger - Highly Reliable Print and Save PDF */}
           <button
             onClick={handlePrint}
             className="flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs sm:text-sm font-extrabold rounded-xl shadow-lg hover:shadow-amber-400/10 uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-amber-500/20"
@@ -802,10 +764,28 @@ const PrintPreviewOverlay = React.memo(({
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
         >
           {/* PAGE 1: THE ACTIVE QUOTE */}
-          <div ref={quotationRef} className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-200 rounded-sm w-[210mm] max-w-full p-12 relative flex flex-col justify-between min-h-[297mm]">
+          <div 
+            ref={quotationRef} 
+            className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] max-w-full p-12 relative flex flex-col justify-between min-h-[297mm]"
+            style={{
+              backgroundImage: "linear-gradient(to right, rgba(76, 0, 39, 0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(76, 0, 39, 0.012) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+              backgroundColor: "#ffffff"
+            }}
+          >
+            {/* Elegant Double Border Frame for Polished Stationery */}
+            <div className="absolute inset-3.5 border-2 border-[#4C0027]/12 pointer-events-none" />
+            <div className="absolute inset-[17px] border border-[#4C0027]/5 pointer-events-none" />
+
+            {/* Corner Ornaments */}
+            <div className="absolute top-3.5 left-3.5 w-4 h-4 border-t border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute top-3.5 right-3.5 w-4 h-4 border-t border-r border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-3.5 left-3.5 w-4 h-4 border-b border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-3.5 right-3.5 w-4 h-4 border-b border-r border-[#4C0027]/40 pointer-events-none" />
+
             {/* Paper Watermark Ornament for Premium Presentation */}
-            <div className="absolute right-8 top-8 opacity-[0.03] select-none pointer-events-none">
-              <span className="font-black text-6xl text-stone-950">ENTER</span>
+            <div className="absolute right-12 top-12 opacity-[0.03] select-none pointer-events-none">
+              <span className="font-black text-6xl text-stone-950 tracking-widest uppercase">ENTER</span>
             </div>
 
             <div>
