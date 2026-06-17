@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Car } from "../types";
 import { getCarImageSrc, getFallbackCarThumbnail } from "../utils/carImage";
-import { QRCodeCanvas } from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface QuotationDocumentContentProps {
   printedCars: Car[];
@@ -196,12 +196,12 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
         </div>
 
         {/* Professional Footer & Catalog Access QR Code Row */}
-        <div className="mt-8 pt-4 border-t border-stone-200 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+        <div className="mt-8 pt-4 border-t border-stone-200 grid grid-cols-3 gap-6 items-center">
           {/* Column 1: Scan to View Fleet interactive block */}
           <div className="flex items-center gap-4 text-left">
             <div className="flex flex-col items-center gap-1 shrink-0 text-center">
               <div className="p-1.5 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
-                <QRCodeCanvas 
+                <QRCodeSVG 
                   value={catalogUrl} 
                   size={52} 
                   level="M" 
@@ -221,7 +221,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           </div>
 
           {/* Column 2: Document Metadata & Printed Page Number (Prevents any overlap) */}
-          <div className="flex flex-col items-center justify-center text-center py-2 px-4 border-y md:border-y-0 md:border-x border-stone-150">
+          <div className="flex flex-col items-center justify-center text-center py-2 px-4 border-x border-stone-250">
             <span className="text-[8px] font-mono font-bold text-stone-400 uppercase tracking-widest">Document Registry</span>
             <span className="text-[9px] font-black text-[#4C0027] font-mono tracking-wider mt-0.5">QT-2787-8EF4-31FC</span>
             <div className="mt-2 px-3 py-1 bg-stone-50 border border-stone-200 rounded-full flex items-center gap-1.5 shadow-sm">
@@ -231,7 +231,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
           </div>
 
           {/* Column 3: Corporate disclaimer text */}
-          <div className="text-center md:text-right max-w-xs md:ml-auto">
+          <div className="text-right max-w-xs ml-auto">
             <p className="text-[9px] text-stone-450 font-mono tracking-wider leading-relaxed">
               Thank you for choosing ENTER Car Rental. We value your business and look forward to safe, premier journeys together.
             </p>

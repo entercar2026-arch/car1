@@ -402,12 +402,23 @@ const PrintPreviewOverlay = React.memo(({
 
     const parent = quotationRef.current.parentElement;
     const originalTransform = parent ? parent.style.transform : "";
+    const imagesToRestore: { img: HTMLImageElement; originalSrc: string }[] = [];
 
     try {
       // Revert any scale temporarily to ensure html2canvas captures full-resolution without cropping
       if (parent) {
         parent.style.transform = "none";
       }
+
+      // Temp swap non-base64 images to avoid any potential CORS/taint errors that crash html2canvas inside iframe
+      const images = quotationRef.current.querySelectorAll("img");
+      images.forEach((img) => {
+        if (img.src && !img.src.startsWith("data:")) {
+          imagesToRestore.push({ img, originalSrc: img.src });
+          // Base64 fallback svg
+          img.src = "data:image/svg+xml;base64," + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="100%" height="100%" fill="#f5f5f4"/><text x="50%" y="50%" font-family="sans-serif" font-size="8" fill="#4C0027" font-weight="bold" text-anchor="middle" dominant-baseline="middle">ENTER CAR RENTAL</text></svg>`);
+        }
+      });
 
       await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -445,10 +456,14 @@ const PrintPreviewOverlay = React.memo(({
 
       const dateStr = new Date().toISOString().slice(0, 10);
       pdf.save(`ENTER_Car_Rental_Quotation_${dateStr}.pdf`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to export quotation as PDF:", err);
-      alert("Failed to export as PDF. Please print via the Print PDF button as an alternative.");
+      alert("Failed to export as PDF: " + (err?.message || err) + ". Please print via the Print PDF button as an alternative.");
     } finally {
+      // Restore original non-base64 images
+      imagesToRestore.forEach(({ img, originalSrc }) => {
+        img.src = originalSrc;
+      });
       if (parent) {
         parent.style.transform = originalTransform;
       }
@@ -462,12 +477,23 @@ const PrintPreviewOverlay = React.memo(({
 
     const parent = quotationRef.current.parentElement;
     const originalTransform = parent ? parent.style.transform : "";
+    const imagesToRestore: { img: HTMLImageElement; originalSrc: string }[] = [];
 
     try {
       // Revert any scale temporarily to ensure html2canvas captures full-resolution without cropping
       if (parent) {
         parent.style.transform = "none";
       }
+
+      // Temp swap non-base64 images to avoid any potential CORS/taint errors that crash html2canvas inside iframe
+      const images = quotationRef.current.querySelectorAll("img");
+      images.forEach((img) => {
+        if (img.src && !img.src.startsWith("data:")) {
+          imagesToRestore.push({ img, originalSrc: img.src });
+          // Base64 fallback svg
+          img.src = "data:image/svg+xml;base64," + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80" viewBox="0 0 120 80"><rect width="100%" height="100%" fill="#f5f5f4"/><text x="50%" y="50%" font-family="sans-serif" font-size="8" fill="#4C0027" font-weight="bold" text-anchor="middle" dominant-baseline="middle">ENTER CAR RENTAL</text></svg>`);
+        }
+      });
 
       await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -486,10 +512,14 @@ const PrintPreviewOverlay = React.memo(({
       link.download = `ENTER_Car_Rental_Quotation_${dateStr}.png`;
       link.href = imgData;
       link.click();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to export quotation as image:", err);
-      alert("Failed to export as PNG. Please print via the Print PDF button as an alternative.");
+      alert("Failed to export as PNG: " + (err?.message || err) + ". Please print via the Print PDF button as an alternative.");
     } finally {
+      // Restore original non-base64 images
+      imagesToRestore.forEach(({ img, originalSrc }) => {
+        img.src = originalSrc;
+      });
       if (parent) {
         parent.style.transform = originalTransform;
       }
