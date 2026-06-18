@@ -41,70 +41,98 @@ interface QuotationPage {
 }
 
 function getQuotationPages(allCars: Car[]): QuotationPage[] {
-  if (allCars.length === 0) {
+  const N = allCars.length;
+  if (N === 0) {
     return [{ cars: [], showIntro: true, showTermsAndSignatures: true, pageType: "single" }];
   }
 
   // If <= 12 cars, they can easily fit on a single page with all intros, terms, and signatures
-  if (allCars.length <= 12) {
+  if (N <= 12) {
     return [{ cars: allCars, showIntro: true, showTermsAndSignatures: true, pageType: "single" }];
   }
 
-  const pages: QuotationPage[] = [];
-  let remainingCars = [...allCars];
+  // 2-page layout (Max: 16 on Page 1, 13 on Page 2 = 29 cars max)
+  if (N <= 29) {
+    // Distribute as evenly as possible, respecting max constraints: Page 1 <= 16, Page 2 <= 13
+    const ideal = Math.ceil(N / 2);
+    let count1 = Math.min(16, ideal);
+    let count2 = N - count1;
+    
+    // Adjust if count2 exceeds its limit of 13
+    if (count2 > 13) {
+      count1 += (count2 - 13);
+      count2 = 13;
+    }
 
-  // Page 1: fits up to 14 cars when not displaying terms and signatures
-  const page1CarsCount = Math.min(14, remainingCars.length - 1); // ensure at least 1 car remains to render subsequent page
-  pages.push({
-    cars: remainingCars.slice(0, page1CarsCount),
-    showIntro: true,
-    showTermsAndSignatures: false,
-    pageType: "first"
-  });
-  remainingCars = remainingCars.slice(page1CarsCount);
-
-  // Now process subsequent pages
-  while (remainingCars.length > 0) {
-    // Is this the last page?
-    // The last page can hold up to 12 cars comfortably along with terms/signatures.
-    if (remainingCars.length <= 12) {
-      pages.push({
-        cars: remainingCars,
+    return [
+      {
+        cars: allCars.slice(0, count1),
+        showIntro: true,
+        showTermsAndSignatures: false,
+        pageType: "first"
+      },
+      {
+        cars: allCars.slice(count1),
         showIntro: false,
         showTermsAndSignatures: true,
         pageType: "last"
-      });
-      remainingCars = [];
-    } else {
-      // If we have more than 12 cars left, middle page can fit up to 18 cars without terms/signatures
-      const takeCount = Math.min(18, remainingCars.length);
-      
-      // If this takes the rest of the cars but is greater than 12, they won't fit with terms/signatures on a single last page.
-      if (takeCount === remainingCars.length && takeCount > 12) {
-        const midCount = Math.floor(takeCount / 2);
-        pages.push({
-          cars: remainingCars.slice(0, midCount),
-          showIntro: false,
-          showTermsAndSignatures: false,
-          pageType: "middle"
-        });
-        pages.push({
-          cars: remainingCars.slice(midCount),
-          showIntro: false,
-          showTermsAndSignatures: true,
-          pageType: "last"
-        });
-        remainingCars = [];
-      } else {
-        pages.push({
-          cars: remainingCars.slice(0, takeCount),
-          showIntro: false,
-          showTermsAndSignatures: false,
-          pageType: "middle"
-        });
-        remainingCars = remainingCars.slice(takeCount);
+      }
+    ];
+  }
+
+  // Multi-page layout (3 or more pages)
+  // Page 1 (First) can hold up to 16
+  // Page last can hold up to 13
+  // Each middle page can hold up to 22
+  let m = 1;
+  while (16 + m * 22 + 13 < N) {
+    m++;
+  }
+
+  const numPages = 2 + m; // 1 first, m middle, 1 last
+  const capacities = [16];
+  for (let i = 0; i < m; i++) {
+    capacities.push(22);
+  }
+  capacities.push(13);
+
+  // Distribute cars as evenly as possible using a round-robin/minimal-fill algorithm
+  const counts = new Array(numPages).fill(0);
+  let assigned = 0;
+  while (assigned < N) {
+    let bestIndex = -1;
+    let minVal = Infinity;
+    for (let i = 0; i < numPages; i++) {
+      if (counts[i] < capacities[i]) {
+        if (counts[i] < minVal) {
+          minVal = counts[i];
+          bestIndex = i;
+        }
       }
     }
+    if (bestIndex === -1) {
+      break;
+    }
+    counts[bestIndex]++;
+    assigned++;
+  }
+
+  // Create the pages from `counts`
+  const pages: QuotationPage[] = [];
+  let currentIndex = 0;
+  for (let i = 0; i < numPages; i++) {
+    const carsOnPage = allCars.slice(currentIndex, currentIndex + counts[i]);
+    currentIndex += counts[i];
+
+    const isFirst = i === 0;
+    const isLast = i === numPages - 1;
+
+    pages.push({
+      cars: carsOnPage,
+      showIntro: isFirst,
+      showTermsAndSignatures: isLast,
+      pageType: isFirst ? "first" : isLast ? "last" : "middle"
+    });
   }
 
   return pages;
