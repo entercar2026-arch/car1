@@ -639,78 +639,71 @@ const PrintPreviewOverlay = React.memo(({
 
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      const canvas = await html2canvas(quotationRef.current, {
-        scale: 2, // High resolution capture
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: "#ffffff",
-        logging: true,
-        imageTimeout: 10000,
-        onclone: (clonedDoc) => {
-          try {
-            // Scrub inline style attributes for any oklch/oklab styles that html2canvas fails to parse
-            const elementsWithStyles = clonedDoc.querySelectorAll("[style]");
-            elementsWithStyles.forEach((el) => {
-              const styleAttr = el.getAttribute("style");
-              if (styleAttr && (styleAttr.includes("oklch") || styleAttr.includes("oklab"))) {
-                el.setAttribute("style", parseAndConvertOklch(styleAttr));
-              }
-            });
-
-            // Scrub internal stylesheets for any oklch/oklab rules that html2canvas fails to parse
-            const styleElements = clonedDoc.querySelectorAll("style");
-            styleElements.forEach((el) => {
-              const cssText = el.innerHTML;
-              if (cssText && (cssText.includes("oklch") || cssText.includes("oklab"))) {
-                el.innerHTML = parseAndConvertOklch(cssText);
-              }
-            });
-          } catch (e) {
-            console.warn("CSS oklch/oklab scrubbing error failed in clone sandbox:", e);
-          }
-
-          const styleOverride = clonedDoc.createElement("style");
-          styleOverride.innerHTML = `
-            * {
-              --color-stone-50: #fafaf9 !important;
-              --color-stone-100: #f5f5f4 !important;
-              --color-stone-200: #e7e5e4 !important;
-              --color-stone-300: #d6d3d1 !important;
-              --color-stone-400: #a8a29e !important;
-              --color-stone-500: #78716c !important;
-              --color-stone-600: #57534e !important;
-              --color-stone-700: #44403c !important;
-              --color-stone-800: #292524 !important;
-              --color-stone-900: #1c1917 !important;
-              --color-emerald-500: #10b981 !important;
-              --color-emerald-600: #059669 !important;
-            }
-          `;
-          clonedDoc.head.appendChild(styleOverride);
-        }
-      });
-
-      // A4 dimensions: 210mm x 297mm
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const pageElements = quotationRef.current.querySelectorAll(".pdf-page-print");
       const pdf = new jsPDF("p", "mm", "a4");
-      
-      let heightLeft = imgHeight;
-      let position = 0;
 
-      // Add first page
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-      heightLeft -= pageHeight;
+      if (pageElements.length === 0) {
+        throw new Error("No page elements found to generate PDF.");
+      }
 
-      // Check for multi-page overflow
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-        heightLeft -= pageHeight;
+      for (let i = 0; i < pageElements.length; i++) {
+        const pageEl = pageElements[i] as HTMLElement;
+        const canvas = await html2canvas(pageEl, {
+          scale: 2, // High resolution capture
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: "#ffffff",
+          logging: true,
+          imageTimeout: 10000,
+          onclone: (clonedDoc) => {
+            try {
+              // Scrub inline style attributes for any oklch/oklab styles that html2canvas fails to parse
+              const elementsWithStyles = clonedDoc.querySelectorAll("[style]");
+              elementsWithStyles.forEach((el) => {
+                const styleAttr = el.getAttribute("style");
+                if (styleAttr && (styleAttr.includes("oklch") || styleAttr.includes("oklab"))) {
+                  el.setAttribute("style", parseAndConvertOklch(styleAttr));
+                }
+              });
+
+              // Scrub internal stylesheets for any oklch/oklab rules that html2canvas fails to parse
+              const styleElements = clonedDoc.querySelectorAll("style");
+              styleElements.forEach((el) => {
+                const cssText = el.innerHTML;
+                if (cssText && (cssText.includes("oklch") || cssText.includes("oklab"))) {
+                  el.innerHTML = parseAndConvertOklch(cssText);
+                }
+              });
+            } catch (e) {
+              console.warn("CSS oklch/oklab scrubbing error failed in clone sandbox:", e);
+            }
+
+            const styleOverride = clonedDoc.createElement("style");
+            styleOverride.innerHTML = `
+              * {
+                --color-stone-50: #fafaf9 !important;
+                --color-stone-100: #f5f5f4 !important;
+                --color-stone-200: #e7e5e4 !important;
+                --color-stone-300: #d6d3d1 !important;
+                --color-stone-400: #a8a29e !important;
+                --color-stone-500: #78716c !important;
+                --color-stone-600: #57534e !important;
+                --color-stone-700: #44403c !important;
+                --color-stone-800: #292524 !important;
+                --color-stone-900: #1c1917 !important;
+                --color-emerald-500: #10b981 !important;
+                --color-emerald-600: #059669 !important;
+              }
+            `;
+            clonedDoc.head.appendChild(styleOverride);
+          }
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, "JPEG", 0, 0, 210, 297, undefined, "FAST");
       }
 
       const dateStr = new Date().toISOString().slice(0, 10);
@@ -913,51 +906,17 @@ const PrintPreviewOverlay = React.memo(({
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-8 flex flex-col items-center bg-stone-900/40 w-full">
         {/* Realistic PDF View Container which acts as a desktop printer sheet */}
         <div
-          className="w-full max-w-4xl transition-all duration-200 ease-out flex flex-col gap-10 items-center mt-4"
+          ref={quotationRef}
+          className="w-full max-w-4xl transition-all duration-200 ease-out flex flex-col gap-10 items-center mt-4 print:gap-0 print:m-0 print:p-0"
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
         >
-          {/* PAGE 1: THE ACTIVE QUOTE */}
-          <div 
-            ref={quotationRef} 
-            className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] min-w-[210mm] shrink-0 print:min-w-0 print:max-w-full p-8 md:p-10 print:p-8 relative flex flex-col justify-between min-h-[297mm]"
-            style={{
-              backgroundImage: "linear-gradient(to right, rgba(76, 0, 39, 0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(76, 0, 39, 0.012) 1px, transparent 1px)",
-              backgroundSize: "24px 24px",
-              backgroundColor: "#ffffff"
-            }}
-          >
-            {/* Elegant Double Border Frame for Polished Stationery */}
-            <div className="absolute inset-3.5 border-2 border-[#4C0027]/12 pointer-events-none" />
-            <div className="absolute inset-[17px] border border-[#4C0027]/5 pointer-events-none" />
-
-            {/* Corner Ornaments */}
-            <div className="absolute top-3.5 left-3.5 w-4 h-4 border-t border-l border-[#4C0027]/40 pointer-events-none" />
-            <div className="absolute top-3.5 right-3.5 w-4 h-4 border-t border-r border-[#4C0027]/40 pointer-events-none" />
-            <div className="absolute bottom-3.5 left-3.5 w-4 h-4 border-b border-l border-[#4C0027]/40 pointer-events-none" />
-            <div className="absolute bottom-3.5 right-3.5 w-4 h-4 border-b border-r border-[#4C0027]/40 pointer-events-none" />
-
-            {/* Paper Watermark Ornament for Premium Presentation */}
-            <div className="absolute right-12 top-12 opacity-[0.03] select-none pointer-events-none">
-              <span className="font-black text-6xl text-stone-950 tracking-widest uppercase">ENTER</span>
-            </div>
-
-            <div>
-              <QuotationDocumentContent
-                printedCars={printedCars}
-                lang={lang}
-                t={t}
-                setLightboxCar={setLightboxCar}
-                setLightboxIndex={setLightboxIndex}
-              />
-            </div>
-
-            {/* Real-time Document Status Bar */}
-            <div className="w-full mt-10 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
-              <span>Ref: QT-2787-8ef4-31fc</span>
-              <span>Page 1 of 1</span>
-              <span>Printed via ENTER VIP Client Services</span>
-            </div>
-          </div>
+          <QuotationDocumentContent
+            printedCars={printedCars}
+            lang={lang}
+            t={t}
+            setLightboxCar={setLightboxCar}
+            setLightboxIndex={setLightboxIndex}
+          />
         </div>
       </div>
     </div>

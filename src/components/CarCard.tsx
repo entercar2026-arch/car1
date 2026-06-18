@@ -36,6 +36,7 @@ import {
   Car as CarIcon,
   Palette,
   Images,
+  Scan,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -1021,7 +1022,7 @@ Description: ${formattedDesc}`;
                   title={t.viewPhotos || "View Photos"}
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
                 >
-                  <Images className="w-4 h-4 text-current" />
+                  <Scan className="w-4 h-4 text-current" />
                 </button>
                 <button
                   onClick={(e) => {

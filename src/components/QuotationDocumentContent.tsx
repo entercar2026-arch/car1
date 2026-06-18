@@ -33,6 +33,83 @@ const convertUrlToBase64 = async (url: string): Promise<string> => {
   }
 };
 
+interface QuotationPage {
+  cars: Car[];
+  showIntro: boolean;
+  showTermsAndSignatures: boolean;
+  pageType: "first" | "middle" | "last" | "single";
+}
+
+function getQuotationPages(allCars: Car[]): QuotationPage[] {
+  if (allCars.length === 0) {
+    return [{ cars: [], showIntro: true, showTermsAndSignatures: true, pageType: "single" }];
+  }
+
+  // If <= 4 cars, fits on 1 single page!
+  if (allCars.length <= 4) {
+    return [{ cars: allCars, showIntro: true, showTermsAndSignatures: true, pageType: "single" }];
+  }
+
+  const pages: QuotationPage[] = [];
+  let remainingCars = [...allCars];
+
+  // Page 1: fits up to 7 cars
+  const page1CarsCount = Math.min(7, remainingCars.length - 1); // ensure at least 1 car remains to render subsequent page
+  pages.push({
+    cars: remainingCars.slice(0, page1CarsCount),
+    showIntro: true,
+    showTermsAndSignatures: false,
+    pageType: "first"
+  });
+  remainingCars = remainingCars.slice(page1CarsCount);
+
+  // Now process subsequent pages
+  while (remainingCars.length > 0) {
+    // Is this the last page?
+    // The last page can hold up to 5 cars with terms/signatures.
+    if (remainingCars.length <= 5) {
+      pages.push({
+        cars: remainingCars,
+        showIntro: false,
+        showTermsAndSignatures: true,
+        pageType: "last"
+      });
+      remainingCars = [];
+    } else {
+      // If we have more than 5 cars left, can we put 9 cars on a middle page?
+      const takeCount = Math.min(9, remainingCars.length);
+      
+      // If this takes the rest of the cars (takeCount === remainingCars.length) but since takeCount > 5, they won't fit with terms/signatures!
+      if (takeCount === remainingCars.length && takeCount > 5) {
+        const midCount = Math.floor(takeCount / 2);
+        pages.push({
+          cars: remainingCars.slice(0, midCount),
+          showIntro: false,
+          showTermsAndSignatures: false,
+          pageType: "middle"
+        });
+        pages.push({
+          cars: remainingCars.slice(midCount),
+          showIntro: false,
+          showTermsAndSignatures: true,
+          pageType: "last"
+        });
+        remainingCars = [];
+      } else {
+        pages.push({
+          cars: remainingCars.slice(0, takeCount),
+          showIntro: false,
+          showTermsAndSignatures: false,
+          pageType: "middle"
+        });
+        remainingCars = remainingCars.slice(takeCount);
+      }
+    }
+  }
+
+  return pages;
+}
+
 export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> = ({
   printedCars,
   lang,
@@ -78,166 +155,241 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
     };
   }, [printedCars]);
 
+  const pages = getQuotationPages(printedCars);
+
   return (
     <>
-      {/* Header Ribbon / Enterprise Meta */}
-      <div className="flex justify-between items-start border-b-2 border-[#4C0027] pb-4 mb-4 text-stone-900 font-sans">
-        <div>
-          <h1 className="text-3xl font-black text-[#4C0027] tracking-wider uppercase">ENTER CAR RENTAL</h1>
-          <p className="text-xs font-mono font-bold tracking-wider text-stone-500 mt-1 uppercase">Premium Fleet Sourcing & Long-Term Leases</p>
-          <div className="mt-3 text-xs space-y-0.5 text-stone-600 font-sans">
-            <p>Tel/Telegram: <span className="font-semibold text-[#4C0027]">096 671 4442</span></p>
-            <p>Email: <span className="font-semibold text-[#4C0027]">entercar2026@gmail.com</span></p>
-            <p>Web Inquiry Portal: <span className="font-semibold text-stone-800">enter.v1</span></p>
-            <p>Phnom Penh, Kingdom of Cambodia</p>
-          </div>
-        </div>
-        <div className="text-right flex flex-col items-end">
-          <span className="bg-[#4C0027]/10 text-[#4C0027] px-3 py-1 text-[10px] font-black tracking-widest uppercase rounded">Official Quotation for 6 Months</span>
-          <p className="text-xs font-mono font-bold text-stone-700 mt-2.5">Ref No: <span className="text-[#4C0027] font-extrabold">QT-2787-8ef4-31fc</span></p>
-          <p className="text-xs text-stone-500 mt-0.5">Date Issued: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-          <p className="text-xs text-stone-500">Validity Period: 30 Calendar Days</p>
-        </div>
-      </div>
+      {pages.map((page, pageIndex) => {
+        // Offset is the sum of car items rendered in all preceding pages
+        const offset = pages.slice(0, pageIndex).reduce((acc, p) => acc + p.cars.length, 0);
 
-      {/* Professional Cover Letter Intro */}
-      <div className="mb-4 text-xs text-stone-700 space-y-2 leading-relaxed font-sans">
-        <p className="font-bold">
-          Dear Valued Customer,
-        </p>
-        <p>
-          In reference to your recent catalog inquiry and rental preferences, we are pleased to submit our official vehicle leasing terms and pricing proposal. We cooperate directly with specialized car owners to ensure you receive the pristine quality vehicles requested under the most flexible conditions.
-        </p>
-      </div>
+        return (
+          <div
+            key={pageIndex}
+            className="pdf-page-print bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] min-w-[210mm] h-[297mm] min-h-[297mm] max-h-[297mm] p-8 md:p-10 relative flex flex-col justify-between overflow-hidden shrink-0 print:shadow-none print:border-none print:m-0 print:p-8 justify-between break-after-page page-break-after"
+            style={{
+              backgroundImage: "linear-gradient(to right, rgba(76, 0, 39, 0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(76, 0, 39, 0.012) 1px, transparent 1px)",
+              backgroundSize: "24px 24px",
+              backgroundColor: "#ffffff",
+              boxSizing: "border-box"
+            }}
+          >
+            {/* Elegant Double Border Frame for Polished Stationery */}
+            <div className="absolute inset-3.5 border-2 border-[#4C0027]/12 pointer-events-none" />
+            <div className="absolute inset-[17px] border border-[#4C0027]/5 pointer-events-none" />
 
-      {/* Print specific pricing table */}
-      <div className="mb-4 overflow-hidden border border-stone-300 rounded-lg font-sans">
-        <table className="w-full text-xs text-left border-collapse">
-          <thead>
-            <tr className="bg-[#4C0027] text-white">
-              <th className="px-3 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 w-12 text-[10px]">No.</th>
-              <th className="px-4 py-2 font-bold uppercase tracking-wider text-left border-b border-stone-300 text-[10px]">Vehicle Model Description</th>
-              <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Fuel Type</th>
-              <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Monthly Rent (USD)</th>
-              <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Refundable Deposit</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-200">
-            {printedCars.map((car: Car, index: number) => (
-              <tr key={car.id} className="bg-white hover:bg-stone-50/50 transition-colors">
-                <td className="px-3 py-2 text-center text-stone-500 font-mono font-bold border-r border-stone-200 w-12 bg-stone-50/20">{index + 1}</td>
-                <td className="px-4 py-2 font-bold text-stone-900">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      onClick={() => {
-                        if (setLightboxCar) {
-                          setLightboxCar(car);
-                          if (setLightboxIndex) {
-                            setLightboxIndex(0);
-                          }
-                        }
-                      }}
-                      className={`w-11 h-7 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0 ${setLightboxCar ? 'cursor-zoom-in' : ''} hover:border-[#4C0027] hover:scale-105 transition-all`}
-                      title="Click to zoom gallery lightbox"
-                    >
-                      <img
-                        src={resolvedImages[car.id] || getCarImageSrc(car)}
-                        alt={car.name}
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                        crossOrigin={(resolvedImages[car.id] || getCarImageSrc(car)).startsWith("data:") ? undefined : "anonymous"}
-                        onError={(e) => {
-                          e.currentTarget.src = getFallbackCarThumbnail(car.name, car.category);
-                        }}
-                      />
+            {/* Corner Ornaments */}
+            <div className="absolute top-3.5 left-3.5 w-4 h-4 border-t border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute top-3.5 right-3.5 w-4 h-4 border-t border-r border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-3.5 left-3.5 w-4 h-4 border-b border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-3.5 right-3.5 w-4 h-4 border-b border-r border-[#4C0027]/40 pointer-events-none" />
+
+            {/* Paper Watermark Ornament for Premium Presentation */}
+            <div className="absolute right-12 top-12 opacity-[0.03] select-none pointer-events-none">
+              <span className="font-black text-6xl text-stone-950 tracking-widest uppercase">ENTER</span>
+            </div>
+
+            {/* Content Body Container */}
+            <div className="z-10 flex flex-col flex-1 justify-start">
+              {page.showIntro && (
+                <>
+                  {/* Header Ribbon / Enterprise Meta */}
+                  <div className="flex justify-between items-start border-b-2 border-[#4C0027] pb-4 mb-4 text-stone-900 font-sans">
+                    <div>
+                      <h1 className="text-3xl font-black text-[#4C0027] tracking-wider uppercase">ENTER CAR RENTAL</h1>
+                      <p className="text-xs font-mono font-bold tracking-wider text-stone-500 mt-1 uppercase">Premium Fleet Sourcing & Long-Term Leases</p>
+                      <div className="mt-3 text-xs space-y-0.5 text-stone-600 font-sans">
+                        <p>Tel/Telegram: <span className="font-semibold text-[#4C0027]">096 671 4442</span></p>
+                        <p>Email: <span className="font-semibold text-[#4C0027]">entercar2026@gmail.com</span></p>
+                        <p>Web Inquiry Portal: <span className="font-semibold text-stone-800">enter.v1</span></p>
+                        <p>Phnom Penh, Kingdom of Cambodia</p>
+                      </div>
                     </div>
-                    <span className="block font-bold text-stone-900 leading-tight">{car.name}</span>
+                    <div className="text-right flex flex-col items-end">
+                      <span className="bg-[#4C0027]/10 text-[#4C0027] px-3 py-1 text-[10px] font-black tracking-widest uppercase rounded">Official Quotation for 6 Months</span>
+                      <p className="text-xs font-mono font-bold text-stone-700 mt-2.5">Ref No: <span className="text-[#4C0027] font-extrabold">QT-2787-8ef4-31fc</span></p>
+                      <p className="text-xs text-stone-500 mt-0.5">Date Issued: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="text-xs text-stone-500">Validity Period: 30 Calendar Days</p>
+                    </div>
                   </div>
-                </td>
-                <td className="px-4 py-2 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
-                <td className="px-4 py-2 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
-                <td className="px-4 py-2 text-center text-[#4C0027] font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
 
-      {/* Terms and Conditions Callout */}
-      <div className="mb-4 p-4 bg-stone-50 rounded-xl border border-stone-200 no-break font-sans">
-        <h3 className="text-[11px] font-black text-[#4C0027] uppercase tracking-widest border-b border-stone-300 pb-1.5 mb-2">
-          Corporate Rental Guidelines & General Terms
-        </h3>
-        <ol className="list-decimal list-inside text-[10px] text-stone-700 space-y-1 leading-relaxed">
-          <li><strong className="text-stone-900">Minimum Term:</strong> All vehicles listed are subject to a standard minimum contract period of six (6) months.</li>
-          <li><strong className="text-stone-900">Security Deposit:</strong> A security deposit equivalent to one (1) month of standard rental fee is due upon signing, fully refundable.</li>
-          <li><strong className="text-stone-900">Advanced Billing:</strong> Standard rental billing cycles are processed in advance at the start of each operating month.</li>
-          <li><strong className="text-stone-900">Comprehensive Care:</strong> Monthly leasing fee includes routine maintenance checks, replacement of wear parts, and standard liability protection.</li>
-          <li><strong className="text-stone-900">Non-Binding Quotation:</strong> Sourcing is formally secured only upon signing the binding Contract Agreement.</li>
-        </ol>
-      </div>
+                  {/* Professional Cover Letter Intro */}
+                  <div className="mb-4 text-xs text-stone-700 space-y-2 leading-relaxed font-sans">
+                    <p className="font-bold text-stone-950">
+                      Dear Valued Customer,
+                    </p>
+                    <p>
+                      In reference to your recent catalog inquiry and rental preferences, we are pleased to submit our official vehicle leasing terms and pricing proposal. We cooperate directly with specialized car owners to ensure you receive the pristine quality vehicles requested under the most flexible conditions.
+                    </p>
+                  </div>
+                </>
+              )}
 
-      {/* Sign-off & Footer Container (Guaranteed to stay cohesive on print) */}
-      <div className="no-break mt-4 pt-4 border-t border-stone-200 font-sans">
-        {/* Corporate Sign-off blocks */}
-        <div className="grid grid-cols-2 gap-8">
-          <div className="flex flex-col">
-            <p className="text-xs font-bold text-stone-500 mb-6 uppercase tracking-wider">Authorized Officer – ENTER Car Rental</p>
-            <div className="border-b border-stone-400 w-56 mb-1.5"></div>
-            <p className="text-xs font-black text-[#4C0027]">Sourcing & Leasing Department</p>
-            <p className="text-[10px] text-stone-400 font-mono">ENTER CAR RENTAL Co., Ltd.</p>
-          </div>
-          <div className="flex flex-col items-end text-right">
-            <p className="text-xs font-bold text-stone-500 mb-6 uppercase tracking-wider">Accepted & Acknowledged – Client</p>
-            <div className="border-b border-stone-400 w-56 mb-1.5"></div>
-            <p className="text-xs font-black text-stone-900">Authorized Client Signature</p>
-            <p className="text-[10px] text-stone-400 font-mono">Date signed: ______ / ______ / 2026</p>
-          </div>
-        </div>
+              {!page.showIntro && (
+                /* Sleek minimal running header on pages 2+ to indicate document context */
+                <div className="flex justify-between items-center border-b border-[#4C0027]/30 pb-2 mb-4 text-stone-900 font-sans z-10">
+                  <div>
+                    <h2 className="text-sm font-black text-[#4C0027] tracking-wider uppercase">ENTER CAR RENTAL</h2>
+                    <p className="text-[8px] font-mono font-bold tracking-wider text-stone-500 uppercase leading-none mt-0.5">Official Sourcing Proposal</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] font-mono font-bold text-stone-700">Ref No: QT-2787-8ef4-31fc</p>
+                  </div>
+                </div>
+              )}
 
-        {/* Professional Footer & Catalog Access QR Code Row */}
-        <div className="mt-4 pt-3 border-t border-[#4C0027]/10 grid grid-cols-3 gap-4 items-center">
-          {/* Column 1: Scan to View Fleet interactive block */}
-          <div className="flex items-center gap-3 text-left">
-            <div className="flex flex-col items-center gap-0.5 shrink-0 text-center">
-              <div className="p-1 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
-                <QRCodeSVG 
-                  value={catalogUrl} 
-                  size={42} 
-                  level="M" 
-                  includeMargin={false} 
-                  fgColor="#4C0027"
-                />
-              </div>
-              <span className="text-[7px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan Fleet</span>
+              {/* Table of quotation cars */}
+              {page.cars.length > 0 && (
+                <div className="mb-4 overflow-hidden border border-stone-300 rounded-lg font-sans z-10">
+                  <table className="w-full text-xs text-left border-collapse">
+                    <thead>
+                      <tr className="bg-[#4C0027] text-white">
+                        <th className="px-3 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 w-12 text-[10px]">No.</th>
+                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-left border-b border-stone-300 text-[10px]">Vehicle Model Description</th>
+                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Fuel Type</th>
+                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Monthly Rent (USD)</th>
+                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Refundable Deposit</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-200">
+                      {page.cars.map((car: Car, index: number) => (
+                        <tr key={car.id} className="bg-white hover:bg-stone-50/50 transition-colors">
+                          <td className="px-3 py-2 text-center text-stone-500 font-mono font-bold border-r border-stone-200 w-12 bg-stone-50/20">{offset + index + 1}</td>
+                          <td className="px-4 py-2 font-bold text-stone-900">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                onClick={() => {
+                                  if (setLightboxCar) {
+                                    setLightboxCar(car);
+                                    if (setLightboxIndex) {
+                                      setLightboxIndex(0);
+                                    }
+                                  }
+                                }}
+                                className={`w-11 h-7 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0 ${setLightboxCar ? 'cursor-zoom-in' : ''} hover:border-[#4C0027] hover:scale-105 transition-all`}
+                                title="Click to zoom gallery lightbox"
+                              >
+                                <img
+                                  src={resolvedImages[car.id] || getCarImageSrc(car)}
+                                  alt={car.name}
+                                  className="w-full h-full object-cover"
+                                  referrerPolicy="no-referrer"
+                                  crossOrigin={(resolvedImages[car.id] || getCarImageSrc(car)).startsWith("data:") ? undefined : "anonymous"}
+                                  onError={(e) => {
+                                    e.currentTarget.src = getFallbackCarThumbnail(car.name, car.category);
+                                  }}
+                                />
+                              </div>
+                              <span className="block font-bold text-stone-900 leading-tight">{car.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
+                          <td className="px-4 py-2 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
+                          <td className="px-4 py-2 text-center text-[#4C0027] font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {page.showTermsAndSignatures && (
+                <>
+                  {/* Terms and Conditions Callout */}
+                  <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 font-sans z-10 mb-4">
+                    <h3 className="text-[11px] font-black text-[#4C0027] uppercase tracking-widest border-b border-stone-300 pb-1.5 mb-2">
+                      Corporate Rental Guidelines & General Terms
+                    </h3>
+                    <ol className="list-decimal list-inside text-[10px] text-stone-700 space-y-1 leading-relaxed">
+                      <li><strong className="text-stone-900">Minimum Term:</strong> All vehicles listed are subject to a standard minimum contract period of six (6) months.</li>
+                      <li><strong className="text-stone-900">Security Deposit:</strong> A security deposit equivalent to one (1) month of standard rental fee is due upon signing, fully refundable.</li>
+                      <li><strong className="text-stone-900">Advanced Billing:</strong> Standard rental billing cycles are processed in advance at the start of each operating month.</li>
+                      <li><strong className="text-stone-900">Comprehensive Care:</strong> Monthly leasing fee includes routine maintenance checks, replacement of wear parts, and standard liability protection.</li>
+                      <li><strong className="text-stone-900">Non-Binding Quotation:</strong> Sourcing is formally secured only upon signing the binding Contract Agreement.</li>
+                    </ol>
+                  </div>
+
+                  {/* Sign-off Blocks */}
+                  <div className="z-10 mt-2">
+                    <div className="grid grid-cols-2 gap-8">
+                      <div className="flex flex-col">
+                        <p className="text-xs font-bold text-stone-500 mb-6 uppercase tracking-wider">Authorized Officer – ENTER Car Rental</p>
+                        <div className="border-b border-stone-400 w-56 mb-1.5"></div>
+                        <p className="text-xs font-black text-[#4C0027]">Sourcing & Leasing Department</p>
+                        <p className="text-[10px] text-stone-400 font-mono font-bold uppercase leading-none mt-0.5">ENTER CAR RENTAL Co., Ltd.</p>
+                      </div>
+                      <div className="flex flex-col items-end text-right">
+                        <p className="text-xs font-bold text-stone-500 mb-6 uppercase tracking-wider">Accepted & Acknowledged – Client</p>
+                        <div className="border-b border-stone-400 w-56 mb-1.5"></div>
+                        <p className="text-xs font-black text-stone-900">Authorized Client Signature</p>
+                        <p className="text-[10px] text-stone-400 font-mono tracking-wide leading-none mt-0.5">Date signed: ______ / ______ / 2026</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-            <div>
-              <p className="text-[9px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Online Catalog</p>
-              <p className="text-[8.5px] text-stone-500 font-medium leading-relaxed max-w-[170px] mt-0.5 animate-pulse">
-                Access interactive fleet, explore high-res galleries, virtual views, and dynamic availability.
-              </p>
-              <p className="text-[7.5px] text-stone-400 font-mono mt-0.5 select-all">{catalogUrl}</p>
+
+            {/* Real-time Document Status Bar & Footers */}
+            <div className="z-10 w-full mt-auto pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
+              {page.showTermsAndSignatures ? (
+                /* Standard QR status footer on last page */
+                <div className="w-full grid grid-cols-3 gap-4 items-center">
+                  {/* Column 1: Scan to View Fleet interactive block */}
+                  <div className="flex items-center gap-3 text-left">
+                    <div className="flex flex-col items-center gap-0.5 shrink-0 text-center">
+                      <div className="p-1 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
+                        <QRCodeSVG 
+                          value={catalogUrl} 
+                          size={32} 
+                          level="M" 
+                          includeMargin={false} 
+                          fgColor="#4C0027"
+                        />
+                      </div>
+                      <span className="text-[6px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan Fleet</span>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Online Catalog</p>
+                      <p className="text-[7.5px] text-stone-500 font-medium leading-tight max-w-[170px] mt-0.5">
+                        Access interactive fleet, explore high-res galleries, virtual views, and core availability.
+                      </p>
+                      <p className="text-[6.5px] text-stone-400 font-mono mt-0.5">{catalogUrl}</p>
+                    </div>
+                  </div>
+
+                  {/* Column 2: Document Metadata & Page Number */}
+                  <div className="flex flex-col items-center justify-center text-center py-1 border-x border-stone-250">
+                    <span className="text-[6.5px] font-mono font-bold text-stone-400 uppercase tracking-widest leading-none">Document Registry</span>
+                    <span className="text-[7.5px] font-black text-[#4C0027] font-mono tracking-wider mt-0.5">QT-2787-8EF4-31FC</span>
+                    <div className="mt-1 px-1.5 py-0.5 bg-stone-50 border border-stone-200 rounded-full flex items-center gap-1 shadow-sm leading-none">
+                      <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
+                      <span className="text-[7px] font-black text-stone-600 font-sans tracking-wide uppercase">Page {pageIndex + 1} of {pages.length}</span>
+                    </div>
+                  </div>
+
+                  {/* Column 3: Corporate disclaimer text */}
+                  <div className="text-right ml-auto max-w-xs">
+                    <p className="text-[7px] text-stone-400 font-mono tracking-wider leading-snug">
+                      Thank you for choosing ENTER. We value your business and look forward to safe, premier journeys.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                /* Standard page-number footer on pages prior to the last */
+                <div className="w-full flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
+                  <span>Ref: QT-2787-8ef4-31fc</span>
+                  <div className="px-2 py-0.5 bg-stone-100 border border-stone-200 rounded-full flex items-center gap-1 shadow-sm font-sans text-[7.5px] font-bold text-[#4C0027] tracking-wide uppercase">
+                    <span className="w-1 h-1 rounded-full bg-indigo-500"></span>
+                    <span>Page {pageIndex + 1} of {pages.length}</span>
+                  </div>
+                  <span>Printed via ENTER VIP Client Services</span>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Column 2: Document Metadata & Printed Page Number (Prevents any overlap) */}
-          <div className="flex flex-col items-center justify-center text-center py-1 px-4 border-x border-stone-250">
-            <span className="text-[7.5px] font-mono font-bold text-stone-400 uppercase tracking-widest">Document Registry</span>
-            <span className="text-[8.5px] font-black text-[#4C0027] font-mono tracking-wider mt-0.5">QT-2787-8EF4-31FC</span>
-            <div className="mt-1.5 px-2 py-0.5 bg-stone-50 border border-stone-200 rounded-full flex items-center gap-1.5 shadow-sm">
-              <span className="w-1.2 h-1.2 rounded-full bg-emerald-500"></span>
-              <span className="text-[8px] font-black text-stone-600 font-sans tracking-wide uppercase">Page 1 of 1</span>
-            </div>
-          </div>
-
-          {/* Column 3: Corporate disclaimer text */}
-          <div className="text-right max-w-xs ml-auto">
-            <p className="text-[8px] text-stone-400 font-mono tracking-wider leading-relaxed">
-              Thank you for choosing ENTER. We value your business and look forward to safe, premier journeys together.
-            </p>
-          </div>
-        </div>
-      </div>
+        );
+      })}
     </>
   );
 };
