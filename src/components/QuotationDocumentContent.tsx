@@ -166,7 +166,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
         return (
           <div
             key={pageIndex}
-            className="pdf-page-print bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] min-w-[210mm] h-[297mm] min-h-[297mm] max-h-[297mm] p-8 md:p-10 relative flex flex-col justify-between overflow-hidden shrink-0 print:shadow-none print:border-none print:m-0 print:p-8 justify-between break-after-page page-break-after"
+            className="pdf-page-print bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] min-w-[210mm] h-[297mm] min-h-[297mm] max-h-[297mm] p-5 md:p-6 relative flex flex-col justify-between overflow-hidden shrink-0 print:shadow-none print:border-none print:m-0 print:p-5 break-after-page page-break-after"
             style={{
               backgroundImage: "linear-gradient(to right, rgba(76, 0, 39, 0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(76, 0, 39, 0.012) 1px, transparent 1px)",
               backgroundSize: "24px 24px",
@@ -175,17 +175,17 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
             }}
           >
             {/* Elegant Double Border Frame for Polished Stationery */}
-            <div className="absolute inset-3.5 border-2 border-[#4C0027]/12 pointer-events-none" />
-            <div className="absolute inset-[17px] border border-[#4C0027]/5 pointer-events-none" />
+            <div className="absolute inset-2 border-2 border-[#4C0027]/12 pointer-events-none" />
+            <div className="absolute inset-[11px] border border-[#4C0027]/5 pointer-events-none" />
 
             {/* Corner Ornaments */}
-            <div className="absolute top-3.5 left-3.5 w-4 h-4 border-t border-l border-[#4C0027]/40 pointer-events-none" />
-            <div className="absolute top-3.5 right-3.5 w-4 h-4 border-t border-r border-[#4C0027]/40 pointer-events-none" />
-            <div className="absolute bottom-3.5 left-3.5 w-4 h-4 border-b border-l border-[#4C0027]/40 pointer-events-none" />
-            <div className="absolute bottom-3.5 right-3.5 w-4 h-4 border-b border-r border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#4C0027]/40 pointer-events-none" />
+            <div className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#4C0027]/40 pointer-events-none" />
 
             {/* Paper Watermark Ornament for Premium Presentation */}
-            <div className="absolute right-12 top-12 opacity-[0.03] select-none pointer-events-none">
+            <div className="absolute right-8 top-8 opacity-[0.03] select-none pointer-events-none">
               <span className="font-black text-6xl text-stone-950 tracking-widest uppercase">ENTER</span>
             </div>
 
