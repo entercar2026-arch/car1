@@ -45,16 +45,16 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
     return [{ cars: [], showIntro: true, showTermsAndSignatures: true, pageType: "single" }];
   }
 
-  // If <= 4 cars, fits on 1 single page!
-  if (allCars.length <= 4) {
+  // If <= 12 cars, they can easily fit on a single page with all intros, terms, and signatures
+  if (allCars.length <= 12) {
     return [{ cars: allCars, showIntro: true, showTermsAndSignatures: true, pageType: "single" }];
   }
 
   const pages: QuotationPage[] = [];
   let remainingCars = [...allCars];
 
-  // Page 1: fits up to 7 cars
-  const page1CarsCount = Math.min(7, remainingCars.length - 1); // ensure at least 1 car remains to render subsequent page
+  // Page 1: fits up to 14 cars when not displaying terms and signatures
+  const page1CarsCount = Math.min(14, remainingCars.length - 1); // ensure at least 1 car remains to render subsequent page
   pages.push({
     cars: remainingCars.slice(0, page1CarsCount),
     showIntro: true,
@@ -66,8 +66,8 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
   // Now process subsequent pages
   while (remainingCars.length > 0) {
     // Is this the last page?
-    // The last page can hold up to 5 cars with terms/signatures.
-    if (remainingCars.length <= 5) {
+    // The last page can hold up to 12 cars comfortably along with terms/signatures.
+    if (remainingCars.length <= 12) {
       pages.push({
         cars: remainingCars,
         showIntro: false,
@@ -76,11 +76,11 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
       });
       remainingCars = [];
     } else {
-      // If we have more than 5 cars left, can we put 9 cars on a middle page?
-      const takeCount = Math.min(9, remainingCars.length);
+      // If we have more than 12 cars left, middle page can fit up to 18 cars without terms/signatures
+      const takeCount = Math.min(18, remainingCars.length);
       
-      // If this takes the rest of the cars (takeCount === remainingCars.length) but since takeCount > 5, they won't fit with terms/signatures!
-      if (takeCount === remainingCars.length && takeCount > 5) {
+      // If this takes the rest of the cars but is greater than 12, they won't fit with terms/signatures on a single last page.
+      if (takeCount === remainingCars.length && takeCount > 12) {
         const midCount = Math.floor(takeCount / 2);
         pages.push({
           cars: remainingCars.slice(0, midCount),
