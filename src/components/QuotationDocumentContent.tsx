@@ -51,70 +51,40 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
     return [{ cars: allCars, showIntro: true, showTermsAndSignatures: true, pageType: "single" }];
   }
 
-  // 2-page layout (Max: 16 on Page 1, 13 on Page 2 = 29 cars max)
-  if (N <= 29) {
-    // Distribute as evenly as possible, respecting max constraints: Page 1 <= 16, Page 2 <= 13
-    const ideal = Math.ceil(N / 2);
-    let count1 = Math.min(16, ideal);
-    let count2 = N - count1;
-    
-    // Adjust if count2 exceeds its limit of 13
-    if (count2 > 13) {
-      count1 += (count2 - 13);
-      count2 = 13;
+  // Determine number of pages first.
+  // Page 1 (First) can hold up to 16.
+  // Page last can hold up to 13.
+  // Each middle page can hold up to 22.
+  let numPages = 2;
+  if (N > 29) {
+    let m = 1;
+    while (16 + m * 22 + 13 < N) {
+      m++;
     }
-
-    return [
-      {
-        cars: allCars.slice(0, count1),
-        showIntro: true,
-        showTermsAndSignatures: false,
-        pageType: "first"
-      },
-      {
-        cars: allCars.slice(count1),
-        showIntro: false,
-        showTermsAndSignatures: true,
-        pageType: "last"
-      }
-    ];
+    numPages = 2 + m;
   }
 
-  // Multi-page layout (3 or more pages)
-  // Page 1 (First) can hold up to 16
-  // Page last can hold up to 13
-  // Each middle page can hold up to 22
-  let m = 1;
-  while (16 + m * 22 + 13 < N) {
-    m++;
+  // Set up the capacities for each page
+  const capacities: number[] = [];
+  if (numPages === 2) {
+    capacities.push(16);
+    capacities.push(13);
+  } else {
+    capacities.push(16);
+    for (let i = 0; i < numPages - 2; i++) {
+      capacities.push(22);
+    }
+    capacities.push(13);
   }
 
-  const numPages = 2 + m; // 1 first, m middle, 1 last
-  const capacities = [16];
-  for (let i = 0; i < m; i++) {
-    capacities.push(22);
-  }
-  capacities.push(13);
-
-  // Distribute cars as evenly as possible using a round-robin/minimal-fill algorithm
+  // Fill greedily from first page to last page, ensuring at least 1 car is left for each subsequent page.
   const counts = new Array(numPages).fill(0);
-  let assigned = 0;
-  while (assigned < N) {
-    let bestIndex = -1;
-    let minVal = Infinity;
-    for (let i = 0; i < numPages; i++) {
-      if (counts[i] < capacities[i]) {
-        if (counts[i] < minVal) {
-          minVal = counts[i];
-          bestIndex = i;
-        }
-      }
-    }
-    if (bestIndex === -1) {
-      break;
-    }
-    counts[bestIndex]++;
-    assigned++;
+  let remainingCarsCount = N;
+  for (let i = 0; i < numPages; i++) {
+    const minRequiredForSubsequentPages = numPages - 1 - i;
+    const maxPossibleOnThisPage = Math.min(capacities[i], remainingCarsCount - minRequiredForSubsequentPages);
+    counts[i] = maxPossibleOnThisPage;
+    remainingCarsCount -= maxPossibleOnThisPage;
   }
 
   // Create the pages from `counts`
