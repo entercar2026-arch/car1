@@ -586,6 +586,22 @@ const PrintPreviewOverlay = React.memo(({
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const quotationRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const updateZoomForMobile = () => {
+      const isMobile = window.innerWidth < 1024;
+      if (isMobile) {
+        // A4 page is ~794px wide. We scale it down to fit view width with safe 32px padding.
+        const fitZoom = Math.floor(((window.innerWidth - 32) / 794) * 100);
+        setZoom(Math.max(30, Math.min(85, fitZoom)));
+      } else {
+        setZoom(85);
+      }
+    };
+    updateZoomForMobile();
+    window.addEventListener("resize", updateZoomForMobile);
+    return () => window.removeEventListener("resize", updateZoomForMobile);
+  }, [isOpen]);
+
   const includeContract = false;
   const showWatermark = false;
 
@@ -894,7 +910,7 @@ const PrintPreviewOverlay = React.memo(({
       </div>
 
       {/* Outer scrolling canvas area */}
-      <div className="flex-1 overflow-y-auto px-4 py-8 flex flex-col items-center bg-stone-900/40">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-8 flex flex-col items-center bg-stone-900/40 w-full">
         {/* Realistic PDF View Container which acts as a desktop printer sheet */}
         <div
           className="w-full max-w-4xl transition-all duration-200 ease-out flex flex-col gap-10 items-center mt-4"
@@ -903,7 +919,7 @@ const PrintPreviewOverlay = React.memo(({
           {/* PAGE 1: THE ACTIVE QUOTE */}
           <div 
             ref={quotationRef} 
-            className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] max-w-full p-8 md:p-10 print:p-8 relative flex flex-col justify-between min-h-[297mm]"
+            className="bg-white text-stone-900 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border border-stone-250 rounded-sm w-[210mm] min-w-[210mm] shrink-0 print:min-w-0 print:max-w-full p-8 md:p-10 print:p-8 relative flex flex-col justify-between min-h-[297mm]"
             style={{
               backgroundImage: "linear-gradient(to right, rgba(76, 0, 39, 0.012) 1px, transparent 1px), linear-gradient(to bottom, rgba(76, 0, 39, 0.012) 1px, transparent 1px)",
               backgroundSize: "24px 24px",
