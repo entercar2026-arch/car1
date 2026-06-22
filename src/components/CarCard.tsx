@@ -775,8 +775,15 @@ Description: ${formattedDesc}`;
         id={`car-card-perspective-wrapper-${car.id}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        whileHover={{ y: -8 }}
-        transition={{ duration: 0.3 }}
+        whileHover={{ 
+          y: -10,
+          scale: 1.025,
+        }}
+        transition={{ 
+          type: "spring",
+          stiffness: 300,
+          damping: 20
+        }}
         className="relative w-full h-[530px] group"
         style={{ perspective: 1200 }}
       >
@@ -791,7 +798,7 @@ Description: ${formattedDesc}`;
               backfaceVisibility: "hidden", 
               WebkitBackfaceVisibility: "hidden" 
             }}
-            className="w-full h-full bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-300 flex flex-col justify-between absolute inset-0"
+            className="w-full h-full bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm group-hover:shadow-[0_25px_50px_-12px_rgba(76,0,39,0.08),0_12px_24px_-10px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col justify-between absolute inset-0"
           >
             {/* Visual Header & Image */}
             <div
@@ -1282,7 +1289,7 @@ Description: ${formattedDesc}`;
               WebkitBackfaceVisibility: "hidden",
               transform: "rotateY(180deg)"
             }}
-            className="w-full h-full bg-[#1C1917] rounded-3xl overflow-hidden border border-stone-800 shadow-2xl group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] transition-all duration-300 p-5 flex flex-col justify-between absolute inset-0 select-none text-stone-100"
+            className="w-full h-full bg-[#1C1917] rounded-3xl overflow-hidden border border-stone-800 shadow-2xl group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6),0_12px_24px_-10px_rgba(0,0,0,0.5)] transition-all duration-300 p-5 flex flex-col justify-between absolute inset-0 select-none text-stone-100"
           >
             {/* Header */}
             <div className="flex justify-between items-start pb-3.5 border-b border-stone-800">

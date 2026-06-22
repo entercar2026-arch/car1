@@ -158,8 +158,10 @@ const DesktopSearchBar = React.memo(({
                 onMouseDown={(e) => {
                   e.preventDefault();
                   setFilters((prev: any) => ({ ...prev, searchTerm: suggestion.name }));
-                  scrollToAnchor("category-filter-container");
                   setIsSearchFocused(false);
+                  setTimeout(() => {
+                    scrollToAnchor("catalog-section");
+                  }, 100);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
               >
@@ -246,9 +248,11 @@ const MobileSearchBar = React.memo(({
                 onMouseDown={(e) => {
                   e.preventDefault();
                   setFilters((prev: any) => ({ ...prev, searchTerm: suggestion.name }));
-                  scrollToAnchor("category-filter-container");
                   setIsSearchFocused(false);
                   setIsMobileMenuOpen(false);
+                  setTimeout(() => {
+                    scrollToAnchor("catalog-section");
+                  }, 100);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-stone-50 transition-colors flex items-center justify-between group/item"
               >
@@ -866,7 +870,6 @@ const PrintPreviewOverlay = React.memo(({
               <ZoomIn className="w-4 h-4" />
             </button>
           </div>
-
         </div>
 
         {/* Right: Action Buttons */}
@@ -1607,6 +1610,57 @@ export default function App() {
   // Mobile drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Scrollspy active section state and observer setup
+  const [activeSection, setActiveSection] = useState<string>("home-panel");
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const sectionIds = [
+            "home-panel",
+            "category-filter-container",
+            "about-section",
+            "workflow-section",
+            "faq-section"
+          ];
+          // sticky header offset calculation
+          const headerOffset = 90;
+          let currentSection = "home-panel";
+
+          for (const id of sectionIds) {
+            const el = document.getElementById(id);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              // If the section top is close to header
+              if (rect.top - headerOffset <= 120) {
+                currentSection = id;
+              }
+            }
+          }
+
+          // Handle bottom edge case
+          if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60) {
+            currentSection = "faq-section";
+          }
+
+          setActiveSection(currentSection);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // initial trigger
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   // Booking details toast state
   const [bookingToast, setBookingToast] = useState<string | null>(null);
 
@@ -2174,37 +2228,92 @@ export default function App() {
             <button
               id="nav-link-home"
               onClick={() => scrollToAnchor("home-panel")}
-              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+              className={`relative py-1 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+                activeSection === "home-panel"
+                  ? "text-[#4C0027]"
+                  : "text-stone-600 hover:text-[#4C0027]"
+              }`}
             >
-              {t.navHome}
+              <span>{t.navHome}</span>
+              {activeSection === "home-panel" && (
+                <motion.span
+                  layoutId="activeNavUnderline"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#4C0027] rounded-full"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
             </button>
             <button
               id="nav-link-catalog"
               onClick={() => scrollToAnchor("category-filter-container")}
-              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+              className={`relative py-1 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+                activeSection === "category-filter-container"
+                  ? "text-[#4C0027]"
+                  : "text-stone-600 hover:text-[#4C0027]"
+              }`}
             >
-              {t.navCatalog}
+              <span>{t.navCatalog}</span>
+              {activeSection === "category-filter-container" && (
+                <motion.span
+                  layoutId="activeNavUnderline"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#4C0027] rounded-full"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
             </button>
             <button
               id="nav-link-about"
               onClick={() => scrollToAnchor("about-section")}
-              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+              className={`relative py-1 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+                activeSection === "about-section"
+                  ? "text-[#4C0027]"
+                  : "text-stone-600 hover:text-[#4C0027]"
+              }`}
             >
-              {t.navAbout}
+              <span>{t.navAbout}</span>
+              {activeSection === "about-section" && (
+                <motion.span
+                  layoutId="activeNavUnderline"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#4C0027] rounded-full"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
             </button>
             <button
               id="nav-link-workflow"
               onClick={() => scrollToAnchor("workflow-section")}
-              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+              className={`relative py-1 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+                activeSection === "workflow-section"
+                  ? "text-[#4C0027]"
+                  : "text-stone-600 hover:text-[#4C0027]"
+              }`}
             >
-              {t.navWorkflow}
+              <span>{t.navWorkflow}</span>
+              {activeSection === "workflow-section" && (
+                <motion.span
+                  layoutId="activeNavUnderline"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#4C0027] rounded-full"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
             </button>
             <button
               id="nav-link-faq"
               onClick={() => scrollToAnchor("faq-section")}
-              className="text-stone-600 text-xs font-extrabold uppercase tracking-widest hover:text-[#4C0027] transition-colors cursor-pointer"
+              className={`relative py-1 text-xs font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
+                activeSection === "faq-section"
+                  ? "text-[#4C0027]"
+                  : "text-stone-600 hover:text-[#4C0027]"
+              }`}
             >
-              {t.navFAQ}
+              <span>{t.navFAQ}</span>
+              {activeSection === "faq-section" && (
+                <motion.span
+                  layoutId="activeNavUnderline"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#4C0027] rounded-full"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
             </button>
 
             {/* Desktop Global Search Bar */}
@@ -2429,56 +2538,76 @@ export default function App() {
                   setIsMobileMenuOpen={setIsMobileMenuOpen}
                 />
 
-                <a
+                <button
                   id="mobile-link-home"
-                  href="#home-panel"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToAnchor("home-panel");
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
+                  className={`block w-full text-left py-2.5 px-3.5 text-xs font-black uppercase tracking-widest transition-all rounded-lg cursor-pointer ${
+                    activeSection === "home-panel"
+                      ? "bg-[#4C0027]/5 text-[#4C0027] border-l-4 border-[#4C0027] pl-3.5 font-bold"
+                      : "text-stone-800 hover:bg-stone-50 hover:text-[#4C0027]"
+                  }`}
                 >
                   {t.navHome}
-                </a>
-                <a
+                </button>
+                <button
                   id="mobile-link-catalog"
-                  href="#category-filter-container"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToAnchor("category-filter-container");
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
+                  className={`block w-full text-left py-2.5 px-3.5 text-xs font-black uppercase tracking-widest transition-all rounded-lg cursor-pointer ${
+                    activeSection === "category-filter-container"
+                      ? "bg-[#4C0027]/5 text-[#4C0027] border-l-4 border-[#4C0027] pl-3.5 font-bold"
+                      : "text-stone-800 hover:bg-stone-50 hover:text-[#4C0027]"
+                  }`}
                 >
                   {t.navCatalog}
-                </a>
-                <a
+                </button>
+                <button
                   id="mobile-link-about"
-                  href="#about-section"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToAnchor("about-section");
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
+                  className={`block w-full text-left py-2.5 px-3.5 text-xs font-black uppercase tracking-widest transition-all rounded-lg cursor-pointer ${
+                    activeSection === "about-section"
+                      ? "bg-[#4C0027]/5 text-[#4C0027] border-l-4 border-[#4C0027] pl-3.5 font-bold"
+                      : "text-stone-800 hover:bg-stone-50 hover:text-[#4C0027]"
+                  }`}
                 >
                   {t.navAbout}
-                </a>
-                <a
+                </button>
+                <button
                   id="mobile-link-workflow"
-                  href="#workflow-section"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToAnchor("workflow-section");
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
+                  className={`block w-full text-left py-2.5 px-3.5 text-xs font-black uppercase tracking-widest transition-all rounded-lg cursor-pointer ${
+                    activeSection === "workflow-section"
+                      ? "bg-[#4C0027]/5 text-[#4C0027] border-l-4 border-[#4C0027] pl-3.5 font-bold"
+                      : "text-stone-800 hover:bg-stone-50 hover:text-[#4C0027]"
+                  }`}
                 >
                   {t.navWorkflow}
-                </a>
-                <a
+                </button>
+                <button
                   id="mobile-link-faq"
-                  href="#faq-section"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToAnchor("faq-section");
                   }}
-                  className="block w-full text-left py-2 text-xs font-black text-stone-800 uppercase tracking-widest hover:text-[#4C0027] cursor-pointer"
+                  className={`block w-full text-left py-2.5 px-3.5 text-xs font-black uppercase tracking-widest transition-all rounded-lg cursor-pointer ${
+                    activeSection === "faq-section"
+                      ? "bg-[#4C0027]/5 text-[#4C0027] border-l-4 border-[#4C0027] pl-3.5 font-bold"
+                      : "text-stone-800 hover:bg-stone-50 hover:text-[#4C0027]"
+                  }`}
                 >
                   {t.navFAQ}
-                </a>
+                </button>
               </div>
             </motion.div>
           )}
@@ -3051,15 +3180,17 @@ export default function App() {
               </motion.div>
             ) : (
               <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div 
+                  key={`${activeFilters.category}-${activeFilters.brand}-${activeFilters.transmission}-${activeFilters.fuelType}-${activeFilters.seats}-${activeFilters.maxPrice}-${activeFilters.searchTerm}-${activeFilters.likedOnly}-${currentPage}-${sortBy}`}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
                   <AnimatePresence mode="popLayout">
                     {paginatedCars.map((car, index) => (
                       <motion.div
                         key={car.id}
                         layout="position"
                         initial={{ opacity: 0, y: 70, scale: 0.95, rotateX: 6, rotateY: -1 }}
-                        whileInView={{ opacity: 1, y: 0, scale: 1, rotateX: 0, rotateY: 0 }}
-                        viewport={{ once: true, margin: "0px 0px -60px 0px", amount: 0.05 }}
+                        animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0, rotateY: 0 }}
                         exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                         transition={{
                           layout: { type: "spring", stiffness: 350, damping: 30 },
@@ -3068,7 +3199,7 @@ export default function App() {
                           rotateX: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
                           rotateY: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
                           y: { type: "spring", stiffness: 75, damping: 14, mass: 1.1 },
-                          delay: (index % 3) * 0.08
+                          delay: index * 0.04
                         }}
                         style={{ perspective: 1200 }}
                         className="h-full pt-2 pb-2"
