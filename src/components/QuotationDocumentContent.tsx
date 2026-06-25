@@ -332,43 +332,48 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
             <div className="z-10 w-full mt-auto pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400 font-mono tracking-wider">
               {page.showTermsAndSignatures ? (
                 /* Standard QR status footer on last page */
-                <div className="w-full grid grid-cols-3 gap-4 items-center">
-                  {/* Column 1: Scan to View Fleet interactive block */}
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="flex flex-col items-center gap-0.5 shrink-0 text-center">
-                      <div className="p-1 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
-                        <QRCodeSVG 
-                          value={catalogUrl} 
-                          size={32} 
-                          level="M" 
-                          includeMargin={false} 
-                          fgColor="#4C0027"
-                        />
+                <div className="w-full flex flex-col gap-3">
+                  <div className="w-full flex items-center justify-between">
+                    {/* Column 1: Scan to View Fleet interactive block */}
+                    <div className="flex items-center gap-4 text-left">
+                      <div className="flex flex-col items-center gap-1 shrink-0 text-center">
+                        <div className="p-1.5 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
+                          <QRCodeSVG 
+                            value={catalogUrl} 
+                            size={48} 
+                            level="M" 
+                            includeMargin={false} 
+                            fgColor="#4C0027"
+                          />
+                        </div>
+                        <span className="text-[7.5px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan Fleet</span>
                       </div>
-                      <span className="text-[6px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan Fleet</span>
+                      <div>
+                        <p className="text-[10px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Online Catalog</p>
+                        <p className="text-[9px] text-stone-600 font-medium leading-tight max-w-[280px] mt-1">
+                          Access interactive fleet, explore high-res galleries, virtual views, and core availability.
+                        </p>
+                        <p className="text-[8px] text-stone-400 font-mono mt-1 select-all">{catalogUrl}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[8px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Online Catalog</p>
-                      <p className="text-[7.5px] text-stone-500 font-medium leading-tight max-w-[170px] mt-0.5">
-                        Access interactive fleet, explore high-res galleries, virtual views, and core availability.
-                      </p>
-                      <p className="text-[6.5px] text-stone-400 font-mono mt-0.5">{catalogUrl}</p>
+
+                    {/* Divider line between Column 1 and 2 */}
+                    <div className="h-12 w-[1px] bg-stone-250 mx-4 shrink-0"></div>
+
+                    {/* Column 2: Document Metadata & Page Number */}
+                    <div className="flex flex-col items-center justify-center text-center py-1">
+                      <span className="text-[8px] font-mono font-bold text-stone-400 uppercase tracking-widest leading-none">Document Registry</span>
+                      <span className="text-[10px] font-black text-[#4C0027] font-mono tracking-wider mt-1">QT-2787-8EF4-31FC</span>
+                      <div className="mt-1.5 px-2 py-0.5 bg-stone-50 border border-stone-200 rounded-full flex items-center gap-1.5 shadow-sm leading-none">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span className="text-[8.5px] font-black text-stone-600 font-sans tracking-wide uppercase">Page {pageIndex + 1} of {pages.length}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Column 2: Document Metadata & Page Number */}
-                  <div className="flex flex-col items-center justify-center text-center py-1 border-x border-stone-250">
-                    <span className="text-[6.5px] font-mono font-bold text-stone-400 uppercase tracking-widest leading-none">Document Registry</span>
-                    <span className="text-[7.5px] font-black text-[#4C0027] font-mono tracking-wider mt-0.5">QT-2787-8EF4-31FC</span>
-                    <div className="mt-1 px-1.5 py-0.5 bg-stone-50 border border-stone-200 rounded-full flex items-center gap-1 shadow-sm leading-none">
-                      <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
-                      <span className="text-[7px] font-black text-stone-600 font-sans tracking-wide uppercase">Page {pageIndex + 1} of {pages.length}</span>
-                    </div>
-                  </div>
-
-                  {/* Column 3: Corporate disclaimer text */}
-                  <div className="text-right ml-auto max-w-xs">
-                    <p className="text-[7px] text-stone-400 font-mono tracking-wider leading-snug">
+                  {/* Row 2: Corporate disclaimer text */}
+                  <div className="w-full text-center pt-2.5 border-t border-stone-150 mt-1">
+                    <p className="text-[9px] text-stone-500 font-mono tracking-wider leading-snug">
                       Thank you for choosing ENTER. We value your business and look forward to safe, premier journeys.
                     </p>
                   </div>

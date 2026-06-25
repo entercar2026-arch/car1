@@ -2365,7 +2365,7 @@ export default function App() {
                 {/* Language Switcher */}
                 <button
                   onClick={() => React.startTransition(() => setLang(l => l === "en" ? "kh" : l === "kh" ? "zh" : "en"))}
-                  className="px-2 py-1 flex items-center gap-1.5 shrink-0 lg:mr-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
+                  className="px-2 py-1 flex items-center gap-1.5 shrink-0 lg:mr-1 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors border border-stone-200 cursor-pointer"
                   title="Toggle Language"
                 >
                   <img 
