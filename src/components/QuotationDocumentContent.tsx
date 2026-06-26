@@ -264,7 +264,7 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
                                     }
                                   }
                                 }}
-                                className={`w-11 h-7 rounded border border-stone-200 overflow-hidden bg-stone-50 shrink-0 ${setLightboxCar ? 'cursor-zoom-in' : ''} hover:border-[#4C0027] hover:scale-105 transition-all`}
+                                className={`w-16 h-10 rounded-md border border-stone-200 overflow-hidden bg-stone-50 shrink-0 ${setLightboxCar ? 'cursor-zoom-in' : ''} hover:border-[#4C0027] hover:scale-105 transition-all`}
                                 title="Click to zoom gallery lightbox"
                               >
                                 <img
@@ -337,28 +337,28 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
                     {/* Column 1: Scan to View Fleet interactive block */}
                     <div className="flex items-center gap-4 text-left">
                       <div className="flex flex-col items-center gap-1 shrink-0 text-center">
-                        <div className="p-1.5 bg-white border border-stone-200 rounded shadow-sm flex items-center justify-center">
+                        <div className="p-2 bg-white border border-stone-200 rounded-lg shadow-sm flex items-center justify-center">
                           <QRCodeSVG 
                             value={catalogUrl} 
-                            size={48} 
+                            size={72} 
                             level="M" 
                             includeMargin={false} 
                             fgColor="#4C0027"
                           />
                         </div>
-                        <span className="text-[7.5px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan Fleet</span>
+                        <span className="text-[8px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Scan Fleet</span>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Online Catalog</p>
-                        <p className="text-[9px] text-stone-600 font-medium leading-tight max-w-[280px] mt-1">
+                        <p className="text-[11px] font-black uppercase text-[#4C0027] tracking-wider leading-none">Online Catalog</p>
+                        <p className="text-[9.5px] text-stone-600 font-medium leading-normal max-w-[320px] mt-1.5">
                           Access interactive fleet, explore high-res galleries, virtual views, and core availability.
                         </p>
-                        <p className="text-[8px] text-stone-400 font-mono mt-1 select-all">{catalogUrl}</p>
+                        <p className="text-[8.5px] text-stone-400 font-mono mt-1.5 select-all">{catalogUrl}</p>
                       </div>
                     </div>
 
                     {/* Divider line between Column 1 and 2 */}
-                    <div className="h-12 w-[1px] bg-stone-250 mx-4 shrink-0"></div>
+                    <div className="h-16 w-[1px] bg-stone-250 mx-4 shrink-0"></div>
 
                     {/* Column 2: Document Metadata & Page Number */}
                     <div className="flex flex-col items-center justify-center text-center py-1">
