@@ -52,13 +52,13 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
   }
 
   // Determine number of pages first.
-  // Page 1 (First) can hold up to 11.
+  // Page 1 (First) can hold up to 12.
   // Page last can hold up to 9.
   // Each middle page can hold up to 15.
   let numPages = 2;
-  if (N > 20) {
+  if (N > 21) {
     let m = 1;
-    while (11 + m * 15 + 9 < N) {
+    while (12 + m * 15 + 9 < N) {
       m++;
     }
     numPages = 2 + m;
@@ -67,10 +67,10 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
   // Set up the capacities for each page
   const capacities: number[] = [];
   if (numPages === 2) {
-    capacities.push(11);
+    capacities.push(12);
     capacities.push(9);
   } else {
-    capacities.push(11);
+    capacities.push(12);
     for (let i = 0; i < numPages - 2; i++) {
       capacities.push(15);
     }
