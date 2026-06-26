@@ -1558,7 +1558,7 @@ export default function App() {
     return {
       searchTerm: initialModel,
       category: "All",
-      maxPrice: 5000,
+      maxPrice: 10000,
       transmission: "All",
       fuelType: "All",
       seats: "All",
@@ -1942,7 +1942,7 @@ export default function App() {
     setFilters({
       searchTerm: "",
       category: "All",
-      maxPrice: 5000,
+      maxPrice: 10000,
       transmission: "All",
       fuelType: "All",
       seats: "All",
@@ -2015,7 +2015,7 @@ export default function App() {
     setFilters({
       searchTerm: "",
       category: "All",
-      maxPrice: 5000,
+      maxPrice: 10000,
       transmission: "All",
       fuelType: "All",
       seats: "All",
@@ -2726,18 +2726,18 @@ export default function App() {
 
                   {/* Quick Range Shortcuts */}
                   <div className="flex gap-2 mb-3">
-                    {[500, 1000, 2000].map(val => (
+                    {[1000, 3000, 5000, 10000].map(val => (
                       <button
                         key={val}
                         type="button"
                         onClick={(e) => { e.stopPropagation(); setFilters(prev => ({ ...prev, maxPrice: val })); }}
-                        className={`flex-1 py-1 px-2 text-[10px] sm:text-[11px] font-mono font-bold rounded text-center transition-colors shadow-sm ${
+                        className={`flex-1 py-1 px-1 sm:px-2 text-[10px] sm:text-[11px] font-mono font-bold rounded text-center transition-colors shadow-sm ${
                           filters.maxPrice === val 
                             ? 'bg-amber-400 text-stone-900 border border-amber-500/30' 
                             : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100 hover:text-stone-900'
                         }`}
                       >
-                        ${val}
+                        ${val.toLocaleString()}
                       </button>
                     ))}
                   </div>
@@ -2746,7 +2746,7 @@ export default function App() {
                     id="filter-slider-price"
                     type="range"
                     min="300"
-                    max="5000"
+                    max="10000"
                     step="100"
                     value={filters.maxPrice}
                     onChange={(e) =>
@@ -2760,7 +2760,7 @@ export default function App() {
                   />
                   <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
                     <span>$300{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
-                    <span>$5,000{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
+                    <span>$10,000{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
                   </div>
                 </div>
               </div>
@@ -2967,7 +2967,7 @@ export default function App() {
                 const trType = filters.transmission === "Automatic" ? t.automatic : filters.transmission === "Manual" ? t.manual : filters.transmission;
                 activeTags.push({ id: 'transmission', label: `${trType}`, onRemove: () => setFilters(pre => ({ ...pre, transmission: "All" })) });
               }
-              if (filters.maxPrice < 5000) activeTags.push({ id: 'maxPrice', label: `Max $${filters.maxPrice}/mo`, onRemove: () => setFilters(pre => ({ ...pre, maxPrice: 5000 })) });
+              if (filters.maxPrice < 10000) activeTags.push({ id: 'maxPrice', label: `Max $${filters.maxPrice}/mo`, onRemove: () => setFilters(pre => ({ ...pre, maxPrice: 10000 })) });
               if (filters.seats !== "All") activeTags.push({ id: 'seats', label: `${filters.seats} Seats`, onRemove: () => setFilters(pre => ({ ...pre, seats: "All" })) });
               if (filters.likedOnly) activeTags.push({ id: 'likedOnly', label: `${t.liked || 'Liked'}`, onRemove: () => setFilters(pre => ({ ...pre, likedOnly: false })) });
 
