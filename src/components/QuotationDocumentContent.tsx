@@ -52,13 +52,13 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
   }
 
   // Determine number of pages first.
-  // Page 1 (First) can hold up to 12.
-  // Page last can hold up to 9.
-  // Each middle page can hold up to 15.
+  // Page 1 (First) can hold up to 13.
+  // Page last can hold up to 10.
+  // Each middle page can hold up to 17.
   let numPages = 2;
-  if (N > 21) {
+  if (N > 23) {
     let m = 1;
-    while (12 + m * 15 + 9 < N) {
+    while (13 + m * 17 + 10 < N) {
       m++;
     }
     numPages = 2 + m;
@@ -67,14 +67,14 @@ function getQuotationPages(allCars: Car[]): QuotationPage[] {
   // Set up the capacities for each page
   const capacities: number[] = [];
   if (numPages === 2) {
-    capacities.push(12);
-    capacities.push(9);
+    capacities.push(13);
+    capacities.push(10);
   } else {
-    capacities.push(12);
+    capacities.push(13);
     for (let i = 0; i < numPages - 2; i++) {
-      capacities.push(15);
+      capacities.push(17);
     }
-    capacities.push(9);
+    capacities.push(10);
   }
 
   // Fill greedily from first page to last page, ensuring at least 1 car is left for each subsequent page.
@@ -242,18 +242,18 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
                   <table className="w-full text-xs text-left border-collapse">
                     <thead>
                       <tr className="bg-[#4C0027] text-white">
-                        <th className="px-3 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 w-12 text-[10px]">No.</th>
-                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-left border-b border-stone-300 text-[10px]">Vehicle Model Description</th>
-                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Fuel Type</th>
-                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Monthly Rent (USD)</th>
-                        <th className="px-4 py-2 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Refundable Deposit</th>
+                        <th className="px-3 py-1.5 font-bold uppercase tracking-wider text-center border-b border-stone-300 w-12 text-[10px]">No.</th>
+                        <th className="px-4 py-1.5 font-bold uppercase tracking-wider text-left border-b border-stone-300 text-[10px]">Vehicle Model Description</th>
+                        <th className="px-4 py-1.5 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Fuel Type</th>
+                        <th className="px-4 py-1.5 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Monthly Rent (USD)</th>
+                        <th className="px-4 py-1.5 font-bold uppercase tracking-wider text-center border-b border-stone-300 text-[10px]">Refundable Deposit</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-200">
                       {page.cars.map((car: Car, index: number) => (
                         <tr key={car.id} className="bg-white hover:bg-stone-50/50 transition-colors">
-                          <td className="px-3 py-2 text-center text-stone-500 font-mono font-bold border-r border-stone-200 w-12 bg-stone-50/20">{offset + index + 1}</td>
-                          <td className="px-4 py-2 font-bold text-stone-900">
+                          <td className="px-3 py-1.5 text-center text-stone-500 font-mono font-bold border-r border-stone-200 w-12 bg-stone-50/20">{offset + index + 1}</td>
+                          <td className="px-4 py-1.5 font-bold text-stone-900">
                             <div className="flex items-center gap-3">
                               <div 
                                 onClick={() => {
@@ -281,9 +281,9 @@ export const QuotationDocumentContent: React.FC<QuotationDocumentContentProps> =
                               <span className="block font-bold text-stone-900 leading-tight">{car.name}</span>
                             </div>
                           </td>
-                          <td className="px-4 py-2 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
-                          <td className="px-4 py-2 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
-                          <td className="px-4 py-2 text-center text-[#4C0027] font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
+                          <td className="px-4 py-1.5 text-center text-stone-600 uppercase font-semibold text-[10px] tracking-wide">{car.fuelType || "Gasoline"}</td>
+                          <td className="px-4 py-1.5 text-center text-stone-900 font-extrabold font-mono">${car.price.toLocaleString()}/mo</td>
+                          <td className="px-4 py-1.5 text-center text-[#4C0027] font-bold font-mono bg-stone-50">${(car.price * 1).toLocaleString()}</td>
                         </tr>
                       ))}
                     </tbody>
