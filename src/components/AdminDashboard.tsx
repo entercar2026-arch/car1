@@ -1339,14 +1339,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                             const updated = [...formDotColors];
                                             for (let k = 0; k <= idx; k++) {
                                               if (updated[k] === undefined) {
-                                                updated[k] = k === 0 ? formDotColor : (formDotColors[k] || formDotColor || "#4C0027");
+                                                updated[k] = formDotColors[k] || formDotColor || "#4C0027";
                                               }
                                             }
                                             updated[idx] = e.target.value;
                                             setFormDotColors(updated);
-                                            if (idx === 0) {
-                                              setFormDotColor(e.target.value);
-                                            }
                                           }}
                                           className="w-8 h-8 cursor-pointer border border-stone-300 rounded-md p-0.5 bg-white shrink-0"
                                           title={`Choose color for slide ${idx + 1}`}

@@ -322,6 +322,23 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return () => clearTimeout(preloadTimeout);
   }, [allPhotos, windowWidth, connectionStatus, currentPhotoIndex]);
 
+  const isColorLight = (hex?: string) => {
+    if (!hex) return false;
+    let color = hex.trim().replace("#", "");
+    if (color.toLowerCase() === "white") return true;
+    if (color.toLowerCase() === "fff") return true;
+    if (color.toLowerCase() === "ffffff") return true;
+    if (color.length === 3) {
+      color = color[0] + color[0] + color[1] + color[1] + color[2] + color[2];
+    }
+    if (color.length !== 6) return false;
+    const r = parseInt(color.substring(0, 2), 16);
+    const g = parseInt(color.substring(2, 4), 16);
+    const b = parseInt(color.substring(4, 6), 16);
+    const hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b));
+    return hsp > 180;
+  };
+
   const isVideoUrl = (url?: string) => {
     if (!url) return false;
     const lower = url.toLowerCase();
@@ -1084,8 +1101,8 @@ Description: ${formattedDesc}`;
                           }}
                           className={`w-6 h-6 rounded-full border flex items-center justify-center origin-center cursor-pointer transition-all ${
                             isActive 
-                              ? "shadow-md z-10 ring-2 ring-offset-1 border-white" 
-                              : "border-stone-200 hover:scale-110 hover:opacity-90"
+                              ? `shadow-md z-10 ring-2 ring-offset-1 ${isColorLight(activeColor) ? "border-stone-400/80 ring-stone-400" : "border-white ring-white"}` 
+                              : `${isColorLight(activeColor) ? "border-stone-300" : "border-stone-200"} hover:scale-110 hover:opacity-90`
                           }`}
                           style={{
                             backgroundColor: activeColor,
@@ -1102,7 +1119,9 @@ Description: ${formattedDesc}`;
                           {isItemVideo && (
                             <svg 
                               viewBox="0 0 24 24" 
-                              className="w-3.5 h-3.5 fill-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                              className={`w-3.5 h-3.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] ${
+                                isColorLight(activeColor) ? "fill-stone-900" : "fill-white"
+                              }`}
                             >
                               {isActive && isPlaying ? (
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
