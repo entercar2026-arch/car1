@@ -1060,7 +1060,7 @@ Description: ${formattedDesc}`;
                   <div className="flex items-center gap-2 mb-3">
                     {allPhotos.map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
-                      const activeColor = idx === 0 ? (car.dotColor || "#4C0027") : ((car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027");
+                      const activeColor = (car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027";
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
                       
                       return (
