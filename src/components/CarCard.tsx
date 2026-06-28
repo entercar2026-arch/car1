@@ -1058,40 +1058,51 @@ Description: ${formattedDesc}`;
               <div>
                 {allPhotos.length > 1 && (
                   <div className="flex items-center gap-2 mb-3">
-                    {allPhotos.map((_, idx) => {
+                    {allPhotos.map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const activeColor = idx === 0 ? (car.dotColor || "#4C0027") : ((car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027");
-                                           if (idx === 0) {
-                        return (
-                          <motion.button
-                            key={idx}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCurrentPhotoIndex(idx);
-                              const hasVideoAtZero = !!effectiveVideoUrl || (allPhotos[0] && isVideoUrl(allPhotos[0]));
-                              if (hasVideoAtZero) {
-                                if (isActive) {
-                                  setIsPlaying((prev) => !prev);
-                                } else {
-                                  setIsPlaying(true);
-                                }
+                      const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
+                      
+                      return (
+                        <motion.button
+                          key={idx}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isActive) {
+                              if (isItemVideo) {
+                                setIsPlaying((prev) => !prev);
                               }
-                            }}
-                            className={`w-5 h-5 rounded-full border border-stone-300/60 flex items-center justify-center origin-center cursor-pointer ${
-                              isActive ? "select-none shadow-md z-10 bg-red-50 text-red-600 border-red-300" : "bg-stone-50 text-red-500 hover:bg-stone-200/80"
-                            }`}
-                            animate={{
-                              scale: isActive ? 1.3 : 1.0,
-                            }}
-                            whileHover={{ scale: isActive ? 1.3 : 1.15 }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                            title={isActive && isPlaying ? "Pause Video" : "Play Video"}
-                          >
+                            } else {
+                              setCurrentPhotoIndex(idx);
+                              if (isItemVideo) {
+                                setIsPlaying(true);
+                              } else {
+                                setIsPlaying(false);
+                              }
+                            }
+                          }}
+                          className={`w-6 h-6 rounded-full border flex items-center justify-center origin-center cursor-pointer transition-all ${
+                            isActive 
+                              ? "shadow-md z-10 ring-2 ring-offset-1 border-white" 
+                              : "border-stone-200 hover:scale-110 hover:opacity-90"
+                          }`}
+                          style={{
+                            backgroundColor: activeColor,
+                            "--tw-ring-color": activeColor,
+                          } as any}
+                          animate={{
+                            scale: isActive ? 1.25 : 1.0,
+                          }}
+                          whileHover={{ scale: isActive ? 1.25 : 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                          title={isItemVideo ? (isActive && isPlaying ? "Pause Video" : "Play Video") : `Go to photo ${idx + 1}`}
+                        >
+                          {isItemVideo && (
                             <svg 
                               viewBox="0 0 24 24" 
-                              className="w-3 h-3 fill-current"
+                              className="w-3.5 h-3.5 fill-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
                             >
                               {isActive && isPlaying ? (
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
@@ -1099,32 +1110,8 @@ Description: ${formattedDesc}`;
                                 <path d="M8 5v14l11-7z" />
                               )}
                             </svg>
-                          </motion.button>
-                        );
-                      }
-
-                      return (
-                        <motion.button
-                          key={idx}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentPhotoIndex(idx);
-                          }}
-                          className={`w-5 h-5 rounded-none border border-stone-300/60 origin-center cursor-pointer ${
-                            isActive ? "shadow-md z-10" : "hover:opacity-90"
-                          }`}
-                          style={{
-                            backgroundColor: activeColor
-                          }}
-                          animate={{
-                            scale: isActive ? 1.3 : 1.0,
-                          }}
-                          whileHover={{ scale: isActive ? 1.3 : 1.15 }}
-                          whileTap={{ scale: 0.95 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                          title={`Go to photo ${idx + 1}`}
-                        />
+                          )}
+                        </motion.button>
                       );
                     })}
                   </div>
