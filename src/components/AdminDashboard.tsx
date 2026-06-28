@@ -32,6 +32,13 @@ import {
 } from "lucide-react";
 
 
+const splitUrls = (input: string): string[] => {
+  if (!input) return [];
+  // Insert a delimiter before any "http://", "https://", "data:" that is not at the start of the string
+  const normalized = input.replace(/(?<!^)(https?:\/\/|data:)/gi, '\n$1');
+  return normalized.split(/[\n,;\s]+/).map(p => p.trim()).filter(Boolean);
+};
+
 
 // Optimized Form components to prevent full-dashboard synchronous re-renders on keystroke (INP fix)
 const OptimizedTextArea = ({ id, value, onChange, placeholder, className, rows }: any) => {
@@ -180,8 +187,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formDotColors, setFormDotColors] = useState<string[]>([]);
 
   const estimatedDotCount = useMemo(() => {
-    const photosArr = formPhotos.split("\n").map(l => l.trim()).filter(Boolean);
-    const mainImg = formImage.trim();
+    const photosArr = splitUrls(formPhotos);
+    const mainImgUrls = splitUrls(formImage);
+    const mainImg = mainImgUrls[0] || "";
     if (!mainImg) {
       return photosArr.length;
     }
@@ -289,16 +297,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    let processedImage = formImage.trim();
+    const cleanAndResolveDrive = (url: string) => {
+      const trimmed = url.trim();
+      const dm = trimmed.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+      if (dm && dm[1]) {
+        return `https://drive.google.com/uc?export=view&id=${dm[1]}`;
+      }
+      return trimmed;
+    };
 
-    // Check for Google Drive links and convert them to direct image links
-    const driveMatch = processedImage.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
-    if (driveMatch && driveMatch[1]) {
-      processedImage = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
-    }
+    const imageUrls = splitUrls(formImage);
+    const primaryUrl = imageUrls[0] || "";
+    const extraFromMain = imageUrls.slice(1);
 
-    // Ensure empty image stays empty, avoiding hardcoded Range Rover fallback
-    const targetImageUrl = processedImage;
+    const targetImageUrl = cleanAndResolveDrive(primaryUrl);
+    const galleryUrls = splitUrls(formPhotos);
+    const finalPhotos = [...extraFromMain, ...galleryUrls].map(cleanAndResolveDrive).filter(Boolean);
 
     if (editingCar) {
       onUpdateCar({
@@ -313,7 +327,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         description: formDescription,
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
-        photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
+        photos: finalPhotos,
         dotColor: formDotColor,
         dotColors: formDotColors,
       });
@@ -329,7 +343,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         description: formDescription,
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
-        photos: formPhotos.split("\n").map(l => l.trim()).filter(Boolean),
+        photos: finalPhotos,
         dotColor: formDotColor,
         dotColors: formDotColors,
       });
@@ -1124,7 +1138,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           type="text"
                           value={formImage}
                           onChange={(val: any) => setFormImage(val)}
-                          placeholder="https://... or Google Drive link"
+                          placeholder="Paste image/video link(s). Multiple links pasted together are split automatically!"
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
@@ -1134,7 +1148,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {/* Extra Photos for Gallery */}
                   <div className="sm:col-span-2">
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
-                      Vehicle Image Gallery (Optional, one URL per line)
+                      Vehicle Image/Video Gallery (Optional, one URL per line, space, or comma)
                     </label>
                     <div className="relative">
                       <span className="absolute top-2.5 left-0 pl-3.5 flex text-stone-400">
@@ -1144,8 +1158,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         id="input-car-photos"
                         value={formPhotos}
                         onChange={(val: any) => setFormPhotos(val)}
-                        placeholder="https://... (image 1)\nhttps://... (image 2)"
-                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs min-h-[60px] focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                        placeholder="https://... (link 1)&#10;https://... (link 2)&#10;Paste multiple URLs separated by newlines, commas, spaces, or concatenated directly"
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs min-h-[70px] focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
                     </div>
                   </div>
