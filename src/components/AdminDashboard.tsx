@@ -1243,6 +1243,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             { hex: "#2563EB", name: "Blue" },
                             { hex: "#059669", name: "Green" },
                             { hex: "#D97706", name: "Amber" },
+                            { hex: "#FFFFFF", name: "White" },
                             { hex: "#1C1917", name: "Stone" }
                           ].map((colorObj) => (
                             <button
@@ -1250,7 +1251,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               type="button"
                               onClick={() => setFormDotColor(colorObj.hex)}
                               className={`w-5 h-5 rounded-full border transition-all duration-150 cursor-pointer ${
-                                formDotColor.toLowerCase() === colorObj.hex.toLowerCase() ? "scale-125 border-stone-800 ring-2 ring-stone-300" : "border-transparent hover:scale-110"
+                                formDotColor.toLowerCase() === colorObj.hex.toLowerCase()
+                                  ? "scale-125 border-stone-800 ring-2 ring-stone-300"
+                                  : `${colorObj.hex.toLowerCase() === "#ffffff" ? "border-stone-300" : "border-transparent"} hover:scale-110`
                               }`}
                               style={{ backgroundColor: colorObj.hex }}
                               title={colorObj.name}
