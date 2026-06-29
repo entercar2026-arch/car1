@@ -1024,9 +1024,9 @@ Description: ${formattedDesc}`;
               className="p-5 flex-1 flex flex-col justify-between pt-2"
             >
               <div>
-                {allPhotos.length > 1 && (
-                  <div className="flex items-center gap-2 mb-3">
-                    {allPhotos.map((itemUrl, idx) => {
+                <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2">
+                  <div className="flex items-center gap-2">
+                    {allPhotos.length > 1 && allPhotos.map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const activeColor = (car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027";
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
@@ -1085,16 +1085,7 @@ Description: ${formattedDesc}`;
                       );
                     })}
                   </div>
-                )}
-                <div className="flex justify-between items-center mb-2 w-full gap-2">
-                  <h3
-                    id={`car-title-${car.id}`}
-                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate flex-1 min-w-0"
-                  >
-                    <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
-                    <span className="truncate">{car.name}</span>
-                  </h3>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1145,6 +1136,15 @@ Description: ${formattedDesc}`;
                       <Share2 className="w-3.5 h-3.5 text-current" />
                     </button>
                   </div>
+                </div>
+                <div className="mb-2 w-full">
+                  <h3
+                    id={`car-title-${car.id}`}
+                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate"
+                  >
+                    <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
+                    <span className="truncate">{car.name}</span>
+                  </h3>
                 </div>
                   <div className="mb-4">
                     {car.description && (
