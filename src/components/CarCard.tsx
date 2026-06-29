@@ -1015,58 +1015,7 @@ Description: ${formattedDesc}`;
                 </div>
               )}
 
-              {/* Action Buttons Overlay */}
-              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsPhotosOpen(true);
-                  }}
-                  title={t.viewPhotos || "View Photos"}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-stone-600 hover:text-[#4C0027] border border-stone-200 transition-colors cursor-pointer shadow-sm"
-                >
-                  <Scan className="w-4 h-4 text-current" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleLike && onToggleLike(car.id);
-                  }}
-                  title={(t as any).liked || "Wishlist"}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600"
-                >
-                  <Heart
-                    className={`w-4 h-4 transition-colors ${
-                      isLiked
-                        ? "fill-rose-500 text-rose-500"
-                        : "text-stone-500 hover:text-rose-500"
-                    }`}
-                  />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const shareUrl = new URL(window.location.href);
-                    shareUrl.searchParams.set('model', car.name);
-                    const finalUrl = shareUrl.toString();
-
-                    if (navigator.share) {
-                      navigator.share({
-                        title: `Check out this ${car.name}`,
-                        text: shareText,
-                        url: finalUrl,
-                      }).catch(console.error);
-                    } else {
-                      navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
-                      alert("Link & details copied to clipboard!");
-                    }
-                  }}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
-                  title="Share"
-                >
-                  <Share2 className="w-3.5 h-3.5 text-current" />
-                </button>
-              </div>
+              {/* Action Buttons Overlay removed from top right of the media container */}
             </div>
 
             {/* Narrative & Info */}
@@ -1137,14 +1086,65 @@ Description: ${formattedDesc}`;
                     })}
                   </div>
                 )}
-                <div className="mb-1 w-full">
+                <div className="flex justify-between items-center mb-2 w-full gap-2">
                   <h3
                     id={`car-title-${car.id}`}
-                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate"
+                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate flex-1 min-w-0"
                   >
                     <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
                     <span className="truncate">{car.name}</span>
                   </h3>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPhotosOpen(true);
+                      }}
+                      title={t.viewPhotos || "View Photos"}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
+                    >
+                      <Scan className="w-4 h-4 text-current" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLike && onToggleLike(car.id);
+                      }}
+                      title={(t as any).liked || "Wishlist"}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600"
+                    >
+                      <Heart
+                        className={`w-4 h-4 transition-colors ${
+                          isLiked
+                            ? "fill-rose-500 text-rose-500"
+                            : "text-stone-500 hover:text-rose-500"
+                        }`}
+                      />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const shareUrl = new URL(window.location.href);
+                        shareUrl.searchParams.set('model', car.name);
+                        const finalUrl = shareUrl.toString();
+
+                        if (navigator.share) {
+                          navigator.share({
+                            title: `Check out this ${car.name}`,
+                            text: shareText,
+                            url: finalUrl,
+                          }).catch(console.error);
+                        } else {
+                          navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
+                          alert("Link & details copied to clipboard!");
+                        }
+                      }}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
+                      title="Share"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-current" />
+                    </button>
+                  </div>
                 </div>
                   <div className="mb-4">
                     {car.description && (
