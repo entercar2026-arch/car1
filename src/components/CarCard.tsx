@@ -1026,6 +1026,34 @@ Description: ${formattedDesc}`;
               <div>
                 <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2">
                   <div className="flex items-center gap-2">
+                    {(hasVideo || !!effectiveVideoUrl) && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (currentPhotoIndex !== 0) {
+                            setCurrentPhotoIndex(0);
+                            setIsPlaying(true);
+                          } else {
+                            setIsPlaying(prev => !prev);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-xs ${
+                          currentPhotoIndex === 0 && isPlaying
+                            ? "bg-[#4C0027] text-white border-[#4C0027] ring-2 ring-[#4C0027]/20"
+                            : "bg-stone-50 hover:bg-stone-100 text-[#4C0027] border-stone-200 hover:scale-105"
+                        }`}
+                        title={currentPhotoIndex === 0 && isPlaying ? "Pause Video" : "Play Video"}
+                      >
+                        {currentPhotoIndex === 0 && isPlaying ? (
+                          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                          </svg>
+                        ) : (
+                          <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
+                        )}
+                      </button>
+                    )}
                     {allPhotos.length > 1 && allPhotos.map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const activeColor = (car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027";
