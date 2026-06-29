@@ -1030,6 +1030,8 @@ Description: ${formattedDesc}`;
                       const carThemeColor = car.dotColor || "#4C0027";
                       const isPlayActive = currentPhotoIndex === 0 && isPlaying;
                       const textClass = isColorLight(carThemeColor) ? "text-stone-900" : "text-white";
+                      // If the theme color is too light (like white, silver), use the beautiful brand maroon "#4C0027" for the inactive icon so it's perfectly visible.
+                      const inactiveIconColor = isColorLight(carThemeColor) ? "#4C0027" : carThemeColor;
                       return (
                         <button
                           type="button"
@@ -1055,7 +1057,7 @@ Description: ${formattedDesc}`;
                                   "--tw-ring-color": `${carThemeColor}33`,
                                 } as any
                               : {
-                                  color: carThemeColor,
+                                  color: inactiveIconColor,
                                 }
                           }
                           title={isPlayActive ? "Pause Video" : "Play Video"}
@@ -1110,22 +1112,7 @@ Description: ${formattedDesc}`;
                           whileTap={{ scale: 0.95 }}
                           transition={{ type: "spring", stiffness: 400, damping: 25 }}
                           title={isItemVideo ? (isActive && isPlaying ? "Pause Video" : "Play Video") : `Go to photo ${idx + 1}`}
-                        >
-                          {isItemVideo && (
-                            <svg 
-                              viewBox="0 0 24 24" 
-                              className={`w-3.5 h-3.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] ${
-                                isColorLight(activeColor) ? "fill-stone-900" : "fill-white"
-                              }`}
-                            >
-                              {isActive && isPlaying ? (
-                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                              ) : (
-                                <path d="M8 5v14l11-7z" />
-                              )}
-                            </svg>
-                          )}
-                        </motion.button>
+                        />
                       );
                     })}
                   </div>
