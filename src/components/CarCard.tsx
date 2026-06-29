@@ -1030,7 +1030,7 @@ Description: ${formattedDesc}`;
                       const carThemeColor = car.dotColor || "#4C0027";
                       const isPlayActive = currentPhotoIndex === 0 && isPlaying;
                       const isLight = isColorLight(carThemeColor);
-                      const iconColor = isLight ? "#4C0027" : "#FFFFFF";
+                      const iconColor = isLight ? "#000000" : "#FFFFFF";
                       const ringColor = `${carThemeColor}44`;
                       return (
                         <button
@@ -1064,6 +1064,12 @@ Description: ${formattedDesc}`;
                       );
                     })()}
                     {allPhotos.length > 1 && allPhotos.map((itemUrl, idx) => {
+                      // Skip rendering the dot for index 0 if the play button is already displayed for it
+                      const showPlayButton = hasVideo || !!effectiveVideoUrl;
+                      if (showPlayButton && idx === 0) {
+                        return null;
+                      }
+
                       const isActive = idx === currentPhotoIndex;
                       const activeColor = (car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027";
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
