@@ -1015,56 +1015,7 @@ Description: ${formattedDesc}`;
                 </div>
               )}
 
-              {/* Video Actions overlay */}
-              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                {(hasVideo || !!effectiveVideoUrl) && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (currentPhotoIndex !== 0) {
-                        setCurrentPhotoIndex(0);
-                        setIsPlaying(true);
-                      } else {
-                        setIsPlaying(prev => !prev);
-                      }
-                    }}
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-white/80 backdrop-blur-sm text-stone-700 border border-stone-200 hover:bg-white shadow-sm"
-                    title={currentPhotoIndex === 0 && isPlaying ? "Pause Video" : "Play Video"}
-                  >
-                    {currentPhotoIndex === 0 && isPlaying ? (
-                      <span className="text-[10px] font-extrabold select-none tracking-tighter">⏸</span>
-                    ) : (
-                      <Play className="w-3.5 h-3.5 fill-current text-stone-700 ml-0.5" />
-                    )}
-                  </button>
-                )}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsPhotosOpen(true);
-                  }}
-                  title={t.viewPhotos || "View Photos"}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
-                >
-                  <Scan className="w-4 h-4 text-current" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleLike && onToggleLike(car.id);
-                  }}
-                  title={(t as any).liked || "Wishlist"}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors border border-stone-200 hover:bg-white cursor-pointer shadow-sm"
-                >
-                  <Heart
-                    className={`w-4 h-4 transition-colors ${
-                      isLiked
-                        ? "fill-rose-500 text-rose-500"
-                        : "text-stone-500"
-                    }`}
-                  />
-                </button>
-              </div>
+              {/* Video Actions overlay removed - moved to the content area below the media */}
             </div>
 
             {/* Narrative & Info */}
@@ -1135,37 +1086,86 @@ Description: ${formattedDesc}`;
                     })}
                   </div>
                 )}
-                <div className="flex justify-between items-baseline mb-1 w-full gap-2 flex-wrap">
+                <div className="flex justify-between items-center mb-1 w-full gap-2">
                   <h3
                     id={`car-title-${car.id}`}
-                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-2"
+                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 flex-1 min-w-0 pr-1 truncate"
                   >
                     <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
-                    {car.name}
+                    <span className="truncate">{car.name}</span>
                   </h3>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const shareUrl = new URL(window.location.href);
-                      shareUrl.searchParams.set('model', car.name);
-                      const finalUrl = shareUrl.toString();
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {(hasVideo || !!effectiveVideoUrl) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (currentPhotoIndex !== 0) {
+                            setCurrentPhotoIndex(0);
+                            setIsPlaying(true);
+                          } else {
+                            setIsPlaying(prev => !prev);
+                          }
+                        }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-stone-50 hover:bg-stone-100 text-stone-600 border border-stone-200 hover:text-[#4C0027] shadow-sm"
+                        title={currentPhotoIndex === 0 && isPlaying ? "Pause Video" : "Play Video"}
+                      >
+                        {currentPhotoIndex === 0 && isPlaying ? (
+                          <span className="text-[10px] font-extrabold select-none tracking-tighter text-[#4C0027]">⏸</span>
+                        ) : (
+                          <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsPhotosOpen(true);
+                      }}
+                      title={t.viewPhotos || "View Photos"}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
+                    >
+                      <Scan className="w-3.5 h-3.5 text-current" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLike && onToggleLike(car.id);
+                      }}
+                      title={(t as any).liked || "Wishlist"}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600"
+                    >
+                      <Heart
+                        className={`w-3.5 h-3.5 transition-colors ${
+                          isLiked
+                            ? "fill-rose-500 text-rose-500"
+                            : "text-stone-500 hover:text-rose-500"
+                        }`}
+                      />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const shareUrl = new URL(window.location.href);
+                        shareUrl.searchParams.set('model', car.name);
+                        const finalUrl = shareUrl.toString();
 
-                      if (navigator.share) {
-                        navigator.share({
-                          title: `Check out this ${car.name}`,
-                          text: shareText,
-                          url: finalUrl,
-                        }).catch(console.error);
-                      } else {
-                        navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
-                        alert("Link & details copied to clipboard!");
-                      }
-                    }}
-                    className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm -mt-1"
-                    title="Share"
-                  >
-                    <Share2 className="w-3.5 h-3.5 text-stone-500 hover:text-stone-700 transition-colors" />
-                  </button>
+                        if (navigator.share) {
+                          navigator.share({
+                            title: `Check out this ${car.name}`,
+                            text: shareText,
+                            url: finalUrl,
+                          }).catch(console.error);
+                        } else {
+                          navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
+                          alert("Link & details copied to clipboard!");
+                        }
+                      }}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
+                      title="Share"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-current" />
+                    </button>
+                  </div>
                 </div>
                   <div className="mb-4">
                     {car.description && (
