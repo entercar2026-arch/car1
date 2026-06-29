@@ -134,15 +134,22 @@ const DesktopSearchBar = React.memo(({
         }}
         className="w-full pl-[38px] pr-10 py-2 bg-stone-50 border border-stone-200 rounded-full text-stone-800 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-2 focus:ring-[#4C0027]/20 transition-all font-sans font-medium placeholder:text-stone-400"
       />
-      {searchText && (
-        <button
-          type="button"
-          onClick={() => setSearchText("")}
-          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      )}
+      <AnimatePresence>
+        {searchText && (
+          <motion.button
+            key="clear-desktop"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            type="button"
+            onClick={() => setSearchText("")}
+            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </motion.button>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {isSearchFocused && searchSuggestions.length > 0 && (
           <motion.div
@@ -224,15 +231,22 @@ const MobileSearchBar = React.memo(({
         }}
         className="w-full pl-[38px] pr-10 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400"
       />
-      {searchText && (
-        <button
-          type="button"
-          onClick={() => setSearchText("")}
-          className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      )}
+      <AnimatePresence>
+        {searchText && (
+          <motion.button
+            key="clear-mobile"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            type="button"
+            onClick={() => setSearchText("")}
+            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </motion.button>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {isSearchFocused && searchSuggestions.length > 0 && (
           <motion.div
@@ -295,15 +309,22 @@ const FilterSectionSearchBar = React.memo(({
           onChange={(e) => setSearchText(e.target.value)}
           className="w-full pl-11 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium placeholder:text-stone-400 shadow-sm"
         />
-        {searchText && (
-          <button
-            type="button"
-            onClick={() => setSearchText("")}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        )}
+        <AnimatePresence>
+          {searchText && (
+            <motion.button
+              key="clear-filter-section"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+              type="button"
+              onClick={() => setSearchText("")}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 hover:text-[#4C0027] transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

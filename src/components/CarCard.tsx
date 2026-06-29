@@ -1015,7 +1015,58 @@ Description: ${formattedDesc}`;
                 </div>
               )}
 
-              {/* Video Actions overlay removed - moved to the content area below the media */}
+              {/* Action Buttons Overlay */}
+              <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsPhotosOpen(true);
+                  }}
+                  title={t.viewPhotos || "View Photos"}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-stone-600 hover:text-[#4C0027] border border-stone-200 transition-colors cursor-pointer shadow-sm"
+                >
+                  <Scan className="w-4 h-4 text-current" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleLike && onToggleLike(car.id);
+                  }}
+                  title={(t as any).liked || "Wishlist"}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600"
+                >
+                  <Heart
+                    className={`w-4 h-4 transition-colors ${
+                      isLiked
+                        ? "fill-rose-500 text-rose-500"
+                        : "text-stone-500 hover:text-rose-500"
+                    }`}
+                  />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const shareUrl = new URL(window.location.href);
+                    shareUrl.searchParams.set('model', car.name);
+                    const finalUrl = shareUrl.toString();
+
+                    if (navigator.share) {
+                      navigator.share({
+                        title: `Check out this ${car.name}`,
+                        text: shareText,
+                        url: finalUrl,
+                      }).catch(console.error);
+                    } else {
+                      navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
+                      alert("Link & details copied to clipboard!");
+                    }
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
+                  title="Share"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-current" />
+                </button>
+              </div>
             </div>
 
             {/* Narrative & Info */}
@@ -1086,86 +1137,14 @@ Description: ${formattedDesc}`;
                     })}
                   </div>
                 )}
-                <div className="flex justify-between items-center mb-1 w-full gap-2">
+                <div className="mb-1 w-full">
                   <h3
                     id={`car-title-${car.id}`}
-                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 flex-1 min-w-0 pr-1 truncate"
+                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate"
                   >
                     <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
                     <span className="truncate">{car.name}</span>
                   </h3>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {(hasVideo || !!effectiveVideoUrl) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (currentPhotoIndex !== 0) {
-                            setCurrentPhotoIndex(0);
-                            setIsPlaying(true);
-                          } else {
-                            setIsPlaying(prev => !prev);
-                          }
-                        }}
-                        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer bg-stone-50 hover:bg-stone-100 text-stone-600 border border-stone-200 hover:text-[#4C0027] shadow-sm"
-                        title={currentPhotoIndex === 0 && isPlaying ? "Pause Video" : "Play Video"}
-                      >
-                        {currentPhotoIndex === 0 && isPlaying ? (
-                          <span className="text-[10px] font-extrabold select-none tracking-tighter text-[#4C0027]">⏸</span>
-                        ) : (
-                          <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
-                        )}
-                      </button>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsPhotosOpen(true);
-                      }}
-                      title={t.viewPhotos || "View Photos"}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
-                    >
-                      <Scan className="w-3.5 h-3.5 text-current" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleLike && onToggleLike(car.id);
-                      }}
-                      title={(t as any).liked || "Wishlist"}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600"
-                    >
-                      <Heart
-                        className={`w-3.5 h-3.5 transition-colors ${
-                          isLiked
-                            ? "fill-rose-500 text-rose-500"
-                            : "text-stone-500 hover:text-rose-500"
-                        }`}
-                      />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const shareUrl = new URL(window.location.href);
-                        shareUrl.searchParams.set('model', car.name);
-                        const finalUrl = shareUrl.toString();
-
-                        if (navigator.share) {
-                          navigator.share({
-                            title: `Check out this ${car.name}`,
-                            text: shareText,
-                            url: finalUrl,
-                          }).catch(console.error);
-                        } else {
-                          navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
-                          alert("Link & details copied to clipboard!");
-                        }
-                      }}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-sm text-stone-600 hover:text-[#4C0027]"
-                      title="Share"
-                    >
-                      <Share2 className="w-3.5 h-3.5 text-current" />
-                    </button>
-                  </div>
                 </div>
                   <div className="mb-4">
                     {car.description && (
@@ -2169,33 +2148,40 @@ Description: ${formattedDesc}`;
 
                 {/* Thumbnails strip */}
                 {allPhotos.length > 1 && (
-                  <div className="flex gap-2 max-w-full overflow-x-auto px-4 py-2 scrollbar-none items-center justify-center">
+                  <div className="flex gap-3 max-w-full overflow-x-auto px-4 py-2 scrollbar-none items-center justify-center">
                     {allPhotos.map((photo, index) => {
                       const isSelected = currentPhotoIndex === index;
-                      const thumbUrl = getOptimizedImageUrl(photo, windowWidth, 'thumbnail', connectionStatus);
+                      const activeColor = (car.dotColors && car.dotColors[index]) || car.dotColor || "#4C0027";
+                      const isItemVideo = (index === 0 && !!effectiveVideoUrl) || isVideoUrl(photo);
                       return (
-                        <button
+                        <motion.button
                           key={index}
                           id={`gallery-thumb-${car.id}-${index}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             setCurrentPhotoIndex(index);
                           }}
-                          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden cursor-pointer shrink-0 transition-all duration-300 ${
+                          className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-full cursor-pointer shrink-0 transition-all duration-300 flex items-center justify-center ${
                             isSelected
-                              ? "ring-2 ring-amber-400 scale-105 shadow-[0_0_12px_rgba(251,191,36,0.35)]"
-                              : "ring-1 ring-white/10 opacity-55 hover:opacity-100 hover:scale-[1.03]"
+                              ? `ring-4 ring-offset-2 ring-offset-black/90 scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)] ${
+                                  isColorLight(activeColor) ? "ring-stone-400" : "ring-white"
+                                }`
+                              : "opacity-60 hover:opacity-100 hover:scale-[1.08]"
                           }`}
+                          style={{
+                            backgroundColor: activeColor,
+                          }}
+                          whileHover={{ scale: isSelected ? 1.1 : 1.08 }}
+                          whileTap={{ scale: 0.95 }}
                         >
-                          <img
-                            src={thumbUrl}
-                            alt={`${car.name} thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
-                            }}
-                          />
-                        </button>
+                          {isItemVideo && (
+                            <Play
+                              className={`w-4 h-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${
+                                isColorLight(activeColor) ? "text-stone-900 fill-current" : "text-white fill-current"
+                              }`}
+                            />
+                          )}
+                        </motion.button>
                       );
                     })}
                   </div>
