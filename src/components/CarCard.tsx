@@ -1029,9 +1029,9 @@ Description: ${formattedDesc}`;
                     {(hasVideo || !!effectiveVideoUrl) && (() => {
                       const carThemeColor = car.dotColor || "#4C0027";
                       const isPlayActive = currentPhotoIndex === 0 && isPlaying;
-                      const textClass = isColorLight(carThemeColor) ? "text-stone-900" : "text-white";
-                      // If the theme color is too light (like white, silver), use the beautiful brand maroon "#4C0027" for the inactive icon so it's perfectly visible.
-                      const inactiveIconColor = isColorLight(carThemeColor) ? "#4C0027" : carThemeColor;
+                      const isLight = isColorLight(carThemeColor);
+                      const iconColor = isLight ? "#4C0027" : "#FFFFFF";
+                      const ringColor = `${carThemeColor}44`;
                       return (
                         <button
                           type="button"
@@ -1044,22 +1044,13 @@ Description: ${formattedDesc}`;
                               setIsPlaying(prev => !prev);
                             }
                           }}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-xs ${
-                            isPlayActive
-                              ? `${textClass} ring-2`
-                              : "bg-stone-50 hover:bg-stone-100 border-stone-200 hover:scale-105"
-                          }`}
-                          style={
-                            isPlayActive
-                              ? {
-                                  backgroundColor: carThemeColor,
-                                  borderColor: carThemeColor,
-                                  "--tw-ring-color": `${carThemeColor}33`,
-                                } as any
-                              : {
-                                  color: inactiveIconColor,
-                                }
-                          }
+                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105"
+                          style={{
+                            backgroundColor: carThemeColor,
+                            borderColor: isLight ? "#d6d3d1" : carThemeColor,
+                            color: iconColor,
+                            boxShadow: isPlayActive ? `0 0 0 3px ${ringColor}` : undefined,
+                          }}
                           title={isPlayActive ? "Pause Video" : "Play Video"}
                         >
                           {isPlayActive ? (
