@@ -1026,89 +1026,55 @@ Description: ${formattedDesc}`;
               <div>
                 <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2">
                   <div className="flex items-center gap-2">
-                    {(hasVideo || !!effectiveVideoUrl) && (() => {
-                      const carThemeColor = car.dotColor || "#4C0027";
-                      const isPlayActive = currentPhotoIndex === 0 && isPlaying;
-                      const isLight = isColorLight(carThemeColor);
-                      const iconColor = isLight ? "#000000" : "#FFFFFF";
-                      const ringColor = `${carThemeColor}44`;
-                      return (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (currentPhotoIndex !== 0) {
-                              setCurrentPhotoIndex(0);
-                              setIsPlaying(true);
-                            } else {
-                              setIsPlaying(prev => !prev);
-                            }
-                          }}
-                          className="w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105"
-                          style={{
-                            backgroundColor: carThemeColor,
-                            borderColor: isLight ? "#d6d3d1" : carThemeColor,
-                            color: iconColor,
-                            boxShadow: isPlayActive ? `0 0 0 3px ${ringColor}` : undefined,
-                          }}
-                          title={isPlayActive ? "Pause Video" : "Play Video"}
-                        >
-                          {isPlayActive ? (
-                            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                            </svg>
-                          ) : (
-                            <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
-                          )}
-                        </button>
-                      );
-                    })()}
                     {allPhotos.length > 1 && allPhotos.map((itemUrl, idx) => {
-                      // Skip rendering the dot for index 0 if the play button is already displayed for it
-                      const showPlayButton = hasVideo || !!effectiveVideoUrl;
-                      if (showPlayButton && idx === 0) {
-                        return null;
-                      }
-
                       const isActive = idx === currentPhotoIndex;
-                      const activeColor = (car.dotColors && car.dotColors[idx]) || car.dotColor || "#4C0027";
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
                       
+                      if (isItemVideo) {
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isActive) {
+                                setIsPlaying(prev => !prev);
+                              } else {
+                                setCurrentPhotoIndex(idx);
+                                setIsPlaying(true);
+                              }
+                            }}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
+                              isActive
+                                ? "bg-stone-900 text-white border-stone-900 ring-2 ring-stone-900/20"
+                                : "bg-white text-stone-900 border-stone-200"
+                            }`}
+                            title={isActive && isPlaying ? "Pause Video" : "Play Video"}
+                          >
+                            {isActive && isPlaying ? (
+                              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                              </svg>
+                            ) : (
+                              <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
+                            )}
+                          </button>
+                        );
+                      }
+
                       return (
-                        <motion.button
+                        <button
                           key={idx}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (isActive) {
-                              if (isItemVideo) {
-                                setIsPlaying((prev) => !prev);
-                              }
-                            } else {
-                              setCurrentPhotoIndex(idx);
-                              if (isItemVideo) {
-                                setIsPlaying(true);
-                              } else {
-                                setIsPlaying(false);
-                              }
-                            }
+                            setCurrentPhotoIndex(idx);
+                            setIsPlaying(false);
                           }}
-                          className={`w-6 h-6 rounded-full border flex items-center justify-center origin-center cursor-pointer transition-all ${
-                            isActive 
-                              ? `shadow-md z-10 ring-2 ring-offset-1 ${isColorLight(activeColor) ? "border-stone-400/80 ring-stone-400" : "border-white ring-white"}` 
-                              : `${isColorLight(activeColor) ? "border-stone-300" : "border-stone-200"} hover:scale-110 hover:opacity-90`
+                          className={`w-2 h-2 rounded-full mx-1 transition-all ${
+                            isActive ? "bg-stone-800 scale-125" : "bg-stone-300 hover:bg-stone-400"
                           }`}
-                          style={{
-                            backgroundColor: activeColor,
-                            "--tw-ring-color": activeColor,
-                          } as any}
-                          animate={{
-                            scale: isActive ? 1.25 : 1.0,
-                          }}
-                          whileHover={{ scale: isActive ? 1.25 : 1.15 }}
-                          whileTap={{ scale: 0.95 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                          title={isItemVideo ? (isActive && isPlaying ? "Pause Video" : "Play Video") : `Go to photo ${idx + 1}`}
+                          title={`Go to photo ${idx + 1}`}
                         />
                       );
                     })}
@@ -2179,7 +2145,6 @@ Description: ${formattedDesc}`;
                   <div className="flex gap-3 max-w-full overflow-x-auto px-4 py-2 scrollbar-none items-center justify-center">
                     {allPhotos.map((photo, index) => {
                       const isSelected = currentPhotoIndex === index;
-                      const activeColor = (car.dotColors && car.dotColors[index]) || car.dotColor || "#4C0027";
                       const isItemVideo = (index === 0 && !!effectiveVideoUrl) || isVideoUrl(photo);
                       return (
                         <motion.button
@@ -2189,24 +2154,24 @@ Description: ${formattedDesc}`;
                             e.stopPropagation();
                             setCurrentPhotoIndex(index);
                           }}
-                          className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-full cursor-pointer shrink-0 transition-all duration-300 flex items-center justify-center ${
+                          className={`relative w-12 h-12 rounded-lg cursor-pointer shrink-0 transition-all duration-300 flex items-center justify-center overflow-hidden bg-stone-900 border ${
                             isSelected
-                              ? `ring-4 ring-offset-2 ring-offset-black/90 scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)] ${
-                                  isColorLight(activeColor) ? "ring-stone-400" : "ring-white"
-                                }`
-                              : "opacity-60 hover:opacity-100 hover:scale-[1.08]"
+                              ? "ring-2 ring-white border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                              : "border-white/20 opacity-50 hover:opacity-100 hover:scale-[1.05]"
                           }`}
-                          style={{
-                            backgroundColor: activeColor,
-                          }}
-                          whileHover={{ scale: isSelected ? 1.1 : 1.08 }}
+                          whileHover={{ scale: isSelected ? 1.1 : 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          {isItemVideo && (
-                            <Play
-                              className={`w-4 h-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${
-                                isColorLight(activeColor) ? "text-stone-900 fill-current" : "text-white fill-current"
-                              }`}
+                          {isItemVideo ? (
+                            <div className="flex items-center justify-center w-full h-full bg-stone-800">
+                              <Play className="w-5 h-5 text-white fill-current opacity-80" />
+                            </div>
+                          ) : (
+                            <img 
+                              src={photo} 
+                              alt={`Thumbnail ${index + 1}`} 
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
                             />
                           )}
                         </motion.button>
