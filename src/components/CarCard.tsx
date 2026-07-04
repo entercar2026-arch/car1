@@ -1071,11 +1071,13 @@ Description: ${formattedDesc}`;
                             setCurrentPhotoIndex(idx);
                             setIsPlaying(false);
                           }}
-                          className={`w-2 h-2 rounded-full mx-1 transition-all ${
-                            isActive ? "bg-stone-800 scale-125" : "bg-stone-300 hover:bg-stone-400"
-                          }`}
+                          className="w-8 h-8 flex items-center justify-center cursor-pointer group"
                           title={`Go to photo ${idx + 1}`}
-                        />
+                        >
+                          <div className={`w-2.5 h-2.5 rounded-full transition-all ${
+                            isActive ? "bg-stone-800 scale-125 shadow-sm" : "bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
+                          }`} />
+                        </button>
                       );
                     })}
                   </div>
@@ -1980,7 +1982,7 @@ Description: ${formattedDesc}`;
               <div className="w-full max-w-5xl flex items-center justify-between px-4 pt-2 mb-2 z-10" onClick={(e) => e.stopPropagation()}>
                 <div className="flex flex-col">
                   <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-                  <span className="text-white/60 font-mono text-xs">Full Media Gallery</span>
+                  <span className="text-red-500 font-sans font-bold text-xl">${car.price.toLocaleString()}/mo</span>
                 </div>
                 <button
                   onClick={() => startTransition(() => setIsPhotosOpen(false))}

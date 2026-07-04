@@ -195,8 +195,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formDescription, setFormDescription] = useState("");
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
-  const [formDotColor, setFormDotColor] = useState("#4C0027");
-  const [formDotColors, setFormDotColors] = useState<string[]>([]);
 
   const estimatedDotCount = useMemo(() => {
     const photosArr = splitUrls(formPhotos);
@@ -275,8 +273,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormDescription("");
     setFormVideoUrl("");
     setFormThumbnail("");
-    setFormDotColor("#4C0027");
-    setFormDotColors([]);
     setHasClearedThumbnail(false);
     startTransition(() => {
       setIsFormOpen(true);
@@ -298,8 +294,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormDescription(car.description || "");
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
-      setFormDotColor(car.dotColor || "#4C0027");
-      setFormDotColors(car.dotColors || []);
       setHasClearedThumbnail(false);
       setIsFormOpen(true);
     });
@@ -340,8 +334,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
         photos: finalPhotos,
-        dotColor: formDotColor,
-        dotColors: formDotColors,
       });
     } else {
       onAddCar({
@@ -356,8 +348,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         videoUrl: formVideoUrl,
         thumbnail: formThumbnail || undefined,
         photos: finalPhotos,
-        dotColor: formDotColor,
-        dotColors: formDotColors,
       });
     }
     setIsFormOpen(false);

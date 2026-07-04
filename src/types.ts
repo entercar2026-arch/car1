@@ -24,8 +24,6 @@ export interface Car {
     co2Emissions?: string;
     ownerNotes?: string;
   };
-  dotColor?: string;
-  dotColors?: string[];
 }
 
 export type ViewMode = "customer" | "admin" | "login";
