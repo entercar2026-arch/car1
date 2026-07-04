@@ -1179,7 +1179,7 @@ Description: ${formattedDesc}`;
                   <div className="flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('fuelType', car.fuelType); }}>
                     <Fuel className="w-4 h-4 text-stone-700 mb-1" />
                     <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
-                      {car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType}
+                      {car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType === 'Gasoline + LPG' ? `${t.gasoline} + LPG` : car.fuelType}
                     </span>
                   </div>
                 </div>
@@ -1323,7 +1323,7 @@ Description: ${formattedDesc}`;
                   <Fuel className="w-4 h-4 text-sky-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.fuelSystem}</p>
-                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType}</p>
+                    <p className="text-xs font-black text-white mt-0.5 truncate">{car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType === 'Gasoline + LPG' ? `${t.gasoline} + LPG` : car.fuelType}</p>
                     <p className="text-[10px] font-bold text-sky-400 font-mono mt-0.5 truncate">{specsDetails.efficiency}</p>
                   </div>
                 </div>

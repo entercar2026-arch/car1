@@ -239,6 +239,56 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   }, [detectedVideoSource]);
 
+  useEffect(() => {
+    if (!editingCar && formName) {
+      const name = formName.toLowerCase();
+      
+      // Auto-detect Transmission
+      if (name.includes("manual") || name.includes(" mt") || name.includes("m/t")) {
+        setFormTransmission("Manual");
+      } else if (name.includes("automatic") || name.includes(" at") || name.includes("a/t")) {
+        setFormTransmission("Automatic");
+      }
+
+      // Auto-detect Fuel Type
+      if (name.includes("ev") || name.includes("electric") || name.includes("tesla") || name.includes("mach-e") || name.includes("ioniq") || name.includes("taycan") || name.includes("polestar") || name.includes("rivian") || name.includes("lucid") || name.includes("bz4x") || name.includes(" eq") || name.includes("e-tron") || name.includes(" leaf") || name.includes("bolt")) {
+        setFormFuel("Electric");
+      } else if (name.includes("hybrid") || name.includes("phev") || name.includes("prius")) {
+        setFormFuel("Hybrid");
+      } else if (name.includes("diesel") || name.includes(" tdi") || name.includes(" d ") || name.includes("cummins") || name.includes("duramax") || name.includes("powerstroke")) {
+        setFormFuel("Diesel");
+      }
+
+      // Auto-detect Category
+      if (name.includes("truck") || name.includes("pickup") || name.includes("f-150") || name.includes("f-250") || name.includes("f-350") || name.includes("silverado") || name.includes("ram") || name.includes("hilux") || name.includes("ranger") || name.includes("tacoma") || name.includes("tundra") || name.includes("colorado")) {
+        setFormCategory("Pickup");
+      } else if (name.includes("suv") || name.includes("tahoe") || name.includes("suburban") || name.includes("escalade") || name.includes("explorer") || name.includes("land cruiser") || name.includes("patrol") || name.includes("x5") || name.includes("x7") || name.includes("q7") || name.includes("cr-v") || name.includes("rav4") || name.includes("tiguan") || name.includes("fortuner") || name.includes("pajero") || name.includes("cayenne") || name.includes("macan") || name.includes("urus") || name.includes("bentayga") || name.includes("cullinan") || name.includes("rx 350") || name.includes("lx 600")) {
+        setFormCategory("SUV");
+      } else if (name.includes("mpv") || name.includes("minivan") || name.includes("sienna") || name.includes("odyssey") || name.includes("carnival") || name.includes("pacifica") || name.includes("alphard") || name.includes("staria")) {
+        setFormCategory("MPV");
+      } else if (name.includes("van") || name.includes("bus") || name.includes("transit") || name.includes("sprinter") || name.includes("hiace") || name.includes("coaster") || name.includes("promaster")) {
+        setFormCategory("MPV");
+      }
+
+      // Auto-detect Seats
+      if (name.includes("truck") || name.includes("pickup") || name.includes("f-150") || name.includes("silverado") || name.includes("ram") || name.includes("hilux") || name.includes("ranger") || name.includes("tacoma") || name.includes("tundra") || name.includes("colorado") || name.includes("camry") || name.includes("corolla") || name.includes("civic") || name.includes("accord") || name.includes("cr-v") || name.includes("rav4") || name.includes("model 3") || name.includes("model y") || name.includes("model s")) {
+        setFormSeats(5);
+      } else if (name.includes("tahoe") || name.includes("suburban") || name.includes("escalade") || name.includes("explorer") || name.includes("land cruiser") || name.includes("patrol") || name.includes("q7") || name.includes("x7") || name.includes("lx 600") || name.includes("model x") || name.includes("fortuner")) {
+        setFormSeats(7);
+      } else if (name.includes("sienna") || name.includes("odyssey") || name.includes("carnival") || name.includes("pacifica") || name.includes("alphard") || name.includes("staria")) {
+        setFormSeats(8);
+      } else if (name.includes("sprinter") || name.includes("transit") || name.includes("promaster")) {
+        setFormSeats(12);
+      } else if (name.includes("hiace")) {
+        setFormSeats(15);
+      } else if (name.includes("coaster") || name.includes("bus")) {
+        setFormSeats(25);
+      } else if (name.includes("mustang") || name.includes("camaro") || name.includes("challenger") || name.includes("911") || name.includes("huracan") || name.includes("coupe") || name.includes("convertible") || name.includes("roadster") || name.includes("miata") || name.includes("cayman") || name.includes("boxster") || name.includes("aventador") || name.includes("mclaren") || name.includes("r8")) {
+        setFormSeats(2);
+      }
+    }
+  }, [formName, editingCar]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -1084,6 +1134,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <option value="Hybrid">Hybrid</option>
                       <option value="Diesel">Diesel</option>
                       <option value="LPG">LPG</option>
+                      <option value="Gasoline + LPG">Gasoline + LPG</option>
                     </select>
                   </div>
 
@@ -1097,7 +1148,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         id="input-car-seats"
                         type="range"
                         min="2"
-                        max="8"
+                        max="25"
                         value={formSeats}
                         onChange={(e) => setFormSeats(Number(e.target.value))}
                         className="w-full accent-[#4C0027]"

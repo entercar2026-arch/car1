@@ -2887,6 +2887,7 @@ export default function App() {
                         "Gasoline",
                         "Diesel",
                         "LPG",
+                        "Gasoline + LPG",
                         "Hybrid",
                         "Electric",
                       ].map((fuel) => {
@@ -2894,6 +2895,7 @@ export default function App() {
                                       fuel === "Gasoline" ? t.petrol :
                                       fuel === "Diesel" ? t.diesel :
                                       fuel === "LPG" ? "LPG" :
+                                      fuel === "Gasoline + LPG" ? `${t.petrol} + LPG` :
                                       fuel === "Hybrid" ? t.hybrid :
                                       fuel === "Electric" ? t.electric : fuel;
                         return (
@@ -2981,7 +2983,7 @@ export default function App() {
                 activeTags.push({ id: 'category', label: `${tCat}`, onRemove: () => setFilters(pre => ({ ...pre, category: "All" })) });
               }
               if (filters.fuelType !== "All") {
-                const fType = filters.fuelType === "Gasoline" ? t.petrol : filters.fuelType === "Diesel" ? t.diesel : filters.fuelType === "Hybrid" ? t.hybrid : filters.fuelType === "Electric" ? t.electric : filters.fuelType;
+                const fType = filters.fuelType === "Gasoline" ? t.petrol : filters.fuelType === "Diesel" ? t.diesel : filters.fuelType === "Hybrid" ? t.hybrid : filters.fuelType === "Electric" ? t.electric : filters.fuelType === "Gasoline + LPG" ? `${t.petrol} + LPG` : filters.fuelType;
                 activeTags.push({ id: 'fuelType', label: `${fType}`, onRemove: () => setFilters(pre => ({ ...pre, fuelType: "All" })) });
               }
               if (filters.transmission !== "All") {
