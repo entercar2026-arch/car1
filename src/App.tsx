@@ -2153,17 +2153,19 @@ export default function App() {
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
     setIsMobileMenuOpen(false);
-    const target = document.getElementById(elementId);
-    if (target) {
-      const headerOffset = 80; // approximate sticky header height
-      const elementPosition = target.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - headerOffset;
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-    }
+    setTimeout(() => {
+      const target = document.getElementById(elementId);
+      if (target) {
+        const headerOffset = 80; // approximate sticky header height
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    }, 10);
   };
 
   // Hero Search execution and viewport scroll

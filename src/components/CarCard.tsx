@@ -1025,7 +1025,7 @@ Description: ${formattedDesc}`;
             >
               <div>
                 <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2">
-                  <div className="flex items-center gap-0.5 flex-wrap">
+                  <div className="flex items-center gap-0 flex-wrap">
                     {allPhotos.length > 1 && allPhotos.map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
@@ -1044,7 +1044,7 @@ Description: ${formattedDesc}`;
                                 setIsPlaying(true);
                               }
                             }}
-                            className={`w-8 h-8 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
+                            className={`w-7 h-7 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
                               isActive
                                 ? "bg-stone-900 text-white border-stone-900 ring-2 ring-stone-900/20"
                                 : "bg-white text-stone-900 border-stone-200"
@@ -1052,16 +1052,15 @@ Description: ${formattedDesc}`;
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
                             {isActive && isPlaying ? (
-                              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                               </svg>
                             ) : (
-                              <Play className="w-3.5 h-3.5 fill-current text-current ml-0.5" />
+                              <Play className="w-3 h-3 fill-current text-current ml-0.5" />
                             )}
                           </button>
                         );
                       }
-
                       return (
                         <button
                           key={idx}
@@ -1071,7 +1070,7 @@ Description: ${formattedDesc}`;
                             setCurrentPhotoIndex(idx);
                             setIsPlaying(false);
                           }}
-                          className="w-7 h-7 flex items-center justify-center cursor-pointer group"
+                          className="w-5 h-5 flex items-center justify-center cursor-pointer group"
                           title={`Go to photo ${idx + 1}`}
                         >
                           <div className={`w-3.5 h-3.5 rounded-full transition-all ${
