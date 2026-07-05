@@ -533,11 +533,11 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     if (!isPhotosOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" && allPhotos.length > 1) {
-        setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+        startTransition(() => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length));
       } else if (e.key === "ArrowRight" && allPhotos.length > 1) {
-        setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+        startTransition(() => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length));
       } else if (e.key === "Escape") {
-        setIsPhotosOpen(false);
+        startTransition(() => setIsPhotosOpen(false));
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -778,7 +778,7 @@ Description: ${formattedDesc}`;
       if (e.key === "Escape") {
         handleCloseBookingModal();
         setIsReviewsOpen(false);
-        setIsPhotosOpen(false);
+        startTransition(() => setIsPhotosOpen(false));
       }
     };
 
@@ -825,7 +825,7 @@ Description: ${formattedDesc}`;
               className="relative h-48 bg-stone-50 overflow-hidden cursor-zoom-in group/media"
               onClick={(e) => { 
                 e.stopPropagation(); 
-                setIsPhotosOpen(true);
+                startTransition(() => setIsPhotosOpen(true));
               }}
             >
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
@@ -995,7 +995,7 @@ Description: ${formattedDesc}`;
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+                      startTransition(() => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length));
                     }}
                     className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto cursor-pointer"
                     title="Previous Photo"
@@ -1006,7 +1006,7 @@ Description: ${formattedDesc}`;
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+                      startTransition(() => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length));
                     }}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto cursor-pointer"
                     title="Next Photo"
@@ -1051,7 +1051,7 @@ Description: ${formattedDesc}`;
                               if (isActive) {
                                 setIsPlaying(prev => !prev);
                               } else {
-                                setCurrentPhotoIndex(idx);
+                                startTransition(() => setCurrentPhotoIndex(idx));
                                 setIsPlaying(true);
                               }
                             }}
@@ -1078,7 +1078,7 @@ Description: ${formattedDesc}`;
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setCurrentPhotoIndex(idx);
+                            startTransition(() => setCurrentPhotoIndex(idx));
                             setIsPlaying(false);
                           }}
                           className="w-5 h-5 flex items-center justify-center cursor-pointer group"
@@ -1095,7 +1095,7 @@ Description: ${formattedDesc}`;
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setIsPhotosOpen(true);
+                        startTransition(() => setIsPhotosOpen(true));
                       }}
                       title={t.viewPhotos || "View Photos"}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
@@ -2018,7 +2018,7 @@ Description: ${formattedDesc}`;
                         onClick={(e) => {
                           e.stopPropagation();
                           if (currentPhotoIndex !== 0) {
-                            setCurrentPhotoIndex(0);
+                            startTransition(() => setCurrentPhotoIndex(0));
                             setIsPlaying(true);
                           } else {
                             setIsPlaying(prev => !prev);
@@ -2042,7 +2042,7 @@ Description: ${formattedDesc}`;
                       id={`gallery-prev-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+                        startTransition(() => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length));
                       }}
                       className="absolute left-2 sm:left-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
                       title="Previous Photo"
@@ -2132,7 +2132,7 @@ Description: ${formattedDesc}`;
                       id={`gallery-next-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+                        startTransition(() => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length));
                       }}
                       className="absolute right-2 sm:right-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
                       title="Next Photo"
@@ -2164,7 +2164,7 @@ Description: ${formattedDesc}`;
                           id={`gallery-thumb-${car.id}-${index}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setCurrentPhotoIndex(index);
+                            startTransition(() => setCurrentPhotoIndex(index));
                           }}
                           className={`relative w-12 h-12 rounded-lg cursor-pointer shrink-0 transition-all duration-300 flex items-center justify-center overflow-hidden bg-stone-900 border ${
                             isSelected

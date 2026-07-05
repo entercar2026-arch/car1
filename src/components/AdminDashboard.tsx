@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, startTransition } from "react";
 import { Car, Booking, Review } from "../types";
 import { getFallbackCarThumbnail as getAdminFallbackCarThumbnail } from "../utils/carImage";
+import { blurLicensePlate } from "../utils/blur-plate";
 import { BrandLogo } from "./BrandLogo";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -171,6 +172,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [isDraggingGallery, setIsDraggingGallery] = useState(false);
   const [editingCar, setEditingCar] = useState<Car | null>(null);
   const [carToDelete, setCarToDelete] = useState<string | null>(null);
   const [activePassportUrl, setActivePassportUrl] = useState<string | null>(
@@ -306,10 +310,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         alert("File size exceeds 10MB limit. Please provide a URL instead of uploading large media directly.");
         return;
       }
+      setIsUploading(true);
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         if (typeof reader.result === "string") {
-          setFormImage(reader.result);
+          try {
+            const blurred = await blurLicensePlate(reader.result);
+            setFormImage(blurred);
+          } catch (e) {
+            setFormImage(reader.result);
+          }
+          setIsUploading(false);
         }
       };
       reader.readAsDataURL(file);
@@ -318,22 +329,90 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
 
 
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      Array.from(files).forEach((file) => {
+      setIsUploading(true);
+      for (const file of Array.from(files)) {
         if (file.size > 10 * 1024 * 1024) {
           alert("File " + file.name + " exceeds 10MB limit. Skipping.");
-          return;
+          continue;
         }
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === "string") {
-            setFormPhotos((prev) => prev ? prev + "\n" + reader.result : reader.result);
+        await new Promise<void>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            if (typeof reader.result === "string") {
+              try {
+                const blurred = await blurLicensePlate(reader.result);
+                setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+              } catch (e) {
+                setFormPhotos((prev) => prev ? prev + "\n" + reader.result : reader.result);
+              }
+            }
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      setIsUploading(false);
+    }
+  };
+
+
+  const handleDropImage = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingImage(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File size exceeds 10MB limit. Please provide a URL instead of uploading large media directly.");
+        return;
+      }
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        if (typeof reader.result === "string") {
+          try {
+            const blurred = await blurLicensePlate(reader.result);
+            setFormImage(blurred);
+          } catch (e) {
+            setFormImage(reader.result);
           }
-        };
-        reader.readAsDataURL(file);
-      });
+          setIsUploading(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDropGallery = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingGallery(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      setIsUploading(true);
+      for (const file of Array.from(files)) {
+        if (file.size > 10 * 1024 * 1024) {
+          alert("File " + file.name + " exceeds 10MB limit. Skipping.");
+          continue;
+        }
+        await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            if (typeof reader.result === "string") {
+              try {
+                const blurred = await blurLicensePlate(reader.result);
+                setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+              } catch (e) {
+                setFormPhotos((prev) => prev ? prev + "\n" + reader.result : reader.result);
+              }
+            }
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      setIsUploading(false);
     }
   };
 
@@ -1206,7 +1285,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                       </label>
                     </div>
-                    <div className="relative">
+                    <div className={`relative border-2 border-dashed rounded-xl transition-all ${isDraggingImage ? "border-[#4C0027] bg-[#4C0027]/5" : "border-transparent"}`} onDragOver={(e) => { e.preventDefault(); setIsDraggingImage(true); }} onDragLeave={() => setIsDraggingImage(false)} onDrop={handleDropImage}>
                       <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-stone-400">
                         <Link2 className="h-4 w-4" />
                       </span>
@@ -1221,7 +1300,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           type="text"
                           value={formImage}
                           onChange={(val: any) => setFormImage(val)}
-                          placeholder="Paste image/video link(s). Multiple links pasted together are split automatically!"
+                          placeholder="Paste image/video link(s) or drag & drop file here"
                           className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                         />
                       )}
@@ -1247,7 +1326,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                       </label>
                     </div>
-                    <div className="relative">
+                    <div className={`relative border-2 border-dashed rounded-xl transition-all ${isDraggingGallery ? "border-[#4C0027] bg-[#4C0027]/5" : "border-transparent"}`} onDragOver={(e) => { e.preventDefault(); setIsDraggingGallery(true); }} onDragLeave={() => setIsDraggingGallery(false)} onDrop={handleDropGallery}>
                       <span className="absolute top-2.5 left-0 pl-3.5 flex text-stone-400">
                         <Images className="h-4 w-4" />
                       </span>
@@ -1255,7 +1334,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         id="input-car-photos"
                         value={formPhotos}
                         onChange={(val: any) => setFormPhotos(val)}
-                        placeholder="https://... (link 1)&#10;https://... (link 2)&#10;Paste multiple URLs separated by newlines, commas, spaces, or concatenated directly"
+                        placeholder="https://... (link 1)&#10;https://... (link 2)&#10;Paste URLs or drag & drop files here"
                         className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs min-h-[70px] focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
                       />
                     </div>
