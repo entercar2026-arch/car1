@@ -73,11 +73,13 @@ async function startServer() {
         }
       });
 
-      const text = response.text();
+      const text = response.text;
       let bbox: number[] = [];
       if (text) {
           try {
-              bbox = JSON.parse(text);
+              // Strip markdown if present
+              const cleanText = text.replace(/```(json)?/g, '').trim();
+              bbox = JSON.parse(cleanText);
           } catch(e) {}
       }
 
