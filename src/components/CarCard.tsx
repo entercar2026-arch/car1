@@ -104,6 +104,8 @@ const getOptimizedImageUrl = (
     return `${url}${separator}w=${targetWidth}&q=${quality}&auto=format&fit=crop`;
   }
   
+  if (url.startsWith('data:')) return url;
+
   if (url.includes('/upload/') && !url.includes('wikimedia.org')) {
     // f_auto serves optimized webp/avif, q controls quality compression dynamically
     return url.replace('/upload/', `/upload/f_auto,q_${quality},w_${targetWidth},c_scale/`);

@@ -35,9 +35,19 @@ import {
 
 const splitUrls = (input: string): string[] => {
   if (!input) return [];
-  // Insert a delimiter before any "http://", "https://", "data:" that is not at the start of the string
   const normalized = input.replace(/(?<!^)(https?:\/\/|data:)/gi, '\n$1');
-  return normalized.split(/[\n,;\s]+/).map(p => p.trim()).filter(Boolean);
+  const lines = normalized.split(/\n/);
+  const result: string[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('data:')) {
+      result.push(trimmed);
+    } else {
+      const parts = trimmed.split(/[\s,;]+/).filter(Boolean);
+      result.push(...parts);
+    }
+  }
+  return result.map(p => p.trim()).filter(Boolean);
 };
 
 const isMediaVideo = (url?: string) => {
