@@ -56,11 +56,13 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         );
 
         // Apply blur
-        ctx.filter = `blur(${Math.max(width, height) * 0.15}px)`;
+        ctx.filter = `blur(${Math.max(width, height) * 0.25}px)`;
         ctx.drawImage(blurCanvas, xmin, ymin);
         
-        // Reset filter
+        // Also draw a semi-transparent overlay to further obscure it
         ctx.filter = 'none';
+        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.fillRect(xmin, ymin, width, height);
 
         resolve(canvas.toDataURL("image/jpeg", 0.9));
       };
