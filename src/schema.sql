@@ -16,7 +16,7 @@ DROP TYPE IF EXISTS car_transmission CASCADE;
 CREATE TYPE car_transmission AS ENUM ('Automatic', 'Manual');
 
 DROP TYPE IF EXISTS car_fuel_type CASCADE;
-CREATE TYPE car_fuel_type AS ENUM ('Electric', 'Gasoline', 'Hybrid', 'Diesel', 'LPG');
+CREATE TYPE car_fuel_type AS ENUM ('Electric', 'Gasoline', 'Hybrid', 'Diesel', 'LPG', 'Gasoline + LPG');
 
 DROP TYPE IF EXISTS booking_contact_method CASCADE;
 CREATE TYPE booking_contact_method AS ENUM ('whatsapp', 'telegram');

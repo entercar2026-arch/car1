@@ -994,10 +994,10 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
 
   const sortedCars = useMemo(() => {
     const list = [...cars];
-    if (sortBy === "price-asc") {
+    if (deferredSortBy === "price-asc") {
       return list.sort((a, b) => a.price - b.price);
     }
-    if (sortBy === "price-desc") {
+    if (deferredSortBy === "price-desc") {
       return list.sort((a, b) => b.price - a.price);
     }
     if (sortBy === "name-asc") {
@@ -1589,9 +1589,7 @@ export default function App() {
   });
 
   const setFilters = React.useCallback((action: any) => {
-    React.startTransition(() => {
-      setFiltersRaw(action);
-    });
+    setFiltersRaw(action);
   }, []);
 
   // Synchronizing filters.searchTerm with SearchService on external updates
@@ -1623,9 +1621,7 @@ export default function App() {
   const [sortByRaw, setSortByRaw] = useState<"default" | "price-asc" | "price-desc" | "alphabetical">("default");
   const sortBy = sortByRaw;
   const setSortBy = React.useCallback((val: "default" | "price-asc" | "price-desc" | "alphabetical") => {
-    React.startTransition(() => {
-      setSortByRaw(val);
-    });
+    setSortByRaw(val);
   }, []);
 
   // Mobile drawer state
@@ -1949,13 +1945,17 @@ export default function App() {
   // Handle login completion
   const handleLoginSuccess = () => {
     setIsAdminAuthenticated(true);
-    setViewMode("admin");
+    React.startTransition(() => {
+      setViewMode("admin");
+    });
   };
 
   // Logout routine
   const handleLogout = () => {
     setIsAdminAuthenticated(false);
-    setViewMode("customer");
+    React.startTransition(() => {
+      setViewMode("customer");
+    });
   };
 
   // Safe reset routine for filtering
@@ -2059,9 +2059,7 @@ export default function App() {
   const [currentPageRaw, setCurrentPageRaw] = useState(1);
   const currentPage = currentPageRaw;
   const setCurrentPage = React.useCallback((val: number | ((prev: number) => number)) => {
-    React.startTransition(() => {
-      setCurrentPageRaw(val);
-    });
+    setCurrentPageRaw(val);
   }, []);
 
   useEffect(() => {
@@ -2081,6 +2079,7 @@ export default function App() {
     setCurrentPage(1);
   }, [sortBy]);
 
+  const deferredSortBy = React.useDeferredValue(sortBy);
   const filteredCars = useMemo(() => {
     const searchPattern = activeFilters.searchTerm.trim().toLowerCase();
     const activeCategory = activeFilters.category;
@@ -2137,18 +2136,19 @@ export default function App() {
     if (sortBy === "price-desc") {
       return [...results].sort((a, b) => b.price - a.price);
     }
-    if (sortBy === "alphabetical") {
+    if (deferredSortBy === "alphabetical") {
       return [...results].sort((a, b) => a.name.localeCompare(b.name));
     }
     return results;
-  }, [cars, activeFilters, likedCars, sortBy]);
+  }, [cars, activeFilters, likedCars, deferredSortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCars.length / 12));
 
+  const deferredCurrentPage = React.useDeferredValue(currentPage);
   const paginatedCars = useMemo(() => {
-    const startIndex = (currentPage - 1) * 12;
+    const startIndex = (deferredCurrentPage - 1) * 12;
     return filteredCars.slice(startIndex, startIndex + 12);
-  }, [filteredCars, currentPage]);
+  }, [filteredCars, deferredCurrentPage]);
 
   // Smooth scroll helper matching IDs
   const scrollToAnchor = (elementId: string) => {
@@ -2199,7 +2199,7 @@ export default function App() {
     return (
       <AdminLogin
         onLoginSuccess={handleLoginSuccess}
-        onBackToCustomer={() => setViewMode("customer")}
+        onBackToCustomer={() => React.startTransition(() => setViewMode("customer"))}
       />
     );
   }
@@ -2212,7 +2212,7 @@ export default function App() {
         onUpdateCar={handleUpdateCar}
         onDeleteCar={handleDeleteCar}
         onLogout={handleLogout}
-        onNavigateToCustomer={() => setViewMode("customer")}
+        onNavigateToCustomer={() => React.startTransition(() => setViewMode("customer"))}
         // Stateful administration parameters linked
         bookings={bookings}
         onUpdateBookingStatus={handleUpdateBookingStatus}
@@ -3817,7 +3817,9 @@ export default function App() {
                     whileHover={{ scale: 1.05, x: 4, color: "#fcd34d" }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() =>
-                      setViewMode(isAdminAuthenticated ? "admin" : "login")
+                      React.startTransition(() => {
+                        setViewMode(isAdminAuthenticated ? "admin" : "login")
+                      })
                     }
                     className="transition-colors cursor-pointer text-left font-semibold hover:text-amber-300"
                   >
