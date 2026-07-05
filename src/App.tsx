@@ -994,10 +994,10 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
 
   const sortedCars = useMemo(() => {
     const list = [...cars];
-    if (deferredSortBy === "price-asc") {
+    if (sortBy === "price-asc") {
       return list.sort((a, b) => a.price - b.price);
     }
-    if (deferredSortBy === "price-desc") {
+    if (sortBy === "price-desc") {
       return list.sort((a, b) => b.price - a.price);
     }
     if (sortBy === "name-asc") {
@@ -2031,7 +2031,9 @@ export default function App() {
   }, [cars]);
 
   // Filter computation logic
-  const [isFiltering, setIsFiltering] = useState(false);
+  
+
+
   const handleGridFilterSelect = React.useCallback((filterType: "category" | "transmission" | "fuelType" | "seats", value: string | number) => {
     setFilters({
       searchTerm: "",
@@ -2047,48 +2049,24 @@ export default function App() {
     scrollToAnchor("category-filter-container");
   }, []);
 
-  const [activeFiltersRaw, setActiveFiltersRaw] = useState<CatalogFilters>(filters);
-
-  const activeFilters = activeFiltersRaw;
-  const setActiveFilters = React.useCallback((val: CatalogFilters | ((prev: CatalogFilters) => CatalogFilters)) => {
-    React.startTransition(() => {
-      setActiveFiltersRaw(val);
-    });
-  }, []);
-  const filterTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [currentPageRaw, setCurrentPageRaw] = useState(1);
-  const currentPage = currentPageRaw;
-  const setCurrentPage = React.useCallback((val: number | ((prev: number) => number)) => {
-    setCurrentPageRaw(val);
-  }, []);
-
-  useEffect(() => {
-    setIsFiltering(true);
-    if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
-    filterTimeoutRef.current = setTimeout(() => {
-      setActiveFilters(filters);
-      setCurrentPage(1);
-      setIsFiltering(false);
-    }, 300);
-    return () => {
-      if (filterTimeoutRef.current) clearTimeout(filterTimeoutRef.current);
-    };
-  }, [filters]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [sortBy]);
+  }, [filters, sortBy]);
 
   const deferredSortBy = React.useDeferredValue(sortBy);
+
+  const deferredFilters = React.useDeferredValue(filters);
   const filteredCars = useMemo(() => {
-    const searchPattern = activeFilters.searchTerm.trim().toLowerCase();
-    const activeCategory = activeFilters.category;
-    const activeMaxPrice = activeFilters.maxPrice;
-    const activeTrans = activeFilters.transmission;
-    const activeFuel = activeFilters.fuelType;
-    const activeSeats = String(activeFilters.seats);
-    const activeBrand = activeFilters.brand.toLowerCase();
-    const activeLikedOnly = activeFilters.likedOnly;
+    const searchPattern = deferredFilters.searchTerm.trim().toLowerCase();
+    const activeCategory = deferredFilters.category;
+    const activeMaxPrice = deferredFilters.maxPrice;
+    const activeTrans = deferredFilters.transmission;
+    const activeFuel = deferredFilters.fuelType;
+    const activeSeats = String(deferredFilters.seats);
+    const activeBrand = deferredFilters.brand.toLowerCase();
+    const activeLikedOnly = deferredFilters.likedOnly;
 
     const results = cars.filter((car) => {
       // 1. Price check (numeric check is extremely fast, do first to exit early)
@@ -2130,17 +2108,17 @@ export default function App() {
       return true;
     });
 
-    if (sortBy === "price-asc") {
+    if (deferredSortBy === "price-asc") {
       return [...results].sort((a, b) => a.price - b.price);
     }
-    if (sortBy === "price-desc") {
+    if (deferredSortBy === "price-desc") {
       return [...results].sort((a, b) => b.price - a.price);
     }
     if (deferredSortBy === "alphabetical") {
       return [...results].sort((a, b) => a.name.localeCompare(b.name));
     }
     return results;
-  }, [cars, activeFilters, likedCars, deferredSortBy]);
+  }, [cars, deferredFilters, likedCars, deferredSortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCars.length / 12));
 
@@ -3156,7 +3134,7 @@ export default function App() {
             </div>
           </div>
           <div id="collection-grid-view">
-            {isFiltering || isLoadingData ? (
+            {isLoadingData ? (
               <div
                 id="cars-grid-loading"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -3210,7 +3188,7 @@ export default function App() {
             ) : (
               <div>
                 <div 
-                  key={`${activeFilters.category}-${activeFilters.brand}-${activeFilters.transmission}-${activeFilters.fuelType}-${activeFilters.seats}-${activeFilters.maxPrice}-${activeFilters.searchTerm}-${activeFilters.likedOnly}-${currentPage}-${sortBy}`}
+                  key={`${deferredFilters.category}-${deferredFilters.brand}-${deferredFilters.transmission}-${deferredFilters.fuelType}-${deferredFilters.seats}-${deferredFilters.maxPrice}-${deferredFilters.searchTerm}-${deferredFilters.likedOnly}-${currentPage}-${sortBy}`}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
                   <AnimatePresence mode="popLayout">
