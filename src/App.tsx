@@ -1269,7 +1269,18 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                                     />
                                   </div>
                                   <div className="flex flex-col">
-                                    <span className="text-stone-900 group-hover:text-[#4C0027] transition-colors">{car.name}</span>
+                                    <span className="text-stone-900 group-hover:text-[#4C0027] transition-colors">
+                                      {(() => {
+                                        const { brand, model } = splitCarName(car.name);
+                                        const brandColor = getBrandColor(brand);
+                                        return (
+                                          <span>
+                                            <span className={brandColor}>{brand}</span>
+                                            {model ? ` ${model}` : ''}
+                                          </span>
+                                        );
+                                      })()}
+                                    </span>
                                     <span className="text-[10px] text-stone-400 uppercase tracking-wider hidden sm:block">{car.name.split(" ")[0]}</span>
                                   </div>
                                 </div>

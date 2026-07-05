@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, startTransition } from "react";
 import { Car, Booking, Review } from "../types";
 import { getFallbackCarThumbnail as getAdminFallbackCarThumbnail } from "../utils/carImage";
+import { getBrandColor, splitCarName } from "../utils/brandColors";
 import { blurLicensePlate } from "../utils/blur-plate";
 import { BrandLogo } from "./BrandLogo";
 import { motion, AnimatePresence } from "motion/react";
@@ -461,6 +462,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Submit processing
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isUploading) return;
 
     const cleanAndResolveDrive = (url: string) => {
       const trimmed = url.trim();
@@ -479,8 +481,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const galleryUrls = splitUrls(formPhotos);
     const finalPhotos = [...extraFromMain, ...galleryUrls].map(cleanAndResolveDrive).filter(Boolean);
 
-    if (editingCar) {
-      onUpdateCar({
+    startTransition(() => {
+      if (editingCar) {
+        onUpdateCar({
         ...editingCar,
         name: formName,
         category: formCategory,
@@ -494,8 +497,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         thumbnail: formThumbnail || undefined,
         photos: finalPhotos,
       });
-    } else {
-      onAddCar({
+      } else {
+        onAddCar({
         name: formName,
         category: formCategory,
         price: Number(formPrice),
@@ -508,15 +511,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         thumbnail: formThumbnail || undefined,
         photos: finalPhotos,
       });
-    }
-    setIsFormOpen(false);
+      }
+      setIsFormOpen(false);
+    });
   };
 
   // Safe delete execution
   const handleDeleteConfirm = () => {
     if (carToDelete) {
-      onDeleteCar(carToDelete);
-      setCarToDelete(null);
+      startTransition(() => {
+        onDeleteCar(carToDelete);
+        setCarToDelete(null);
+      });
     }
   };
 
@@ -714,7 +720,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   id={`btn-approve-book-${book.id}`}
                   onClick={() =>
-                    onUpdateBookingStatus(book.id, "Approved")
+                    startTransition(() => onUpdateBookingStatus(book.id, "Approved"))
                   }
                   title="Approve Booking"
                   className="p-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-150 shadow-2xs transition-all cursor-pointer"
@@ -728,10 +734,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   id={`btn-cancel-book-${book.id}`}
                   onClick={() =>
-                    onUpdateBookingStatus(
-                      book.id,
-                      "Cancelled",
-                    )
+                    startTransition(() => onUpdateBookingStatus(book.id, "Cancelled"))
                   }
                   title="Cancel Booking"
                   className="p-1 px-2 text-stone-100 bg-stone-500 hover:bg-stone-600 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
@@ -743,7 +746,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {onDeleteBooking && (
               <button
                 id={`btn-delete-book-${book.id}`}
-                onClick={() => onDeleteBooking(book.id)}
+                onClick={() => startTransition(() => onDeleteBooking(book.id))}
                 title="Purge Record"
                 className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
               >
@@ -808,7 +811,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {!rev.isApproved && onApproveReview && (
                 <button
                   id={`btn-approve-rev-moderator-${rev.id}`}
-                  onClick={() => onApproveReview(rev.id)}
+                  onClick={() => startTransition(() => onApproveReview(rev.id))}
                   className="p-1 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-sm"
                 >
                   Approve & Publish
@@ -818,7 +821,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {onDeleteReview && (
                 <button
                   id={`btn-delete-rev-moderator-${rev.id}`}
-                  onClick={() => onDeleteReview(rev.id)}
+                  onClick={() => startTransition(() => onDeleteReview(rev.id))}
                   title="Discard Review Feedback"
                   className="p-1 px-2 bg-[#FAFAF9] hover:bg-rose-50 text-rose-600 border border-stone-205 hover:border-rose-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
                 >
@@ -1128,7 +1131,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 <button
                   id="btn-close-form"
-                  onClick={() => setIsFormOpen(false)}
+                  onClick={() => startTransition(() => setIsFormOpen(false))}
                   className="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg text-white transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
@@ -1565,7 +1568,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     id="btn-cancel-modal"
                     type="button"
-                    onClick={() => setIsFormOpen(false)}
+                    onClick={() => startTransition(() => setIsFormOpen(false))}
                     className="px-4 py-2 text-xs font-semibold text-stone-500 bg-stone-100 hover:bg-stone-200 rounded-xl transition-all cursor-pointer"
                   >
                     Discard
@@ -1573,10 +1576,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     id="btn-save-car"
                     type="submit"
-                    className="px-5 py-2 text-xs font-bold text-white rounded-xl shadow-md transition-all hover:brightness-110 cursor-pointer"
+                    disabled={isUploading}
+                    className="px-5 py-2 text-xs font-bold text-white rounded-xl shadow-md transition-all hover:brightness-110 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ backgroundColor: brandPlum }}
                   >
-                    {editingCar ? "Update Specifications" : "Save Vehicle"}
+                    {isUploading ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Processing Images...
+                      </span>
+                    ) : editingCar ? "Update Specifications" : "Save Vehicle"}
                   </button>
                 </div>
               </form>

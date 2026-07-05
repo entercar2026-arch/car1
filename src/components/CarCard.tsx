@@ -4,6 +4,7 @@ import { Car, Review, Booking } from "../types";
 import { getFallbackCarThumbnail } from "../utils/carImage";
 import { motion, AnimatePresence } from "motion/react";
 import { BrandIcon } from "./BrandIcon";
+import { getBrandColor, splitCarName } from "../utils/brandColors";
 import {
   Users,
   Fuel,
@@ -1149,7 +1150,16 @@ Description: ${formattedDesc}`;
                     className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate"
                   >
                     <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
-                    <span className="truncate">{car.name}</span>
+                    {(() => {
+                      const { brand, model } = splitCarName(car.name);
+                      const brandColor = getBrandColor(brand);
+                      return (
+                        <span className="truncate">
+                          <span className={brandColor}>{brand}</span>
+                          {model ? ` ${model}` : ''}
+                        </span>
+                      );
+                    })()}
                   </h3>
                 </div>
                   <div className="mb-4">
@@ -1482,7 +1492,16 @@ Description: ${formattedDesc}`;
                           {t.selectedVehicle}
                         </p>
                         <p className="font-bold text-stone-800 truncate mt-0.5">
-                          {car.name}
+                          {(() => {
+                            const { brand, model } = splitCarName(car.name);
+                            const brandColor = getBrandColor(brand);
+                            return (
+                              <span>
+                                <span className={brandColor}>{brand}</span>
+                                {model ? ` ${model}` : ''}
+                              </span>
+                            );
+                          })()}
                         </p>
                       </div>
                       <div>
@@ -1582,7 +1601,16 @@ Description: ${formattedDesc}`;
                     <div>
                       <h4 className="font-extrabold text-stone-900 text-lg sm:text-xl leading-tight flex items-center gap-2">
                         <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
-                        {car.name}
+                        {(() => {
+                          const { brand, model } = splitCarName(car.name);
+                          const brandColor = getBrandColor(brand);
+                          return (
+                            <span>
+                              <span className={brandColor}>{brand}</span>
+                              {model ? ` ${model}` : ''}
+                            </span>
+                          );
+                        })()}
                       </h4>
                       <p className="text-sm sm:text-base text-stone-600 font-mono font-bold mt-0.5 drop-shadow-sm">
                         <span className="text-stone-400 text-[10px] sm:text-xs uppercase">
@@ -1815,7 +1843,16 @@ Description: ${formattedDesc}`;
                   <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
                   <h3 className="font-sans font-black text-stone-900 text-xl tracking-tight flex items-center gap-2">
                     <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
-                    {car.name} Experience Reviews
+                    {(() => {
+                      const { brand, model } = splitCarName(car.name);
+                      const brandColor = getBrandColor(brand);
+                      return (
+                        <span>
+                          <span className={brandColor}>{brand}</span>
+                          {model ? ` ${model}` : ''} Experience Reviews
+                        </span>
+                      );
+                    })()}
                   </h3>
                 </div>
                 <p className="text-xs text-stone-400 mt-1 leading-normal font-sans">
