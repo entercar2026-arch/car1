@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Car, Review, Booking } from "../types";
 import { getFallbackCarThumbnail } from "../utils/carImage";
 import { motion, AnimatePresence } from "motion/react";
-import { BrandIcon } from "./BrandIcon";
+import { BrandIcon, hasBrandIcon } from "./BrandIcon";
 import { getBrandColor, splitCarName } from "../utils/brandColors";
 import {
   Users,
@@ -823,7 +823,7 @@ Description: ${formattedDesc}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative h-48 bg-stone-50 overflow-hidden cursor-zoom-in group/media"
+              className="relative aspect-[16/9] w-full bg-stone-50 overflow-hidden cursor-zoom-in group/media"
               onClick={(e) => { 
                 e.stopPropagation(); 
                 startTransition(() => setIsPhotosOpen(true));
@@ -1037,7 +1037,7 @@ Description: ${formattedDesc}`;
             >
               <div>
                 <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2">
-                  <div className="flex items-center gap-0 flex-wrap">
+                  <div className="flex items-center gap-1 overflow-x-auto flex-nowrap scrollbar-hide flex-1 pb-1 pt-1 -mx-1 px-1">
                     {(allPhotos.length > 1 || hasVideo) && allPhotos.map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
@@ -1056,7 +1056,7 @@ Description: ${formattedDesc}`;
                                 setIsPlaying(true);
                               }
                             }}
-                            className={`w-7 h-7 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
+                            className={`w-7 h-7 shrink-0 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
                               isActive
                                 ? "bg-stone-900 text-white border-stone-900 ring-2 ring-stone-900/20"
                                 : "bg-white text-stone-900 border-stone-200"
@@ -1082,7 +1082,7 @@ Description: ${formattedDesc}`;
                             startTransition(() => setCurrentPhotoIndex(idx));
                             setIsPlaying(false);
                           }}
-                          className="w-5 h-5 flex items-center justify-center cursor-pointer group"
+                          className="w-5 h-5 shrink-0 flex items-center justify-center cursor-pointer group"
                           title={`Go to photo ${idx + 1}`}
                         >
                           <div className={`w-3.5 h-3.5 rounded-full transition-all ${
@@ -1155,8 +1155,8 @@ Description: ${formattedDesc}`;
                       const brandColor = getBrandColor(brand);
                       return (
                         <span className="truncate">
-                          <span className={brandColor}>{brand}</span>
-                          {model ? ` ${model}` : ''}
+                          {!hasBrandIcon(brand) && <span className={brandColor}>{brand}</span>}
+                                {model || hasBrandIcon(brand) ? ` ${model}` : ''}
                         </span>
                       );
                     })()}
@@ -1497,8 +1497,8 @@ Description: ${formattedDesc}`;
                             const brandColor = getBrandColor(brand);
                             return (
                               <span>
-                                <span className={brandColor}>{brand}</span>
-                                {model ? ` ${model}` : ''}
+                                {!hasBrandIcon(brand) && <span className={brandColor}>{brand}</span>}
+                                {model || hasBrandIcon(brand) ? ` ${model}` : ''}
                               </span>
                             );
                           })()}
@@ -1606,8 +1606,8 @@ Description: ${formattedDesc}`;
                           const brandColor = getBrandColor(brand);
                           return (
                             <span>
-                              <span className={brandColor}>{brand}</span>
-                              {model ? ` ${model}` : ''}
+                              {!hasBrandIcon(brand) && <span className={brandColor}>{brand}</span>}
+                                {model || hasBrandIcon(brand) ? ` ${model}` : ''}
                             </span>
                           );
                         })()}
@@ -1848,8 +1848,8 @@ Description: ${formattedDesc}`;
                       const brandColor = getBrandColor(brand);
                       return (
                         <span>
-                          <span className={brandColor}>{brand}</span>
-                          {model ? ` ${model}` : ''} Experience Reviews
+                          {!hasBrandIcon(brand) && <span className={brandColor}>{brand}</span>}
+                                {model || hasBrandIcon(brand) ? ` ${model}` : ''} Experience Reviews
                         </span>
                       );
                     })()}
@@ -2099,7 +2099,7 @@ Description: ${formattedDesc}`;
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.15 }}
                           src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&controls=1&rel=0`}
-                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                           allow="autoplay; encrypted-media"
                           allowFullScreen
                         />
@@ -2111,7 +2111,7 @@ Description: ${formattedDesc}`;
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.15 }}
                           src={`https://drive.google.com/file/d/${googleDriveVideoId}/preview`}
-                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                           allow="autoplay; encrypted-media"
                           allowFullScreen
                         />
@@ -2128,7 +2128,7 @@ Description: ${formattedDesc}`;
                           onPlay={() => setIsPlaying(true)}
                           onPause={() => setIsPlaying(false)}
                           loop
-                          className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         />
                       )
                     ) : imageError && isGoogleDrive && driveId ? (
@@ -2139,7 +2139,7 @@ Description: ${formattedDesc}`;
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
                         src={`https://drive.google.com/file/d/${driveId}/preview`}
-                        className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         allow="autoplay"
                       />
                     ) : (
@@ -2158,7 +2158,7 @@ Description: ${formattedDesc}`;
                             (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
                           }
                         }}
-                        className="w-auto max-w-full max-h-[60vh] sm:max-h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                       />
                     )}
                   </AnimatePresence>
@@ -2203,7 +2203,7 @@ Description: ${formattedDesc}`;
                             e.stopPropagation();
                             startTransition(() => setCurrentPhotoIndex(index));
                           }}
-                          className={`relative w-12 h-12 rounded-lg cursor-pointer shrink-0 transition-all duration-300 flex items-center justify-center overflow-hidden bg-stone-900 border ${
+                          className={`relative w-20 h-12 rounded-lg cursor-pointer shrink-0 transition-all duration-300 flex items-center justify-center overflow-hidden bg-stone-900 border ${
                             isSelected
                               ? "ring-2 ring-white border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.3)]"
                               : "border-white/20 opacity-50 hover:opacity-100 hover:scale-[1.05]"

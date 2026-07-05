@@ -1275,8 +1275,8 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                                         const brandColor = getBrandColor(brand);
                                         return (
                                           <span>
-                                            <span className={brandColor}>{brand}</span>
-                                            {model ? ` ${model}` : ''}
+                                            {!hasBrandIcon(brand) && <span className={brandColor}>{brand}</span>}
+                                            {model || hasBrandIcon(brand) ? ` ${model}` : ''}
                                           </span>
                                         );
                                       })()}
