@@ -1275,8 +1275,8 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                                         const brandColor = getBrandColor(brand);
                                         return (
                                           <span>
-                                            {!hasBrandIcon(brand) && <span className={brandColor}>{brand}</span>}
-                                            {model || hasBrandIcon(brand) ? ` ${model}` : ''}
+                                            <span className={brandColor}>{brand}</span>
+                                            {model ? ` ${model}` : ''}
                                           </span>
                                         );
                                       })()}
@@ -1508,6 +1508,64 @@ export default function App() {
       setTimeout(() => setIsLoadingData(false), 800);
     }
   }, []);
+
+  // Migrate existing cars to blur license plates
+  useEffect(() => {
+    if (cars.length > 0 && !localStorage.getItem("blur_migration_v2")) {
+      const runMigration = async () => {
+        localStorage.setItem("blur_migration_v2", "processing");
+        let anyUpdated = false;
+        try {
+          const { blurLicensePlate } = await import("./utils/blur-plate");
+          for (const car of cars) {
+            let updated = false;
+            const newCar = { ...car };
+            
+            if (newCar.image && newCar.image.startsWith("data:image")) {
+              const blurred = await blurLicensePlate(newCar.image);
+              if (blurred !== newCar.image) {
+                newCar.image = blurred;
+                updated = true;
+              }
+            }
+            if (newCar.altImage && newCar.altImage.startsWith("data:image")) {
+              const blurred = await blurLicensePlate(newCar.altImage);
+              if (blurred !== newCar.altImage) {
+                newCar.altImage = blurred;
+                updated = true;
+              }
+            }
+            if (newCar.photos && newCar.photos.length > 0) {
+              const newPhotos = [];
+              for (const p of newCar.photos) {
+                if (p.startsWith("data:image")) {
+                  const blurred = await blurLicensePlate(p);
+                  if (blurred !== p) updated = true;
+                  newPhotos.push(blurred);
+                } else {
+                  newPhotos.push(p);
+                }
+              }
+              newCar.photos = newPhotos;
+            }
+            if (updated) {
+              await db.cars.update(newCar.id, newCar);
+              anyUpdated = true;
+            }
+          }
+          if (anyUpdated) {
+            const refreshed = await db.cars.getAll();
+            if (refreshed) setCars(refreshed);
+          }
+          localStorage.setItem("blur_migration_v2", "done");
+        } catch (e) {
+          console.error("Migration failed", e);
+          localStorage.removeItem("blur_migration_v2");
+        }
+      };
+      runMigration();
+    }
+  }, [cars]);
 
   // Liked cars state
   const [likedCars, setLikedCars] = useState<string[]>(() => {
