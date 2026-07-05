@@ -3188,7 +3188,7 @@ export default function App() {
             ) : (
               <div>
                 <div 
-                  key={`${deferredFilters.category}-${deferredFilters.brand}-${deferredFilters.transmission}-${deferredFilters.fuelType}-${deferredFilters.seats}-${deferredFilters.maxPrice}-${deferredFilters.searchTerm}-${deferredFilters.likedOnly}-${currentPage}-${sortBy}`}
+                  key={`${deferredFilters.category}-${deferredFilters.brand}-${deferredFilters.transmission}-${deferredFilters.fuelType}-${deferredFilters.seats}-${deferredFilters.maxPrice}-${deferredFilters.searchTerm}-${deferredFilters.likedOnly}-${deferredCurrentPage}-${deferredSortBy}`}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                 >
                   <AnimatePresence mode="popLayout">
