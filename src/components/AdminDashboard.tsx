@@ -56,6 +56,7 @@ const isMediaVideo = (url?: string) => {
   if (!url) return false;
   const lower = url.toLowerCase();
   if (lower.startsWith("data:image/")) return false;
+  if (lower.match(/\.(jpg|jpeg|png|gif|webp|avif|heic)(\?.*)?$/i)) return false; // skip image extensions
   if (lower.match(/\.(mp4|webm|ogg|avi|mov|mkv)(\?.*)?$/i)) return true;
   if (lower.includes("youtube.com") || lower.includes("youtu.be")) return true;
   if (lower.includes("files.catbox.moe")) {
@@ -66,7 +67,7 @@ const isMediaVideo = (url?: string) => {
 };
 
 
-const resizeImage = (dataUrl: string, maxWidth = 1200): Promise<string> => {
+const resizeImage = (dataUrl: string, maxWidth = 800): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
@@ -82,7 +83,7 @@ const resizeImage = (dataUrl: string, maxWidth = 1200): Promise<string> => {
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.8));
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
       } else {
         resolve(dataUrl);
       }
@@ -590,7 +591,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             if (!effectiveImage || effectiveImage.includes("photo-1555215695")) {
               effectiveImage = getAdminFallbackCarThumbnail(car.name, car.category);
             }
-            const isVideo = effectiveImage && (effectiveImage.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || (effectiveImage.toLowerCase().includes("video") && !effectiveImage.startsWith("data:image/")));
+            const isVideo = effectiveImage && (effectiveImage.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || (effectiveImage.toLowerCase().includes("video") && !effectiveImage.startsWith("data:image/") && !effectiveImage.match(/\.(jpg|jpeg|png|gif|webp|avif|heic)(\?.*)?$/i)));
 
             if (hasThumbnail) {
               return (

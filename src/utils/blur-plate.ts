@@ -77,7 +77,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
         ctx.fillRect(xmin, ymin, width, height);
 
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
       };
       img.onerror = () => resolve(base64Image);
       img.src = returnedBase64;

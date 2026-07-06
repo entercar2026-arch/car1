@@ -55,7 +55,7 @@ const getOptimizedImageUrl = (
   
   const isVideo = !!(
     lowerUrl.match(/\.(mp4|webm|ogg|quicktime|mov)(\?.*)?$/i) || 
-    (lowerUrl.includes("video") && !lowerUrl.startsWith("data:")) || 
+    (lowerUrl.includes("video") && !lowerUrl.startsWith("data:") && !lowerUrl.match(/\.(jpg|jpeg|png|gif|webp|avif|heic)(\?.*)?$/i)) || 
     lowerUrl.startsWith("data:video/") || 
     lowerUrl.includes("youtube.com") || 
     lowerUrl.includes("youtu.be")
@@ -349,6 +349,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     if (!url) return false;
     const lower = url.toLowerCase();
     if (lower.startsWith("data:image/")) return false; // fast path for base64 images
+    if (lower.match(/\.(jpg|jpeg|png|gif|webp|avif|heic)(\?.*)?$/i)) return false; // skip image extensions
     return !!(
       lower.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || 
       (lower.includes("video") && !lower.startsWith("data:")) || 
@@ -1041,8 +1042,8 @@ Description: ${formattedDesc}`;
             >
               <div>
                 <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2">
-                  <div className="flex items-center gap-[2px] overflow-hidden flex-nowrap flex-1 pb-1 pt-1">
-                    {(allPhotos.length > 1 || hasVideo) && allPhotos.map((itemUrl, idx) => {
+                  <div className="flex items-center gap-[4px] overflow-hidden flex-nowrap flex-1 pb-1 pt-1">
+                    {(allPhotos.length > 1 || hasVideo) && allPhotos.slice(0, 11).map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
                       
@@ -1060,7 +1061,7 @@ Description: ${formattedDesc}`;
                                 setIsPlaying(true);
                               }
                             }}
-                            className={`w-5 h-5 shrink-0 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
+                            className={`w-6 h-6 shrink-0 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
                               isActive
                                 ? "bg-stone-900 text-white border-stone-900 ring-2 ring-stone-900/20"
                                 : "bg-white text-stone-900 border-stone-200"
@@ -1068,11 +1069,11 @@ Description: ${formattedDesc}`;
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
                             {isActive && isPlaying ? (
-                              <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current">
+                              <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                               </svg>
                             ) : (
-                              <Play className="w-2 h-2 fill-current text-current ml-[1px]" />
+                              <Play className="w-2.5 h-2.5 fill-current text-current ml-[1px]" />
                             )}
                           </button>
                         );
@@ -1086,11 +1087,11 @@ Description: ${formattedDesc}`;
                             startTransition(() => setCurrentPhotoIndex(idx));
                             setIsPlaying(false);
                           }}
-                          className="w-3 h-3 shrink-0 flex items-center justify-center cursor-pointer group"
+                          className="w-4 h-4 shrink-0 flex items-center justify-center cursor-pointer group"
                           title={`Go to photo ${idx + 1}`}
                         >
-                          <div className={`w-2 h-2 rounded-full transition-all ${
-                            isActive ? "bg-stone-800 scale-110 shadow-sm" : "bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
+                          <div className={`rounded-full transition-all ${
+                            isActive ? "w-2.5 h-2.5 bg-stone-800 scale-110 shadow-sm" : "w-2 h-2 bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
                           }`} />
                         </button>
                       );
