@@ -26,25 +26,47 @@ async function startServer() {
     }
     
     try {
-      const { imageBase64 } = req.body;
-      if (!imageBase64) {
-        return res.status(400).json({ error: "Missing image" });
+      const { imageBase64, imageUrl } = req.body;
+      if (!imageBase64 && !imageUrl) {
+        return res.status(400).json({ error: "Missing image data or URL" });
       }
 
-      // Strip "data:image/jpeg;base64," prefix
-      const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-      let base64Data = imageBase64;
+      let base64Data = "";
       let mimeType = "image/jpeg";
-      
-      if (matches && matches.length === 3) {
-        mimeType = matches[1];
-        base64Data = matches[2];
+      let fullBase64Image = "";
+
+      if (imageUrl) {
+        try {
+          const imageRes = await fetch(imageUrl);
+          if (!imageRes.ok) {
+            throw new Error(`Failed to fetch image: ${imageRes.statusText}`);
+          }
+          const contentType = imageRes.headers.get("content-type");
+          if (contentType) {
+            mimeType = contentType;
+          }
+          const arrayBuffer = await imageRes.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          base64Data = buffer.toString("base64");
+          fullBase64Image = `data:${mimeType};base64,${base64Data}`;
+        } catch (fetchErr: any) {
+          console.error("Failed to fetch imageUrl:", fetchErr);
+          return res.status(400).json({ error: `Failed to fetch image URL: ${fetchErr.message}` });
+        }
       } else {
-        base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+        const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        fullBase64Image = imageBase64;
+        
+        if (matches && matches.length === 3) {
+          mimeType = matches[1];
+          base64Data = matches[2];
+        } else {
+          base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+        }
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         contents: [
           {
             role: "user",
@@ -77,13 +99,12 @@ async function startServer() {
       let bbox: number[] = [];
       if (text) {
           try {
-              // Strip markdown if present
               const cleanText = text.replace(/```(json)?/g, '').trim();
               bbox = JSON.parse(cleanText);
           } catch(e) {}
       }
 
-      res.json({ bbox });
+      res.json({ bbox, base64Image: fullBase64Image });
     } catch (error) {
       console.error("Gemini Error:", error);
       res.status(500).json({ error: "Failed to detect license plate" });

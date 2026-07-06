@@ -1,11 +1,23 @@
 export async function blurLicensePlate(base64Image: string): Promise<string> {
   try {
+    const isUrl = base64Image.startsWith("http://") || base64Image.startsWith("https://") || base64Image.startsWith("/");
+    const body: any = {};
+    if (isUrl) {
+      let url = base64Image;
+      if (url.startsWith("/")) {
+        url = window.location.origin + url;
+      }
+      body.imageUrl = url;
+    } else {
+      body.imageBase64 = base64Image;
+    }
+
     const res = await fetch("/api/blur-license-plate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ imageBase64: base64Image }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
@@ -15,9 +27,12 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
 
     const data = await res.json();
     const bbox = data.bbox; // [ymin, xmin, ymax, xmax] (0 to 1000)
+    const returnedBase64 = data.base64Image || base64Image;
 
     if (!bbox || bbox.length !== 4 || bbox.every((val: number) => val === 0)) {
-      return base64Image;
+      // If there is no plate, but we converted URL to base64, we can still return the base64 or original.
+      // Returning base64 is safer, but returning original keeps it small. Let's return returnedBase64.
+      return returnedBase64;
     }
 
     return new Promise((resolve, reject) => {
@@ -27,7 +42,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
-        if (!ctx) return resolve(base64Image);
+        if (!ctx) return resolve(returnedBase64);
 
         // Draw original image
         ctx.drawImage(img, 0, 0);
@@ -46,7 +61,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         blurCanvas.width = width;
         blurCanvas.height = height;
         const blurCtx = blurCanvas.getContext("2d");
-        if (!blurCtx) return resolve(base64Image);
+        if (!blurCtx) return resolve(returnedBase64);
 
         // Draw the region to blur onto the temp canvas
         blurCtx.drawImage(
@@ -66,8 +81,8 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
 
         resolve(canvas.toDataURL("image/jpeg", 0.9));
       };
-      img.onerror = () => resolve(base64Image);
-      img.src = base64Image;
+      img.onerror = () => resolve(returnedBase64);
+      img.src = returnedBase64;
     });
   } catch (error) {
     console.error("Error in blurLicensePlate:", error);

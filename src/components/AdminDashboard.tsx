@@ -334,7 +334,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const files = e.target.files;
     if (files && files.length > 0) {
       setIsUploading(true);
-      for (const file of Array.from(files)) {
+      const filesArray = Array.from(files) as File[];
+      for (const file of filesArray) {
         if (file.size > 10 * 1024 * 1024) {
           alert("File " + file.name + " exceeds 10MB limit. Skipping.");
           continue;
@@ -392,12 +393,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       setIsUploading(true);
-      for (const file of Array.from(files)) {
+      const filesArray = Array.from(files) as File[];
+      for (const file of filesArray) {
         if (file.size > 10 * 1024 * 1024) {
           alert("File " + file.name + " exceeds 10MB limit. Skipping.");
           continue;
         }
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve) => {
           const reader = new FileReader();
           reader.onloadend = async () => {
             if (typeof reader.result === "string") {

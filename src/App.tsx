@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useDeferredValue } from "r
 import { Car, ViewMode, CatalogFilters, Booking, Review } from "./types";
 import { INITIAL_CARS } from "./data";
 import { getCarImageSrc, getFallbackCarThumbnail } from "./utils/carImage";
+import { getBrandColor, splitCarName } from "./utils/brandColors";
 import { BrandLogo } from "./components/BrandLogo";
 import { CarCard } from "./components/CarCard";
 import { AdminLogin } from "./components/AdminLogin";
@@ -1511,24 +1512,25 @@ export default function App() {
 
   // Migrate existing cars to blur license plates
   useEffect(() => {
-    if (cars.length > 0 && !localStorage.getItem("blur_migration_v5")) {
+    if (cars.length > 0 && !localStorage.getItem("blur_migration_v6")) {
       const runMigration = async () => {
-        localStorage.setItem("blur_migration_v5", "processing");
+        localStorage.setItem("blur_migration_v6", "processing");
         let anyUpdated = false;
         try {
           const { blurLicensePlate } = await import("./utils/blur-plate");
+          const updatedCarsList = [];
           for (const car of cars) {
             let updated = false;
             const newCar = { ...car };
             
-            if (newCar.image && newCar.image.startsWith("data:image")) {
+            if (newCar.image) {
               const blurred = await blurLicensePlate(newCar.image);
               if (blurred !== newCar.image) {
                 newCar.image = blurred;
                 updated = true;
               }
             }
-            if (newCar.altImage && newCar.altImage.startsWith("data:image")) {
+            if (newCar.altImage) {
               const blurred = await blurLicensePlate(newCar.altImage);
               if (blurred !== newCar.altImage) {
                 newCar.altImage = blurred;
@@ -1538,29 +1540,32 @@ export default function App() {
             if (newCar.photos && newCar.photos.length > 0) {
               const newPhotos = [];
               for (const p of newCar.photos) {
-                if (p.startsWith("data:image")) {
-                  const blurred = await blurLicensePlate(p);
-                  if (blurred !== p) updated = true;
-                  newPhotos.push(blurred);
-                } else {
-                  newPhotos.push(p);
-                }
+                const blurred = await blurLicensePlate(p);
+                if (blurred !== p) updated = true;
+                newPhotos.push(blurred);
               }
               newCar.photos = newPhotos;
             }
             if (updated) {
-              await db.cars.update(newCar.id, newCar);
+              if (supabase) {
+                await db.cars.update(newCar.id, newCar);
+              }
               anyUpdated = true;
             }
+            updatedCarsList.push(newCar);
           }
           if (anyUpdated) {
-            const refreshed = await db.cars.getAll();
-            if (refreshed) setCars(refreshed);
+            if (supabase) {
+              const refreshed = await db.cars.getAll();
+              if (refreshed) setCars(refreshed);
+            } else {
+              setCars(updatedCarsList);
+            }
           }
-          localStorage.setItem("blur_migration_v5", "done");
+          localStorage.setItem("blur_migration_v6", "done");
         } catch (e) {
           console.error("Migration failed", e);
-          localStorage.removeItem("blur_migration_v5");
+          localStorage.removeItem("blur_migration_v6");
         }
       };
       runMigration();
@@ -1878,15 +1883,35 @@ export default function App() {
 
   // Handle addition of a new vehicle catalog item
   const handleAddCar = async (newCarFields: Omit<Car, "id">) => {
+    const { blurLicensePlate } = await import("./utils/blur-plate");
+    const fieldsCopy = { ...newCarFields };
+    
+    // Blur main image
+    if (fieldsCopy.image) {
+      fieldsCopy.image = await blurLicensePlate(fieldsCopy.image);
+    }
+    // Blur alt image
+    if (fieldsCopy.altImage) {
+      fieldsCopy.altImage = await blurLicensePlate(fieldsCopy.altImage);
+    }
+    // Blur gallery photos
+    if (fieldsCopy.photos && fieldsCopy.photos.length > 0) {
+      const blurredPhotos = [];
+      for (const p of fieldsCopy.photos) {
+        blurredPhotos.push(await blurLicensePlate(p));
+      }
+      fieldsCopy.photos = blurredPhotos;
+    }
+
     const freshCar: Car = {
-      ...newCarFields,
+      ...fieldsCopy,
       id: `car-${Date.now()}`,
     };
     setCars((prev) => [freshCar, ...prev]);
 
     if (supabase) {
       try {
-        const dbCar = await db.cars.create(newCarFields);
+        const dbCar = await db.cars.create(fieldsCopy);
         if (dbCar) {
           setCars((prev) => prev.map(c => c.id === freshCar.id ? dbCar : c));
         }
@@ -1899,12 +1924,32 @@ export default function App() {
 
   // Handle updating an existing vehicle listing
   const handleUpdateCar = async (updatedCar: Car) => {
+    const { blurLicensePlate } = await import("./utils/blur-plate");
+    const carCopy = { ...updatedCar };
+    
+    // Blur main image
+    if (carCopy.image) {
+      carCopy.image = await blurLicensePlate(carCopy.image);
+    }
+    // Blur alt image
+    if (carCopy.altImage) {
+      carCopy.altImage = await blurLicensePlate(carCopy.altImage);
+    }
+    // Blur gallery photos
+    if (carCopy.photos && carCopy.photos.length > 0) {
+      const blurredPhotos = [];
+      for (const p of carCopy.photos) {
+        blurredPhotos.push(await blurLicensePlate(p));
+      }
+      carCopy.photos = blurredPhotos;
+    }
+
     setCars((prev) =>
-      prev.map((car) => (car.id === updatedCar.id ? updatedCar : car)),
+      prev.map((car) => (car.id === carCopy.id ? carCopy : car)),
     );
     if (supabase) {
       try {
-        await db.cars.update(updatedCar.id, updatedCar);
+        await db.cars.update(carCopy.id, carCopy);
       } catch (err: any) {
         console.error("Failed to update car in Supabase", err);
         alert(`Failed to sync with Supabase: ${err.message || "Unknown error"}`);
