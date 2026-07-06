@@ -550,6 +550,19 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isPhotosOpen, allPhotos.length]);
 
+  // Scroll active thumbnail into view when currentPhotoIndex changes
+  useEffect(() => {
+    if (!isPhotosOpen) return;
+    const activeThumb = document.getElementById(`gallery-thumb-${car.id}-${currentPhotoIndex}`);
+    if (activeThumb) {
+      activeThumb.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [currentPhotoIndex, isPhotosOpen, car.id]);
+
   const [reviewAuthor, setReviewAuthor] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
@@ -2104,7 +2117,7 @@ Description: ${formattedDesc}`;
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.15 }}
                           src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&controls=1&rel=0`}
-                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                           allow="autoplay; encrypted-media"
                           allowFullScreen
                         />
@@ -2116,7 +2129,7 @@ Description: ${formattedDesc}`;
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.15 }}
                           src={`https://drive.google.com/file/d/${googleDriveVideoId}/preview`}
-                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                           allow="autoplay; encrypted-media"
                           allowFullScreen
                         />
@@ -2133,7 +2146,7 @@ Description: ${formattedDesc}`;
                           onPlay={() => setIsPlaying(true)}
                           onPause={() => setIsPlaying(false)}
                           loop
-                          className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         />
                       )
                     ) : imageError && isGoogleDrive && driveId ? (
@@ -2144,7 +2157,7 @@ Description: ${formattedDesc}`;
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
                         src={`https://drive.google.com/file/d/${driveId}/preview`}
-                        className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         allow="autoplay"
                       />
                     ) : (
@@ -2163,7 +2176,7 @@ Description: ${formattedDesc}`;
                             (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
                           }
                         }}
-                        className="w-full max-w-4xl h-[60vh] sm:h-[65vh] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                       />
                     )}
                   </AnimatePresence>
@@ -2196,7 +2209,7 @@ Description: ${formattedDesc}`;
 
                 {/* Thumbnails strip */}
                 {allPhotos.length > 1 && (
-                  <div className="flex gap-3 max-w-full overflow-x-auto px-4 py-2 scrollbar-none items-center justify-center">
+                  <div className="flex gap-3 max-w-full overflow-x-auto px-4 py-2 hide-scrollbar items-center justify-start sm:justify-center w-full flex-nowrap">
                     {allPhotos.map((photo, index) => {
                       const isSelected = currentPhotoIndex === index;
                       const isItemVideo = (index === 0 && !!effectiveVideoUrl) || isVideoUrl(photo);
