@@ -2117,7 +2117,7 @@ Description: ${formattedDesc}`;
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.15 }}
                           src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&controls=1&rel=0`}
-                          className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl aspect-[16/10] md:aspect-[16/9] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                           allow="autoplay; encrypted-media"
                           allowFullScreen
                         />
@@ -2129,7 +2129,7 @@ Description: ${formattedDesc}`;
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.15 }}
                           src={`https://drive.google.com/file/d/${googleDriveVideoId}/preview`}
-                          className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl aspect-[16/10] md:aspect-[16/9] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                           allow="autoplay; encrypted-media"
                           allowFullScreen
                         />
@@ -2146,7 +2146,7 @@ Description: ${formattedDesc}`;
                           onPlay={() => setIsPlaying(true)}
                           onPause={() => setIsPlaying(false)}
                           loop
-                          className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                          className="w-full max-w-4xl aspect-[16/10] md:aspect-[16/9] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         />
                       )
                     ) : imageError && isGoogleDrive && driveId ? (
@@ -2157,7 +2157,7 @@ Description: ${formattedDesc}`;
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
                         src={`https://drive.google.com/file/d/${driveId}/preview`}
-                        className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        className="w-full max-w-4xl aspect-[16/10] md:aspect-[16/9] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                         allow="autoplay"
                       />
                     ) : (
@@ -2176,7 +2176,7 @@ Description: ${formattedDesc}`;
                             (e.target as HTMLImageElement).src = getFallbackCarThumbnail(car.name, car.category);
                           }
                         }}
-                        className="w-full max-w-4xl aspect-[16/10] sm:aspect-auto sm:h-[65vh] object-contain rounded-2xl shadow-2xl border border-white/5 bg-black/40"
+                        className="w-full max-w-4xl aspect-[16/10] md:aspect-[16/9] object-cover rounded-2xl shadow-2xl border border-white/5 bg-black/40"
                       />
                     )}
                   </AnimatePresence>
