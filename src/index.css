@@ -8,6 +8,15 @@
   --font-khmer-moul: "Moul", serif;
 }
 
+/* Hide scrollbar utilities */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Base style resets to match premium plum theme */
 body {
   font-family: var(--font-sans);

@@ -1041,8 +1041,8 @@ Description: ${formattedDesc}`;
               className="p-5 flex-1 flex flex-col justify-between pt-2"
             >
               <div>
-                <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2">
-                  <div className="flex items-center gap-[4px] overflow-hidden flex-nowrap flex-1 pb-1 pt-1">
+                <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2 relative">
+                  <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar flex-nowrap flex-1 pb-1 pt-1 relative pr-4" style={{ maskImage: "linear-gradient(to right, black 90%, transparent 100%)", WebkitMaskImage: "-webkit-linear-gradient(left, black 90%, transparent 100%)" }}>
                     {(allPhotos.length > 1 || hasVideo) && allPhotos.slice(0, 11).map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
@@ -1061,7 +1061,7 @@ Description: ${formattedDesc}`;
                                 setIsPlaying(true);
                               }
                             }}
-                            className={`w-7 h-7 shrink-0 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
+                            className={`w-6 h-6 shrink-0 mr-0.5 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
                               isActive
                                 ? "bg-stone-900 text-white border-stone-900 ring-2 ring-stone-900/20"
                                 : "bg-white text-stone-900 border-stone-200"
@@ -1069,11 +1069,11 @@ Description: ${formattedDesc}`;
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
                             {isActive && isPlaying ? (
-                              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                              <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current">
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                               </svg>
                             ) : (
-                              <Play className="w-3 h-3 fill-current text-current ml-[1px]" />
+                              <Play className="w-2.5 h-2.5 fill-current text-current ml-[1px]" />
                             )}
                           </button>
                         );
@@ -1087,11 +1087,11 @@ Description: ${formattedDesc}`;
                             startTransition(() => setCurrentPhotoIndex(idx));
                             setIsPlaying(false);
                           }}
-                          className="w-5 h-5 shrink-0 flex items-center justify-center cursor-pointer group"
+                          className="w-4 h-4 shrink-0 flex items-center justify-center cursor-pointer group"
                           title={`Go to photo ${idx + 1}`}
                         >
                           <div className={`rounded-full transition-all ${
-                            isActive ? "w-3 h-3 bg-stone-800 scale-110 shadow-sm" : "w-2.5 h-2.5 bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
+                            isActive ? "w-2.5 h-2.5 bg-stone-800 scale-110 shadow-sm" : "w-2 h-2 bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
                           }`} />
                         </button>
                       );
