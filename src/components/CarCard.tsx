@@ -1038,10 +1038,10 @@ Description: ${formattedDesc}`;
             {/* Narrative & Info */}
             <div
               id={`car-body-${car.id}`}
-              className="p-5 flex-1 flex flex-col justify-between pt-2"
+              className="p-4 flex-1 flex flex-col justify-between pt-2"
             >
               <div>
-                <div className="flex justify-between items-center mb-3.5 w-full min-h-[32px] gap-2 relative">
+                <div className="flex justify-between items-center mb-2 w-full min-h-[28px] gap-2 relative">
                   <div className="flex items-center gap-0.5 overflow-x-auto hide-scrollbar flex-nowrap flex-1 min-w-0 pb-1 pt-1">
                     {(allPhotos.length > 1 || hasVideo) && allPhotos.slice(0, 11).map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
@@ -1149,7 +1149,7 @@ Description: ${formattedDesc}`;
                     </button>
                   </div>
                 </div>
-                <div className="mb-2 w-full">
+                <div className="mb-1 w-full">
                   <h3
                     id={`car-title-${car.id}`}
                     className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate"
@@ -1167,7 +1167,7 @@ Description: ${formattedDesc}`;
                     })()}
                   </h3>
                 </div>
-                  <div className="mb-4">
+                  <div className="mb-2">
                     {car.description && (
                       <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
                         {car.description}
@@ -1178,7 +1178,7 @@ Description: ${formattedDesc}`;
                   {/* Highlights Info Grid (Technical) */}
                 <div
                   id={`car-specs-${car.id}`}
-                  className="grid grid-cols-4 gap-1 py-3 border-y border-stone-200 mb-3 bg-stone-100/50 rounded-xl px-1"
+                  className="grid grid-cols-4 gap-1 py-2 border-y border-stone-200 mb-2 bg-stone-100/50 rounded-xl px-1"
                 >
                   <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
                     <CarIcon className="w-4 h-4 text-stone-700 mb-1" />
@@ -1210,16 +1210,16 @@ Description: ${formattedDesc}`;
                 </div>
 
                 {/* Additional Technical Specifications Grid */}
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
+                <div className="grid grid-cols-3 gap-1 mb-2">
+                  <div className="bg-stone-50 border border-stone-100 p-1.5 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.engine}</span>
                     <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.engine}</span>
                   </div>
-                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
+                  <div className="bg-stone-50 border border-stone-100 p-1.5 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.horsepower}</span>
                     <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.power}</span>
                   </div>
-                  <div className="bg-stone-50 border border-stone-100 p-2 rounded-lg flex flex-col items-center justify-center">
+                  <div className="bg-stone-50 border border-stone-100 p-1.5 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
                     <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.accel}</span>
                   </div>
