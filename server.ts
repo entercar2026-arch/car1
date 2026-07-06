@@ -66,7 +66,7 @@ async function startServer() {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: [
           {
             role: "user",
@@ -105,9 +105,10 @@ async function startServer() {
       }
 
       res.json({ bbox, base64Image: fullBase64Image });
-    } catch (error) {
-      console.error("Gemini Error:", error);
-      res.status(500).json({ error: "Failed to detect license plate" });
+    } catch (error: any) {
+      console.warn("Gemini detection skipped due to API error (e.g., quota or timeout). Details:", error.message);
+      // Gracefully degrade by returning empty bounding box so original image is kept
+      res.json({ bbox: [], base64Image: fullBase64Image });
     }
   });
 

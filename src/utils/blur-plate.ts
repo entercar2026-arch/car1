@@ -1,15 +1,30 @@
 export async function blurLicensePlate(base64Image: string): Promise<string> {
   try {
-    const isUrl = base64Image.startsWith("http://") || base64Image.startsWith("https://") || base64Image.startsWith("/");
+    let base64ToSend = base64Image;
+    if (base64Image.startsWith("http://") || base64Image.startsWith("https://") || base64Image.startsWith("/")) {
+       try {
+         const fetchRes = await fetch(base64Image);
+         const blob = await fetchRes.blob();
+         base64ToSend = await new Promise((resolve, reject) => {
+           const reader = new FileReader();
+           reader.onloadend = () => resolve(reader.result as string);
+           reader.onerror = reject;
+           reader.readAsDataURL(blob);
+         });
+       } catch (e) {
+         console.warn("Could not fetch image on client, sending URL to server", e);
+       }
+    }
+
     const body: any = {};
-    if (isUrl) {
-      let url = base64Image;
+    if (base64ToSend.startsWith("data:")) {
+      body.imageBase64 = base64ToSend;
+    } else {
+      let url = base64ToSend;
       if (url.startsWith("/")) {
         url = window.location.origin + url;
       }
       body.imageUrl = url;
-    } else {
-      body.imageBase64 = base64Image;
     }
 
     const res = await fetch("/api/blur-license-plate", {
