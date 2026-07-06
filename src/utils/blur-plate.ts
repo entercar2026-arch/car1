@@ -30,9 +30,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
     const returnedBase64 = data.base64Image || base64Image;
 
     if (!bbox || bbox.length !== 4 || bbox.every((val: number) => val === 0)) {
-      // If there is no plate, but we converted URL to base64, we can still return the base64 or original.
-      // Returning base64 is safer, but returning original keeps it small. Let's return returnedBase64.
-      return returnedBase64;
+      return base64Image;
     }
 
     return new Promise((resolve, reject) => {
@@ -42,7 +40,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
-        if (!ctx) return resolve(returnedBase64);
+        if (!ctx) return resolve(base64Image);
 
         // Draw original image
         ctx.drawImage(img, 0, 0);
@@ -61,7 +59,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         blurCanvas.width = width;
         blurCanvas.height = height;
         const blurCtx = blurCanvas.getContext("2d");
-        if (!blurCtx) return resolve(returnedBase64);
+        if (!blurCtx) return resolve(base64Image);
 
         // Draw the region to blur onto the temp canvas
         blurCtx.drawImage(
@@ -81,7 +79,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
 
         resolve(canvas.toDataURL("image/jpeg", 0.9));
       };
-      img.onerror = () => resolve(returnedBase64);
+      img.onerror = () => resolve(base64Image);
       img.src = returnedBase64;
     });
   } catch (error) {

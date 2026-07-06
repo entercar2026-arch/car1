@@ -54,15 +54,43 @@ const splitUrls = (input: string): string[] => {
 
 const isMediaVideo = (url?: string) => {
   if (!url) return false;
-  if (url.match(/\.(mp4|webm|ogg|avi|mov|mkv)(\?.*)?$/i)) return true;
-  if (url.includes("youtube.com") || url.includes("youtu.be")) return true;
-  if (url.includes("files.catbox.moe")) {
-    if (url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".mov") || url.toLowerCase().endsWith(".webm")) return true;
+  const lower = url.toLowerCase();
+  if (lower.startsWith("data:image/")) return false;
+  if (lower.match(/\.(mp4|webm|ogg|avi|mov|mkv)(\?.*)?$/i)) return true;
+  if (lower.includes("youtube.com") || lower.includes("youtu.be")) return true;
+  if (lower.includes("files.catbox.moe")) {
+    if (lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.endsWith(".webm")) return true;
   }
-  if (url.toLowerCase().includes("video") || url.startsWith("data:video/")) return true;
+  if ((lower.includes("video") && !lower.startsWith("data:")) || lower.startsWith("data:video/")) return true;
   return false;
 };
 
+
+const resizeImage = (dataUrl: string, maxWidth = 1200): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      } else {
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+};
 
 // Optimized Form components to prevent full-dashboard synchronous re-renders on keystroke (INP fix)
 const OptimizedTextArea = ({ id, value, onChange, placeholder, className, rows }: any) => {
@@ -316,7 +344,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       reader.onloadend = async () => {
         if (typeof reader.result === "string") {
           try {
-            const blurred = await blurLicensePlate(reader.result);
+            let base64 = reader.result;
+            if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
+            const blurred = await blurLicensePlate(base64);
             setFormImage(blurred);
           } catch (e) {
             setFormImage(reader.result);
@@ -345,7 +375,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           reader.onloadend = async () => {
             if (typeof reader.result === "string") {
               try {
-                const blurred = await blurLicensePlate(reader.result);
+                let base64 = reader.result;
+                if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
+                const blurred = await blurLicensePlate(base64);
                 setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
               } catch (e) {
                 setFormPhotos((prev) => prev ? prev + "\n" + reader.result : reader.result);
@@ -375,7 +407,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       reader.onloadend = async () => {
         if (typeof reader.result === "string") {
           try {
-            const blurred = await blurLicensePlate(reader.result);
+            let base64 = reader.result;
+            if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
+            const blurred = await blurLicensePlate(base64);
             setFormImage(blurred);
           } catch (e) {
             setFormImage(reader.result);
@@ -404,7 +438,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           reader.onloadend = async () => {
             if (typeof reader.result === "string") {
               try {
-                const blurred = await blurLicensePlate(reader.result);
+                let base64 = reader.result;
+                if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
+                const blurred = await blurLicensePlate(base64);
                 setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
               } catch (e) {
                 setFormPhotos((prev) => prev ? prev + "\n" + reader.result : reader.result);
@@ -554,7 +590,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             if (!effectiveImage || effectiveImage.includes("photo-1555215695")) {
               effectiveImage = getAdminFallbackCarThumbnail(car.name, car.category);
             }
-            const isVideo = effectiveImage && (effectiveImage.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || effectiveImage.includes("video"));
+            const isVideo = effectiveImage && (effectiveImage.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || (effectiveImage.toLowerCase().includes("video") && !effectiveImage.startsWith("data:image/")));
 
             if (hasThumbnail) {
               return (

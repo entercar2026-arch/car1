@@ -50,12 +50,15 @@ const getOptimizedImageUrl = (
 ) => {
   if (!rawUrl) return rawUrl;
 
+  const lowerUrl = rawUrl.toLowerCase();
+  if (lowerUrl.startsWith("data:image/")) return rawUrl;
+  
   const isVideo = !!(
-    rawUrl.toLowerCase().match(/\.(mp4|webm|ogg|quicktime|mov)(\?.*)?$/i) || 
-    rawUrl.toLowerCase().includes("video") || 
-    rawUrl.startsWith("data:video/") || 
-    rawUrl.includes("youtube.com") || 
-    rawUrl.includes("youtu.be")
+    lowerUrl.match(/\.(mp4|webm|ogg|quicktime|mov)(\?.*)?$/i) || 
+    (lowerUrl.includes("video") && !lowerUrl.startsWith("data:")) || 
+    lowerUrl.startsWith("data:video/") || 
+    lowerUrl.includes("youtube.com") || 
+    lowerUrl.includes("youtu.be")
   );
   if (isVideo) {
     return rawUrl;
@@ -345,9 +348,10 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const isVideoUrl = (url?: string) => {
     if (!url) return false;
     const lower = url.toLowerCase();
+    if (lower.startsWith("data:image/")) return false; // fast path for base64 images
     return !!(
-      lower.match(/\.(mp4|webm|ogg|quicktime|mov)(\?.*)?$/i) || 
-      lower.includes("video") || 
+      lower.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || 
+      (lower.includes("video") && !lower.startsWith("data:")) || 
       lower.startsWith("data:video/") || 
       lower.includes("youtube.com") || 
       lower.includes("youtu.be") || 
