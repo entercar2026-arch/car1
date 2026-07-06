@@ -1061,7 +1061,7 @@ Description: ${formattedDesc}`;
                                 setIsPlaying(true);
                               }
                             }}
-                            className={`w-6 h-6 shrink-0 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
+                            className={`w-7 h-7 shrink-0 mr-1 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
                               isActive
                                 ? "bg-stone-900 text-white border-stone-900 ring-2 ring-stone-900/20"
                                 : "bg-white text-stone-900 border-stone-200"
@@ -1069,11 +1069,11 @@ Description: ${formattedDesc}`;
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
                             {isActive && isPlaying ? (
-                              <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current">
+                              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                               </svg>
                             ) : (
-                              <Play className="w-2.5 h-2.5 fill-current text-current ml-[1px]" />
+                              <Play className="w-3 h-3 fill-current text-current ml-[1px]" />
                             )}
                           </button>
                         );
@@ -1087,11 +1087,11 @@ Description: ${formattedDesc}`;
                             startTransition(() => setCurrentPhotoIndex(idx));
                             setIsPlaying(false);
                           }}
-                          className="w-4 h-4 shrink-0 flex items-center justify-center cursor-pointer group"
+                          className="w-5 h-5 shrink-0 flex items-center justify-center cursor-pointer group"
                           title={`Go to photo ${idx + 1}`}
                         >
                           <div className={`rounded-full transition-all ${
-                            isActive ? "w-2.5 h-2.5 bg-stone-800 scale-110 shadow-sm" : "w-2 h-2 bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
+                            isActive ? "w-3 h-3 bg-stone-800 scale-110 shadow-sm" : "w-2.5 h-2.5 bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
                           }`} />
                         </button>
                       );
