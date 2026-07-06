@@ -1,30 +1,15 @@
 export async function blurLicensePlate(base64Image: string): Promise<string> {
   try {
-    let base64ToSend = base64Image;
-    if (base64Image.startsWith("http://") || base64Image.startsWith("https://") || base64Image.startsWith("/")) {
-       try {
-         const fetchRes = await fetch(base64Image);
-         const blob = await fetchRes.blob();
-         base64ToSend = await new Promise((resolve, reject) => {
-           const reader = new FileReader();
-           reader.onloadend = () => resolve(reader.result as string);
-           reader.onerror = reject;
-           reader.readAsDataURL(blob);
-         });
-       } catch (e) {
-         console.warn("Could not fetch image on client, sending URL to server", e);
-       }
-    }
-
+    const isUrl = base64Image.startsWith("http://") || base64Image.startsWith("https://") || base64Image.startsWith("/");
     const body: any = {};
-    if (base64ToSend.startsWith("data:")) {
-      body.imageBase64 = base64ToSend;
-    } else {
-      let url = base64ToSend;
+    if (isUrl) {
+      let url = base64Image;
       if (url.startsWith("/")) {
         url = window.location.origin + url;
       }
       body.imageUrl = url;
+    } else {
+      body.imageBase64 = base64Image;
     }
 
     const res = await fetch("/api/blur-license-plate", {
@@ -45,12 +30,13 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
     const returnedBase64 = data.base64Image || base64Image;
 
     if (!bbox || bbox.length !== 4 || bbox.every((val: number) => val === 0)) {
+      // If there is no plate, but we converted URL to base64, we can still return the base64 or original.
+      // Returning base64 is safer, but returning original keeps it small. Let's return returnedBase64.
       return returnedBase64;
     }
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const img = new Image();
-      img.crossOrigin = "anonymous";
       img.onload = () => {
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
@@ -70,69 +56,28 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         const width = xmax - xmin;
         const height = ymax - ymin;
 
-        if (width <= 0 || height <= 0) {
-          return resolve(returnedBase64);
-        }
+        // Create a temporary canvas for the blur effect
+        const blurCanvas = document.createElement("canvas");
+        blurCanvas.width = width;
+        blurCanvas.height = height;
+        const blurCtx = blurCanvas.getContext("2d");
+        if (!blurCtx) return resolve(returnedBase64);
 
-        // --- ROBUST SCALE-DOWN & SCALE-UP PIXELATION / BLURRING ---
-        // 1. Create a tiny temp canvas to scale down the license plate region.
-        // This mathematically destroys the text and details so it's impossible to recover.
-        const tempCanvas = document.createElement("canvas");
-        // We scale it down to about 12% of its size (minimum 4x4 pixels)
-        tempCanvas.width = Math.max(4, Math.round(width * 0.12));
-        tempCanvas.height = Math.max(4, Math.round(height * 0.12));
-        const tempCtx = tempCanvas.getContext("2d");
+        // Draw the region to blur onto the temp canvas
+        blurCtx.drawImage(
+          img,
+          xmin, ymin, width, height,
+          0, 0, width, height
+        );
+
+        // Apply blur
+        ctx.filter = `blur(${Math.max(width, height) * 0.25}px)`;
+        ctx.drawImage(blurCanvas, xmin, ymin);
         
-        if (tempCtx) {
-          // Draw the crisp region onto the tiny canvas
-          tempCtx.drawImage(
-            img,
-            xmin, ymin, width, height,
-            0, 0, tempCanvas.width, tempCanvas.height
-          );
-
-          // Get the average color of the plate from the tiny canvas to use as a solid fill.
-          // This ensures that the original high-frequency crisp text is completely obliterated first.
-          const pixelData = tempCtx.getImageData(
-            Math.floor(tempCanvas.width / 2),
-            Math.floor(tempCanvas.height / 2),
-            1, 1
-          ).data;
-          const avgColor = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
-
-          // Fill the region with the solid average color first
-          ctx.fillStyle = avgColor;
-          ctx.fillRect(xmin - 2, ymin - 2, width + 4, height + 4);
-
-          // Now draw the tiny pixelated image back, stretched to original size.
-          // imageSmoothingEnabled = true will create a very smooth, clean blur effect!
-          ctx.imageSmoothingEnabled = true;
-          
-          // Apply an optional canvas blur filter if the browser supports it, as an extra layer
-          try {
-            ctx.filter = `blur(${Math.max(width, height) * 0.15}px)`;
-          } catch (e) {}
-
-          // Draw it stretched back
-          ctx.drawImage(
-            tempCanvas,
-            0, 0, tempCanvas.width, tempCanvas.height,
-            xmin - 2, ymin - 2, width + 4, height + 4
-          );
-
-          // Turn off filter
-          try {
-            ctx.filter = "none";
-          } catch (e) {}
-
-          // Add a elegant glassmorphism frosted glass overlay to make it look beautifully integrated
-          ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
-          ctx.fillRect(xmin - 1, ymin - 1, width + 2, height + 2);
-        } else {
-          // Fallback if tempCtx couldn't be created: draw a semi-transparent block
-          ctx.fillStyle = "rgba(180, 180, 180, 0.95)";
-          ctx.fillRect(xmin, ymin, width, height);
-        }
+        // Also draw a semi-transparent overlay to further obscure it
+        ctx.filter = 'none';
+        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.fillRect(xmin, ymin, width, height);
 
         resolve(canvas.toDataURL("image/jpeg", 0.9));
       };
