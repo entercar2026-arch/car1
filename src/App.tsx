@@ -3329,6 +3329,7 @@ export default function App() {
                           car={car}
                           isAdminMode={isAdminAuthenticated}
                           onBookSuccess={handleBookingToast}
+                          onShowToast={setBookingToast}
                           reviews={reviews}
                           onAddReview={handleAddReview}
                           onConfirmBook={(bookingFields) =>

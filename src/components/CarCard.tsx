@@ -148,6 +148,7 @@ export interface CarCardProps {
   onToggleLike?: (carId: string) => void;
   onFilterSelect?: (filterType: "category" | "transmission" | "fuelType" | "seats", value: string | number) => void;
   lang?: "en" | "kh";
+  onShowToast?: (message: string) => void;
 }
 
 const CarCardComponent: React.FC<CarCardProps> = ({
@@ -163,6 +164,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   onToggleLike,
   onFilterSelect,
   lang = "en",
+  onShowToast,
 }) => {
   const t = translations[lang];
 
@@ -661,7 +663,11 @@ Description: ${formattedDesc}`;
     e.preventDefault();
     if (!isFormComplete) {
        if (contactMethod === "none" && !tel) {
-           alert("Please provide a phone number when selecting None as Contact Method.");
+           if (onShowToast) {
+               onShowToast("Please provide a phone number when selecting None as Contact Method.");
+           } else {
+               alert("Please provide a phone number when selecting None as Contact Method.");
+           }
        }
        return;
     }
@@ -1152,7 +1158,11 @@ Description: ${formattedDesc}`;
                           }).catch(console.error);
                         } else {
                           navigator.clipboard.writeText(`${shareText}\n\n${finalUrl}`);
-                          alert("Link & details copied to clipboard!");
+                          if (onShowToast) {
+                            onShowToast("Link & details copied to clipboard!");
+                          } else {
+                            alert("Link & details copied to clipboard!");
+                          }
                         }
                       }}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
@@ -1594,14 +1604,7 @@ Description: ${formattedDesc}`;
                   </p>
 
 
-                  <button
-                    id={`btn-close-receipt-${car.id}`}
-                    onClick={handleCloseBookingModal}
-                    className="w-full mt-3 py-3 text-xs font-bold text-white rounded-xl shadow-md transition-all text-center uppercase tracking-wider cursor-pointer"
-                    style={{ backgroundColor: brandPlum }}
-                  >
-                    Done & Return
-                  </button>
+                  {/* Done & Return button hidden per request */}
                 </div>
               ) : (
                 <form onSubmit={handleBookingSubmit} className="space-y-4">
@@ -2018,16 +2021,7 @@ Description: ${formattedDesc}`;
                 </div>
               </div>
 
-              {/* Close Button at bottom in drawer context */}
-              <div className="border-t border-stone-100 pt-4 mt-4 text-center">
-                <button
-                  id={`btn-close-reviews-modal-${car.id}`}
-                  onClick={() => setIsReviewsOpen(false)}
-                  className="px-5 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition-all cursor-pointer uppercase tracking-wider"
-                >
-                  Dismiss Views
-                </button>
-              </div>
+              {/* Close Button at bottom in drawer context hidden per request */}
             </motion.div>
           </div>
         )}
