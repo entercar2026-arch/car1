@@ -37,7 +37,14 @@ async function startServer() {
 
       if (imageUrl) {
         try {
-          const imageRes = await fetch(imageUrl);
+          const imageRes = await fetch(imageUrl, {
+            headers: {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+              "Accept-Language": "en-US,en;q=0.9",
+              "Referer": new URL(imageUrl).origin
+            }
+          });
           if (!imageRes.ok) {
             throw new Error(`Failed to fetch image: ${imageRes.statusText}`);
           }
@@ -50,8 +57,8 @@ async function startServer() {
           base64Data = buffer.toString("base64");
           fullBase64Image = `data:${mimeType};base64,${base64Data}`;
         } catch (fetchErr: any) {
-          console.error("Failed to fetch imageUrl:", fetchErr);
-          return res.status(400).json({ error: `Failed to fetch image URL: ${fetchErr.message}` });
+          console.warn("Failed to fetch imageUrl:", fetchErr.message);
+          return res.json({ bbox: [], base64Image: imageUrl });
         }
       } else {
         const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);

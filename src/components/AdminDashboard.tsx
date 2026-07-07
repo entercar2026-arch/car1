@@ -37,11 +37,12 @@ import {
 
 const splitUrls = (input: string): string[] => {
   if (!input) return [];
-  const normalized = input.replace(/(?<!^)(https?:\/\/|data:)/gi, '\n$1');
+  const normalized = input.replace(/(https?:\/\/|data:)/gi, '\n$1');
   const lines = normalized.split(/\n/);
   const result: string[] = [];
   for (const line of lines) {
     const trimmed = line.trim();
+    if (!trimmed) continue;
     if (trimmed.startsWith('data:')) {
       result.push(trimmed);
     } else {
