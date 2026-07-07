@@ -1001,15 +1001,6 @@ Description: ${formattedDesc}`;
                 )}
               </AnimatePresence>
 
-              {/* Floating Play Button Overlay */}
-              {hasVideo && !isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                  <div className="w-12 h-12 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-xl">
-                    <Play className="w-5 h-5 text-white ml-1 fill-current opacity-90" />
-                  </div>
-                </div>
-              )}
-
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/25 via-transparent to-transparent pointer-events-none" />
 
