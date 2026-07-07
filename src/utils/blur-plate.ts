@@ -47,25 +47,35 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
       body.imageUrl = url;
     }
 
-    const res = await fetch("/api/blur-license-plate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    let bbox: number[] = [];
+    let returnedBase64 = base64Image;
 
-    if (!res.ok) {
-      console.warn("Failed to detect plate:", await res.text());
-      return base64Image;
+    try {
+      const res = await fetch("/api/blur-license-plate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        console.warn("Failed to detect plate on backend:", await res.text());
+      } else {
+        const data = await res.json();
+        if (data.bbox) bbox = data.bbox;
+        if (data.base64Image) returnedBase64 = data.base64Image;
+      }
+    } catch (apiErr) {
+      console.warn("Backend request failed:", apiErr);
     }
 
-    const data = await res.json();
-    const bbox = data.bbox; // [ymin, xmin, ymax, xmax] (0 to 1000)
-    const returnedBase64 = data.base64Image || base64Image;
-
+    let finalBbox = bbox;
     if (!bbox || bbox.length !== 4 || bbox.every((val: number) => val === 0)) {
-      return base64Image;
+      console.warn("Detection returned empty bounding box or failed, falling back to generic bottom-center blur");
+      // Approximate position of a license plate on a car photo (bottom center)
+      // ymin: 65%, xmin: 30%, ymax: 85%, xmax: 70%
+      finalBbox = [650, 300, 850, 700];
     }
 
     return new Promise((resolve) => {
@@ -82,10 +92,10 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
           ctx.drawImage(img, 0, 0);
 
           // Calculate coordinates
-          let ymin = (bbox[0] / 1000) * img.height;
-          let xmin = (bbox[1] / 1000) * img.width;
-          let ymax = (bbox[2] / 1000) * img.height;
-          let xmax = (bbox[3] / 1000) * img.width;
+          let ymin = (finalBbox[0] / 1000) * img.height;
+          let xmin = (finalBbox[1] / 1000) * img.width;
+          let ymax = (finalBbox[2] / 1000) * img.height;
+          let xmax = (finalBbox[3] / 1000) * img.width;
           let width = xmax - xmin;
           let height = ymax - ymin;
           

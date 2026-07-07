@@ -72,37 +72,37 @@ async function startServer() {
         }
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                inlineData: {
-                  data: base64Data,
-                  mimeType: mimeType
+      let response;
+      try {
+        response = await ai.models.generateContent({
+          model: "gemini-2.5-pro",
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  inlineData: {
+                    data: base64Data,
+                    mimeType: mimeType
+                  }
+                },
+                {
+                  text: "You are a specialized car license plate detector. Analyze this image and find the license plate on the car. Find the bounding box of the license plate. The license plate may be in English, Cambodian (Khmer), Arabic, or any other language. Look for a rectangular plate on the front or rear bumper containing numbers and letters. \n\nIMPORTANT: You must return ONLY a JSON array of exactly 4 integers representing the bounding box in [ymin, xmin, ymax, xmax] format, normalized from 0 to 1000. For example: [800, 400, 900, 600]. Do not include any other text, markdown, or explanation. If you absolutely cannot find any license plate or car, return []."
                 }
-              },
-              {
-                text: "Detect the bounding box of the car license plate (including the frame, text, numbers, and any recognizable plate structure) in this image. Even if the license plate text is in a foreign language (like Cambodian, Arabic, Cyrillic, etc.) or has a non-standard shape, you must still detect the rectangular frame or area holding the text/numbers on the bumper of the vehicle. Return the bounding box in [ymin, xmin, ymax, xmax] format normalized from 0 to 1000. If there are multiple, return the most prominent one. If there is no license plate, return []. IMPORTANT: Your output must be ONLY a valid JSON array of 4 integers."
-              }
-            ]
-          }
-        ],
-        config: {
-            temperature: 0.1,
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: "array",
-                items: {
-                    type: "integer"
-                }
+              ]
             }
-        }
-      });
+          ],
+          config: {
+              temperature: 0.1,
+          }
+        });
+      } catch (geminiError: any) {
+        console.error("Gemini Error:", geminiError);
+        return res.json({ bbox: [], base64Image: fullBase64Image });
+      }
 
       const text = response.text;
+      console.log("Gemini response text:", text);
       let bbox: number[] = [];
       if (text) {
           try {
@@ -112,9 +112,9 @@ async function startServer() {
       }
 
       res.json({ bbox, base64Image: fullBase64Image });
-    } catch (error) {
-      console.error("Gemini Error:", error);
-      res.status(500).json({ error: "Failed to detect license plate" });
+    } catch (error: any) {
+      console.error("Outer Error:", error);
+      res.status(500).json({ error: "Failed to detect license plate", details: error.message });
     }
   });
 
