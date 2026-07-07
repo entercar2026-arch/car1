@@ -551,9 +551,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, []);
 
   // Submit processing
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isUploading) return;
+    
+    setIsUploading(true);
 
     const cleanAndResolveDrive = (url: string) => {
       const trimmed = url.trim();
@@ -572,39 +574,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const galleryUrls = splitUrls(formPhotos);
     const finalPhotos = [...extraFromMain, ...galleryUrls].map(cleanAndResolveDrive).filter(Boolean);
 
-    startTransition(() => {
+    try {
       if (editingCar) {
-        onUpdateCar({
-        ...editingCar,
-        name: formName,
-        category: formCategory,
-        price: Number(formPrice),
-        image: targetImageUrl,
-        transmission: formTransmission,
-        seats: Number(formSeats),
-        fuelType: formFuel,
-        description: formDescription,
-        videoUrl: formVideoUrl,
-        thumbnail: formThumbnail || undefined,
-        photos: finalPhotos,
-      });
+        await onUpdateCar({
+          ...editingCar,
+          name: formName,
+          category: formCategory,
+          price: Number(formPrice),
+          image: targetImageUrl,
+          transmission: formTransmission,
+          seats: Number(formSeats),
+          fuelType: formFuel,
+          description: formDescription,
+          videoUrl: formVideoUrl,
+          thumbnail: formThumbnail || undefined,
+          photos: finalPhotos,
+        });
       } else {
-        onAddCar({
-        name: formName,
-        category: formCategory,
-        price: Number(formPrice),
-        image: targetImageUrl,
-        transmission: formTransmission,
-        seats: Number(formSeats),
-        fuelType: formFuel,
-        description: formDescription,
-        videoUrl: formVideoUrl,
-        thumbnail: formThumbnail || undefined,
-        photos: finalPhotos,
-      });
+        await onAddCar({
+          name: formName,
+          category: formCategory,
+          price: Number(formPrice),
+          image: targetImageUrl,
+          transmission: formTransmission,
+          seats: Number(formSeats),
+          fuelType: formFuel,
+          description: formDescription,
+          videoUrl: formVideoUrl,
+          thumbnail: formThumbnail || undefined,
+          photos: finalPhotos,
+        });
       }
-      setIsFormOpen(false);
-    });
+      
+      startTransition(() => {
+        setIsFormOpen(false);
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Safe delete execution
