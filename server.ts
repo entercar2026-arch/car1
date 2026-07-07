@@ -87,13 +87,25 @@ async function startServer() {
                   }
                 },
                 {
-                  text: "You are a specialized car license plate detector. Analyze this image and find the license plate on the car. Find the bounding box of the license plate. The license plate may be in English, Cambodian (Khmer), Arabic, or any other language. Look for a rectangular plate on the front or rear bumper containing numbers and letters. \n\nIMPORTANT: You must return ONLY a JSON array of exactly 4 integers representing the bounding box in [ymin, xmin, ymax, xmax] format, normalized from 0 to 1000. For example: [800, 400, 900, 600]. Do not include any other text, markdown, or explanation. If you absolutely cannot find any license plate or car, return []."
+                  text: "Analyze this image and find the license plate on the car. Find the bounding box of the license plate. Return the bounding box with ymin, xmin, ymax, xmax normalized from 0 to 1000. If no license plate is found, set found to false."
                 }
               ]
             }
           ],
           config: {
               temperature: 0.1,
+              responseMimeType: "application/json",
+              responseSchema: {
+                  type: "object",
+                  properties: {
+                      found: { type: "boolean" },
+                      ymin: { type: "integer" },
+                      xmin: { type: "integer" },
+                      ymax: { type: "integer" },
+                      xmax: { type: "integer" }
+                  },
+                  required: ["found"]
+              }
           }
         });
       } catch (geminiError: any) {
@@ -103,12 +115,13 @@ async function startServer() {
 
       const text = response.text;
       console.log("Gemini response text:", text);
+
       let bbox: number[] = [];
       if (text) {
           try {
-              const cleanText = text.replace(/```(json)?/g, '').trim();
-              bbox = JSON.parse(cleanText);
-              if (bbox && bbox.length === 4) {
+              const parsed = JSON.parse(text);
+              if (parsed.found && parsed.ymin !== undefined && parsed.xmin !== undefined && parsed.ymax !== undefined && parsed.xmax !== undefined) {
+                 bbox = [parsed.ymin, parsed.xmin, parsed.ymax, parsed.xmax];
                  const height = Math.abs(bbox[2] - bbox[0]);
                  const width = Math.abs(bbox[3] - bbox[1]);
                  if (height < 10 || width < 10) {
