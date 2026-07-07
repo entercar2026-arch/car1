@@ -71,11 +71,13 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
     }
 
     let finalBbox = bbox;
+    let isFallback = false;
     if (!bbox || bbox.length !== 4 || bbox.every((val: number) => val === 0)) {
       console.warn("Detection returned empty bounding box or failed, falling back to generic bottom-center blur");
       // Approximate position of a license plate on a car photo (bottom center)
-      // ymin: 65%, xmin: 30%, ymax: 85%, xmax: 70%
-      finalBbox = [650, 300, 850, 700];
+      // Tightened and centered: ymin: 72%, xmin: 36%, ymax: 82%, xmax: 64%
+      finalBbox = [720, 360, 820, 640];
+      isFallback = true;
     }
 
     return new Promise((resolve) => {
@@ -106,17 +108,18 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
           
           if (width <= 0 || height <= 0) {
             // Invalid bounding box, fallback to bottom center
-            ymin = 0.65 * img.height;
-            xmin = 0.30 * img.width;
-            ymax = 0.85 * img.height;
-            xmax = 0.70 * img.width;
+            ymin = 0.72 * img.height;
+            xmin = 0.36 * img.width;
+            ymax = 0.82 * img.height;
+            xmax = 0.64 * img.width;
             width = xmax - xmin;
             height = ymax - ymin;
+            isFallback = true;
           }
           
-          // Expand the bounding box by 20% on each side to ensure it covers the whole plate
-          const expandX = width * 0.20;
-          const expandY = height * 0.20;
+          // Expand the bounding box by 8% if detected, or 0% if using the generic fallback
+          const expandX = isFallback ? 0 : width * 0.08;
+          const expandY = isFallback ? 0 : height * 0.08;
           
           xmin = Math.round(Math.max(0, xmin - expandX));
           ymin = Math.round(Math.max(0, ymin - expandY));
@@ -142,14 +145,15 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
             0, 0, width, height
           );
 
-          // Apply blur
-          ctx.filter = `blur(${Math.max(width, height) * 0.3}px)`;
+          // Draw a very subtle semi-transparent overlay directly onto the temp canvas
+          // so it is beautifully blurred and feathered at the edges instead of having harsh sharp borders!
+          blurCtx.fillStyle = "rgba(0, 0, 0, 0.35)";
+          blurCtx.fillRect(0, 0, width, height);
+
+          // Apply blur filter on the main canvas and draw the combined temp canvas
+          ctx.filter = `blur(${Math.max(width, height) * 0.25}px)`;
           ctx.drawImage(blurCanvas, xmin, ymin);
-          
-          // Also draw a semi-transparent overlay to further obscure it
           ctx.filter = 'none';
-          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-          ctx.fillRect(xmin, ymin, width, height);
 
           resolve(canvas.toDataURL("image/jpeg", 0.6));
         } catch (e) {

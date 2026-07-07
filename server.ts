@@ -87,7 +87,7 @@ async function startServer() {
                   }
                 },
                 {
-                  text: "Find the bounding box of the car license plate in this image. Return ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] normalized from 0 to 1000. For example: [600, 400, 700, 600]. If no license plate is found, return []."
+                  text: "Find the exact bounding box of the license plate on the car in this image. The license plate may be in English, Cambodian (Khmer, which is a white rectangular plate with a red border, containing blue text like 'ភ្នំពេញ' or other Khmer text on top, and alphanumeric characters like '2CH-5590' or '2CA-0980' on the bottom), or any other language. Look on the front and rear bumpers. Return ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] normalized from 0 to 1000. For example: [600, 400, 700, 600]. If no license plate is found, return []."
                 }
               ]
             }
