@@ -336,6 +336,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.type.startsWith("video/")) {
+        alert("Direct video uploads are too large for local storage. Please paste a video URL (like YouTube) instead.");
+        return;
+      }
       if (file.size > 10 * 1024 * 1024) {
         alert("File size exceeds 10MB limit. Please provide a URL instead of uploading large media directly.");
         return;
@@ -346,9 +350,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         if (typeof reader.result === "string") {
           try {
             let base64 = reader.result;
-            if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
-            const blurred = await blurLicensePlate(base64);
-            setFormImage(blurred);
+            if (base64.startsWith("data:image/")) {
+              base64 = await resizeImage(base64);
+              const blurred = await blurLicensePlate(base64);
+              setFormImage(blurred);
+            } else {
+              setFormImage(base64);
+            }
           } catch (e) {
             setFormImage(reader.result);
           }
@@ -359,14 +367,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-
-
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       setIsUploading(true);
       const filesArray = Array.from(files) as File[];
       for (const file of filesArray) {
+        if (file.type.startsWith("video/")) {
+          alert("Video " + file.name + " is too large for local storage. Please paste a video URL instead.");
+          continue;
+        }
         if (file.size > 10 * 1024 * 1024) {
           alert("File " + file.name + " exceeds 10MB limit. Skipping.");
           continue;
@@ -377,9 +387,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             if (typeof reader.result === "string") {
               try {
                 let base64 = reader.result;
-                if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
-                const blurred = await blurLicensePlate(base64);
-                setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+                if (base64.startsWith("data:image/")) {
+                  base64 = await resizeImage(base64);
+                  const blurred = await blurLicensePlate(base64);
+                  setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+                } else {
+                  setFormPhotos((prev) => prev ? prev + "\n" + base64 : base64);
+                }
               } catch (e) {
                 setFormPhotos((prev) => prev ? prev + "\n" + reader.result : reader.result);
               }
@@ -393,12 +407,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-
   const handleDropImage = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDraggingImage(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
+      if (file.type.startsWith("video/")) {
+        alert("Direct video uploads are too large for local storage. Please paste a video URL (like YouTube) instead.");
+        return;
+      }
       if (file.size > 10 * 1024 * 1024) {
         alert("File size exceeds 10MB limit. Please provide a URL instead of uploading large media directly.");
         return;
@@ -409,9 +426,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         if (typeof reader.result === "string") {
           try {
             let base64 = reader.result;
-            if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
-            const blurred = await blurLicensePlate(base64);
-            setFormImage(blurred);
+            if (base64.startsWith("data:image/")) {
+              base64 = await resizeImage(base64);
+              const blurred = await blurLicensePlate(base64);
+              setFormImage(blurred);
+            } else {
+              setFormImage(base64);
+            }
           } catch (e) {
             setFormImage(reader.result);
           }
@@ -430,6 +451,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setIsUploading(true);
       const filesArray = Array.from(files) as File[];
       for (const file of filesArray) {
+        if (file.type.startsWith("video/")) {
+          alert("Video " + file.name + " is too large for local storage. Please paste a video URL instead.");
+          continue;
+        }
         if (file.size > 10 * 1024 * 1024) {
           alert("File " + file.name + " exceeds 10MB limit. Skipping.");
           continue;
@@ -440,9 +465,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             if (typeof reader.result === "string") {
               try {
                 let base64 = reader.result;
-                if (base64.startsWith("data:image/")) base64 = await resizeImage(base64);
-                const blurred = await blurLicensePlate(base64);
-                setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+                if (base64.startsWith("data:image/")) {
+                  base64 = await resizeImage(base64);
+                  const blurred = await blurLicensePlate(base64);
+                  setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+                } else {
+                  setFormPhotos((prev) => prev ? prev + "\n" + base64 : base64);
+                }
               } catch (e) {
                 setFormPhotos((prev) => prev ? prev + "\n" + reader.result : reader.result);
               }
