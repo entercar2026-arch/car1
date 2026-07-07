@@ -1004,6 +1004,13 @@ Description: ${formattedDesc}`;
               {/* Beautiful linear cover shadow */}
               <div className="absolute inset-0 bg-gradient-to-t from-stone-900/25 via-transparent to-transparent pointer-events-none" />
 
+              {/* Play Button Overlay (Top Right) */}
+              {hasVideo && !isPlaying && (
+                <div className="absolute top-3 right-3 z-20 pointer-events-none w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-md">
+                   <Play className="w-4 h-4 fill-current text-white ml-[2px]" />
+                </div>
+              )}
+
               {/* Inline Gallery Navigation Controls */}
               {allPhotos.length > 1 && (
                 <>
