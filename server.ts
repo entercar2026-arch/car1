@@ -85,7 +85,7 @@ async function startServer() {
                 }
               },
               {
-                text: "Detect the bounding box of the car license plate (including the frame, text, numbers, and any recognizable plate structure) in this image. Return the bounding box in [ymin, xmin, ymax, xmax] format normalized from 0 to 1000. If there are multiple, return the most prominent one. If there is no license plate, return []. IMPORTANT: Your output must be ONLY a valid JSON array of 4 integers."
+                text: "Detect the bounding box of the car license plate (including the frame, text, numbers, and any recognizable plate structure) in this image. Even if the license plate text is in a foreign language (like Cambodian, Arabic, Cyrillic, etc.) or has a non-standard shape, you must still detect the rectangular frame or area holding the text/numbers on the bumper of the vehicle. Return the bounding box in [ymin, xmin, ymax, xmax] format normalized from 0 to 1000. If there are multiple, return the most prominent one. If there is no license plate, return []. IMPORTANT: Your output must be ONLY a valid JSON array of 4 integers."
               }
             ]
           }

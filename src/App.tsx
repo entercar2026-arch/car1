@@ -1487,7 +1487,8 @@ export default function App() {
             console.log("Database is empty. Seeding initial cars...");
             for (const car of INITIAL_CARS) {
               try {
-                await db.cars.create(car);
+                const { id, ...carWithoutId } = car;
+                await db.cars.create(carWithoutId as any);
               } catch (e) {
                 console.error("Failed to seed car", e);
               }
@@ -1959,7 +1960,8 @@ export default function App() {
           await db.cars.update(carCopy.id, carCopy);
         } else {
           console.log(`Car ID ${carCopy.id} is not a valid UUID. Creating in Supabase instead of updating...`);
-          const dbCar = await db.cars.create(carCopy);
+          const { id, ...carWithoutId } = carCopy;
+          const dbCar = await db.cars.create(carWithoutId as any);
           if (dbCar) {
             setCars((prev) => prev.map(c => c.id === carCopy.id ? dbCar : c));
           }
