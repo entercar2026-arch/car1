@@ -100,16 +100,6 @@ const resizeImage = (dataUrl: string, maxWidth = 1000): Promise<string> => {
         if (canvasWidth > width) {
           ctx.fillStyle = "#000000";
           ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-          
-          ctx.filter = 'blur(30px)';
-          const scale = canvasWidth / width;
-          const bgHeight = height * scale;
-          const bgY = (canvasHeight - bgHeight) / 2;
-          ctx.drawImage(img, 0, bgY, canvasWidth, bgHeight);
-          ctx.filter = 'none';
-          
-          ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-          ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
           const xOffset = (canvasWidth - width) / 2;
           ctx.drawImage(img, xOffset, 0, width, height);
