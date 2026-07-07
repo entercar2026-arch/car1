@@ -1548,7 +1548,12 @@ export default function App() {
             }
             if (updated) {
               if (supabase) {
-                await db.cars.update(newCar.id, newCar);
+                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(newCar.id);
+                if (isUUID) {
+                  await db.cars.update(newCar.id, newCar);
+                } else {
+                  console.log(`Migration skipping database update for non-UUID car ${newCar.id}`);
+                }
               }
               anyUpdated = true;
             }
@@ -1949,7 +1954,16 @@ export default function App() {
     );
     if (supabase) {
       try {
-        await db.cars.update(carCopy.id, carCopy);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(carCopy.id);
+        if (isUUID) {
+          await db.cars.update(carCopy.id, carCopy);
+        } else {
+          console.log(`Car ID ${carCopy.id} is not a valid UUID. Creating in Supabase instead of updating...`);
+          const dbCar = await db.cars.create(carCopy);
+          if (dbCar) {
+            setCars((prev) => prev.map(c => c.id === carCopy.id ? dbCar : c));
+          }
+        }
       } catch (err: any) {
         console.error("Failed to update car in Supabase", err);
         alert(`Failed to sync with Supabase: ${err.message || "Unknown error"}`);
@@ -1962,7 +1976,12 @@ export default function App() {
     setCars((prev) => prev.filter((car) => car.id !== carId));
     if (supabase) {
       try {
-        await db.cars.delete(carId);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(carId);
+        if (isUUID) {
+          await db.cars.delete(carId);
+        } else {
+          console.log(`Car ID ${carId} is not a valid UUID. Skipping DB delete as it only exists client-side.`);
+        }
       } catch (err: any) {
         console.error("Failed to delete car from Supabase", err);
         alert(`Failed to delete from Supabase: ${err.message || "Unknown error"}`);
