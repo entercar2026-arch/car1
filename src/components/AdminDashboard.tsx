@@ -67,23 +67,56 @@ const isMediaVideo = (url?: string) => {
 };
 
 
-const resizeImage = (dataUrl: string, maxWidth = 800): Promise<string> => {
+const resizeImage = (dataUrl: string, maxWidth = 1000): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
       let width = img.width;
       let height = img.height;
-      if (width > maxWidth) {
-        height = Math.round((height * maxWidth) / width);
-        width = maxWidth;
+
+      if (width > maxWidth || height > maxWidth) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxWidth) / height);
+          height = maxWidth;
+        }
       }
+
+      let canvasWidth = width;
+      let canvasHeight = height;
+
+      if (height > width) {
+        canvasWidth = Math.round(height * (16 / 9));
+      }
+
       const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       const ctx = canvas.getContext("2d");
+
       if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.6));
+        if (canvasWidth > width) {
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+          
+          ctx.filter = 'blur(30px)';
+          const scale = canvasWidth / width;
+          const bgHeight = height * scale;
+          const bgY = (canvasHeight - bgHeight) / 2;
+          ctx.drawImage(img, 0, bgY, canvasWidth, bgHeight);
+          ctx.filter = 'none';
+          
+          ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+          ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+          const xOffset = (canvasWidth - width) / 2;
+          ctx.drawImage(img, xOffset, 0, width, height);
+        } else {
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
       } else {
         resolve(dataUrl);
       }
