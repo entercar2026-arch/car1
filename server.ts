@@ -87,25 +87,13 @@ async function startServer() {
                   }
                 },
                 {
-                  text: "Analyze this image and find the license plate on the car. Find the bounding box of the license plate. Return the bounding box with ymin, xmin, ymax, xmax normalized from 0 to 1000. If no license plate is found, set found to false."
+                  text: "Find the bounding box of the car license plate in this image. Return ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] normalized from 0 to 1000. For example: [600, 400, 700, 600]. If no license plate is found, return []."
                 }
               ]
             }
           ],
           config: {
               temperature: 0.1,
-              responseMimeType: "application/json",
-              responseSchema: {
-                  type: "object",
-                  properties: {
-                      found: { type: "boolean" },
-                      ymin: { type: "integer" },
-                      xmin: { type: "integer" },
-                      ymax: { type: "integer" },
-                      xmax: { type: "integer" }
-                  },
-                  required: ["found"]
-              }
           }
         });
       } catch (geminiError: any) {
@@ -119,17 +107,27 @@ async function startServer() {
       let bbox: number[] = [];
       if (text) {
           try {
-              const parsed = JSON.parse(text);
-              if (parsed.found && parsed.ymin !== undefined && parsed.xmin !== undefined && parsed.ymax !== undefined && parsed.xmax !== undefined) {
-                 bbox = [parsed.ymin, parsed.xmin, parsed.ymax, parsed.xmax];
+              const cleanText = text.replace(/\x60\x60\x60(json)?/g, '').trim();
+              let parsed = JSON.parse(cleanText);
+              
+              if (Array.isArray(parsed) && parsed.length === 1 && parsed[0].box_2d) {
+                  parsed = parsed[0].box_2d;
+              } else if (parsed.box_2d) {
+                  parsed = parsed.box_2d;
+              }
+              
+              if (Array.isArray(parsed) && parsed.length >= 4) {
+                 bbox = [parsed[0], parsed[1], parsed[2], parsed[3]];
                  const height = Math.abs(bbox[2] - bbox[0]);
                  const width = Math.abs(bbox[3] - bbox[1]);
                  if (height < 10 || width < 10) {
-                     console.warn("Gemini returned a bounding box that is too small, ignoring it", bbox);
+                     console.warn("Gemini returned a bounding box that is too small, ignoring it", bbox); 
                      bbox = [];
                  }
               }
-          } catch(e) {}
+          } catch(e) {
+              console.error("JSON parse error:", e);
+          }
       }
 
       res.json({ bbox, base64Image: fullBase64Image });
