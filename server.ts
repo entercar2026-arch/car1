@@ -108,6 +108,14 @@ async function startServer() {
           try {
               const cleanText = text.replace(/```(json)?/g, '').trim();
               bbox = JSON.parse(cleanText);
+              if (bbox && bbox.length === 4) {
+                 const height = Math.abs(bbox[2] - bbox[0]);
+                 const width = Math.abs(bbox[3] - bbox[1]);
+                 if (height < 10 || width < 10) {
+                     console.warn("Gemini returned a bounding box that is too small, ignoring it", bbox);
+                     bbox = [];
+                 }
+              }
           } catch(e) {}
       }
 

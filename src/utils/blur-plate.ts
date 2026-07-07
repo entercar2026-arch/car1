@@ -64,7 +64,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
       } else {
         const data = await res.json();
         if (data.bbox) bbox = data.bbox;
-        if (data.base64Image) returnedBase64 = data.base64Image;
+        // Do not use data.base64Image, rely on local finalBase64 to avoid truncation
       }
     } catch (apiErr) {
       console.warn("Backend request failed:", apiErr);
@@ -96,20 +96,37 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
           let xmin = (finalBbox[1] / 1000) * img.width;
           let ymax = (finalBbox[2] / 1000) * img.height;
           let xmax = (finalBbox[3] / 1000) * img.width;
+          
+          // Ensure ymin < ymax and xmin < xmax just in case the AI swapped them
+          if (ymin > ymax) { let temp = ymin; ymin = ymax; ymax = temp; }
+          if (xmin > xmax) { let temp = xmin; xmin = xmax; xmax = temp; }
+          
           let width = xmax - xmin;
           let height = ymax - ymin;
+          
+          if (width <= 0 || height <= 0) {
+            // Invalid bounding box, fallback to bottom center
+            ymin = 0.65 * img.height;
+            xmin = 0.30 * img.width;
+            ymax = 0.85 * img.height;
+            xmax = 0.70 * img.width;
+            width = xmax - xmin;
+            height = ymax - ymin;
+          }
           
           // Expand the bounding box by 20% on each side to ensure it covers the whole plate
           const expandX = width * 0.20;
           const expandY = height * 0.20;
           
-          xmin = Math.max(0, xmin - expandX);
-          ymin = Math.max(0, ymin - expandY);
-          xmax = Math.min(img.width, xmax + expandX);
-          ymax = Math.min(img.height, ymax + expandY);
+          xmin = Math.round(Math.max(0, xmin - expandX));
+          ymin = Math.round(Math.max(0, ymin - expandY));
+          xmax = Math.round(Math.min(img.width, xmax + expandX));
+          ymax = Math.round(Math.min(img.height, ymax + expandY));
           
-          width = xmax - xmin;
-          height = ymax - ymin;
+          width = Math.round(xmax - xmin);
+          height = Math.round(ymax - ymin);
+
+          if (width <= 0 || height <= 0) return resolve(base64Image);
 
           // Create a temporary canvas for the blur effect
           const blurCanvas = document.createElement("canvas");
@@ -142,10 +159,10 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
       };
       img.onerror = () => resolve(base64Image);
       // Important: Add crossOrigin so if we are loading a URL to blur, we don't taint the canvas
-      if (!returnedBase64.startsWith("blob:") && !returnedBase64.startsWith("data:")) {
+      if (!finalBase64.startsWith("blob:") && !finalBase64.startsWith("data:")) {
          img.crossOrigin = "anonymous";
       }
-      img.src = returnedBase64;
+      img.src = finalBase64;
     });
   } catch (error) {
     console.warn("Error in blurLicensePlate:", error);
