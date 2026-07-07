@@ -46,13 +46,25 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         ctx.drawImage(img, 0, 0);
 
         // Calculate coordinates
-        const ymin = (bbox[0] / 1000) * img.height;
-        const xmin = (bbox[1] / 1000) * img.width;
-        const ymax = (bbox[2] / 1000) * img.height;
-        const xmax = (bbox[3] / 1000) * img.width;
+        let ymin = (bbox[0] / 1000) * img.height;
+        let xmin = (bbox[1] / 1000) * img.width;
+        let ymax = (bbox[2] / 1000) * img.height;
+        let xmax = (bbox[3] / 1000) * img.width;
 
-        const width = xmax - xmin;
-        const height = ymax - ymin;
+        let width = xmax - xmin;
+        let height = ymax - ymin;
+        
+        // Expand the bounding box by 15% on each side to ensure it covers the whole plate
+        const expandX = width * 0.15;
+        const expandY = height * 0.15;
+        
+        xmin = Math.max(0, xmin - expandX);
+        ymin = Math.max(0, ymin - expandY);
+        xmax = Math.min(img.width, xmax + expandX);
+        ymax = Math.min(img.height, ymax + expandY);
+        
+        width = xmax - xmin;
+        height = ymax - ymin;
 
         // Create a temporary canvas for the blur effect
         const blurCanvas = document.createElement("canvas");
@@ -69,12 +81,12 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         );
 
         // Apply blur
-        ctx.filter = `blur(${Math.max(width, height) * 0.25}px)`;
+        ctx.filter = `blur(${Math.max(width, height) * 0.3}px)`;
         ctx.drawImage(blurCanvas, xmin, ymin);
         
         // Also draw a semi-transparent overlay to further obscure it
         ctx.filter = 'none';
-        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         ctx.fillRect(xmin, ymin, width, height);
 
         resolve(canvas.toDataURL("image/jpeg", 0.6));
