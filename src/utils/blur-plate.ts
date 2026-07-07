@@ -1,15 +1,50 @@
 export async function blurLicensePlate(base64Image: string): Promise<string> {
   try {
-    const isUrl = base64Image.startsWith("http://") || base64Image.startsWith("https://") || base64Image.startsWith("/");
-    const body: any = {};
+    let finalBase64 = base64Image;
+    const isUrl = base64Image.startsWith("http://") || base64Image.startsWith("https://") || base64Image.startsWith("/") || base64Image.startsWith("blob:");
+    
     if (isUrl) {
       let url = base64Image;
       if (url.startsWith("/")) {
         url = window.location.origin + url;
       }
-      body.imageUrl = url;
+      
+      // Attempt to fetch the image in the browser to bypass backend CORS/fetching blocks
+      try {
+        finalBase64 = await new Promise((resolve, reject) => {
+          const img = new Image();
+          if (!url.startsWith("blob:")) {
+             img.crossOrigin = "anonymous";
+          }
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(img, 0, 0);
+              resolve(canvas.toDataURL("image/jpeg", 0.9));
+            } else {
+              reject(new Error("No canvas context"));
+            }
+          };
+          img.onerror = () => reject(new Error("Image load error"));
+          img.src = url;
+        });
+      } catch (e) {
+        console.warn("Failed to convert image to base64 in browser, falling back to sending URL", e);
+      }
+    }
+
+    const body: any = {};
+    if (finalBase64.startsWith("data:image/")) {
+      body.imageBase64 = finalBase64;
     } else {
-      body.imageBase64 = base64Image;
+      let url = finalBase64;
+      if (url.startsWith("/")) {
+        url = window.location.origin + url;
+      }
+      body.imageUrl = url;
     }
 
     const res = await fetch("/api/blur-license-plate", {
@@ -21,7 +56,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
     });
 
     if (!res.ok) {
-      console.error("Failed to detect plate:", await res.text());
+      console.warn("Failed to detect plate:", await res.text());
       return base64Image;
     }
 
@@ -95,7 +130,7 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
       img.src = returnedBase64;
     });
   } catch (error) {
-    console.error("Error in blurLicensePlate:", error);
+    console.warn("Error in blurLicensePlate:", error);
     return base64Image;
   }
 }
