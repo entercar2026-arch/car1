@@ -1512,9 +1512,9 @@ export default function App() {
 
   // Migrate existing cars to blur license plates
   useEffect(() => {
-    if (cars.length > 0 && !localStorage.getItem("blur_migration_v13")) {
+    if (cars.length > 0 && !localStorage.getItem("blur_migration_v14")) {
       const runMigration = async () => {
-        localStorage.setItem("blur_migration_v13", "processing");
+        localStorage.setItem("blur_migration_v14", "processing");
         let anyUpdated = false;
         try {
           const { blurLicensePlate } = await import("./utils/blur-plate");
@@ -1562,10 +1562,10 @@ export default function App() {
               setCars(updatedCarsList);
             }
           }
-          localStorage.setItem("blur_migration_v13", "done");
+          localStorage.setItem("blur_migration_v14", "done");
         } catch (e) {
           console.warn("Migration failed", e);
-          localStorage.removeItem("blur_migration_v13");
+          localStorage.removeItem("blur_migration_v14");
         }
       };
       runMigration();

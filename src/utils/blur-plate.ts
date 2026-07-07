@@ -68,65 +68,73 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
       return base64Image;
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return resolve(base64Image);
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(base64Image);
 
-        // Draw original image
-        ctx.drawImage(img, 0, 0);
+          // Draw original image
+          ctx.drawImage(img, 0, 0);
 
-        // Calculate coordinates
-        let ymin = (bbox[0] / 1000) * img.height;
-        let xmin = (bbox[1] / 1000) * img.width;
-        let ymax = (bbox[2] / 1000) * img.height;
-        let xmax = (bbox[3] / 1000) * img.width;
+          // Calculate coordinates
+          let ymin = (bbox[0] / 1000) * img.height;
+          let xmin = (bbox[1] / 1000) * img.width;
+          let ymax = (bbox[2] / 1000) * img.height;
+          let xmax = (bbox[3] / 1000) * img.width;
+          let width = xmax - xmin;
+          let height = ymax - ymin;
+          
+          // Expand the bounding box by 20% on each side to ensure it covers the whole plate
+          const expandX = width * 0.20;
+          const expandY = height * 0.20;
+          
+          xmin = Math.max(0, xmin - expandX);
+          ymin = Math.max(0, ymin - expandY);
+          xmax = Math.min(img.width, xmax + expandX);
+          ymax = Math.min(img.height, ymax + expandY);
+          
+          width = xmax - xmin;
+          height = ymax - ymin;
 
-        let width = xmax - xmin;
-        let height = ymax - ymin;
-        
-        // Expand the bounding box by 15% on each side to ensure it covers the whole plate
-        const expandX = width * 0.15;
-        const expandY = height * 0.15;
-        
-        xmin = Math.max(0, xmin - expandX);
-        ymin = Math.max(0, ymin - expandY);
-        xmax = Math.min(img.width, xmax + expandX);
-        ymax = Math.min(img.height, ymax + expandY);
-        
-        width = xmax - xmin;
-        height = ymax - ymin;
+          // Create a temporary canvas for the blur effect
+          const blurCanvas = document.createElement("canvas");
+          blurCanvas.width = width;
+          blurCanvas.height = height;
+          const blurCtx = blurCanvas.getContext("2d");
+          if (!blurCtx) return resolve(base64Image);
 
-        // Create a temporary canvas for the blur effect
-        const blurCanvas = document.createElement("canvas");
-        blurCanvas.width = width;
-        blurCanvas.height = height;
-        const blurCtx = blurCanvas.getContext("2d");
-        if (!blurCtx) return resolve(base64Image);
+          // Draw the region to blur onto the temp canvas
+          blurCtx.drawImage(
+            img,
+            xmin, ymin, width, height,
+            0, 0, width, height
+          );
 
-        // Draw the region to blur onto the temp canvas
-        blurCtx.drawImage(
-          img,
-          xmin, ymin, width, height,
-          0, 0, width, height
-        );
+          // Apply blur
+          ctx.filter = `blur(${Math.max(width, height) * 0.3}px)`;
+          ctx.drawImage(blurCanvas, xmin, ymin);
+          
+          // Also draw a semi-transparent overlay to further obscure it
+          ctx.filter = 'none';
+          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+          ctx.fillRect(xmin, ymin, width, height);
 
-        // Apply blur
-        ctx.filter = `blur(${Math.max(width, height) * 0.3}px)`;
-        ctx.drawImage(blurCanvas, xmin, ymin);
-        
-        // Also draw a semi-transparent overlay to further obscure it
-        ctx.filter = 'none';
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-        ctx.fillRect(xmin, ymin, width, height);
-
-        resolve(canvas.toDataURL("image/jpeg", 0.6));
+          resolve(canvas.toDataURL("image/jpeg", 0.6));
+        } catch (e) {
+          console.warn("Failed to blur plate locally due to CORS taint, image will remain unblurred", e);
+          resolve(base64Image);
+        }
       };
       img.onerror = () => resolve(base64Image);
+      // Important: Add crossOrigin so if we are loading a URL to blur, we don't taint the canvas
+      if (!returnedBase64.startsWith("blob:") && !returnedBase64.startsWith("data:")) {
+         img.crossOrigin = "anonymous";
+      }
       img.src = returnedBase64;
     });
   } catch (error) {
