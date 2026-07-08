@@ -97,6 +97,24 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
   const hasPrevCar = carIndex > 0;
   const hasNextCar = carIndex < cars.length - 1;
 
+  const handlePrevCar = () => {
+    if (hasPrevCar) {
+      startTransition(() => {
+        setCarIndex(carIndex - 1);
+        setPhotoIndex(0);
+      });
+    }
+  };
+
+  const handleNextCar = () => {
+    if (hasNextCar) {
+      startTransition(() => {
+        setCarIndex(carIndex + 1);
+        setPhotoIndex(0);
+      });
+    }
+  };
+
   const handlePrev = () => {
     if (photoIndex > 0) {
       startTransition(() => setPhotoIndex(photoIndex - 1));
@@ -156,7 +174,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
           <div className="flex items-center gap-2">
             {hasPrevCar && (
               <button
-                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                onClick={(e) => { e.stopPropagation(); handlePrevCar(); }}
                 className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/10 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4 text-stone-200" />
@@ -165,7 +183,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
             )}
             {hasNextCar && (
               <button
-                onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                onClick={(e) => { e.stopPropagation(); handleNextCar(); }}
                 className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-md ${
                   photoIndex === allPhotos.length - 1
                     ? "bg-amber-400 text-stone-950 border-amber-300 hover:bg-amber-300 animate-pulse"
@@ -258,7 +276,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
               <button
                 key={idx}
                 onClick={() => startTransition(() => setPhotoIndex(idx))}
-                className={`relative h-20 sm:h-24 shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shadow-md flex items-center justify-center bg-stone-900 ${
+                className={`relative h-14 sm:h-16 shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shadow-md flex items-center justify-center bg-stone-900 ${
                   isThumbActive ? "border-amber-400 scale-110 z-10 opacity-100" : "border-transparent opacity-50 hover:opacity-100 hover:scale-105"
                 }`}
                 style={{ aspectRatio: "16/9" }}
@@ -267,13 +285,23 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
                   <>
                     <img src={`https://img.youtube.com/vi/${thumbYtId}/hqdefault.jpg`} alt="YouTube Thumbnail" className="w-full h-full object-cover opacity-70" draggable={false} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Play className="w-8 h-8 text-white opacity-90 fill-white drop-shadow-md" />
+                      <Play className="w-6 h-6 text-white opacity-90 fill-white drop-shadow-md" />
                     </div>
                   </>
                 ) : (isThumbVideo || thumbDriveId) ? (
-                  <div className="flex items-center justify-center w-full h-full bg-stone-800">
-                     <Play className="w-8 h-8 text-white opacity-80 fill-white" />
-                  </div>
+                  <>
+                    {thumbDriveId ? (
+                      <img src={`https://drive.google.com/thumbnail?id=${thumbDriveId}&sz=w400`} alt="Drive Video Thumbnail" className="w-full h-full object-cover opacity-70" draggable={false} />
+                    ) : car.thumbnail ? (
+                      <img src={car.thumbnail} alt="Video Thumbnail" className="w-full h-full object-cover opacity-70" draggable={false} />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center w-full h-full bg-stone-800 gap-1">
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Play className="w-6 h-6 text-white opacity-80 fill-white drop-shadow-md" />
+                    </div>
+                  </>
                 ) : (
                   <img src={photoUrl} alt="Thumbnail" className="w-full h-full object-cover" draggable={false} />
                 )}
