@@ -518,6 +518,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   // Booking flow states
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [isShortTermModalOpen, setIsShortTermModalOpen] = useState(false);
   const [bookingMode, setBookingMode] = useState<"enquire" | "book">("enquire");
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
@@ -825,16 +826,17 @@ Description: ${formattedDesc}`;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         handleCloseBookingModal();
+        setIsShortTermModalOpen(false);
         setIsReviewsOpen(false);
         startTransition(() => setIsPhotosOpen(false));
       }
     };
 
-    if (isBookingOpen || isReviewsOpen || isPhotosOpen) {
+    if (isBookingOpen || isReviewsOpen || isPhotosOpen || isShortTermModalOpen) {
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isBookingOpen, isReviewsOpen, isPhotosOpen]);
+  }, [isBookingOpen, isReviewsOpen, isPhotosOpen, isShortTermModalOpen]);
 
   return (
     <>
@@ -1312,16 +1314,17 @@ Description: ${formattedDesc}`;
                   </div>
                 ) : (
                   <div className="flex gap-2">
-                    <button
-                      id={`car-btn-book-${car.id}`}
-                      onClick={() => {
-                        setBookingMode("book");
-                        startTransition(() => setIsBookingOpen(true));
-                      }}
-                      className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer bg-stone-800"
-                    >
-                      {t.bookNow}
-                    </button>
+                    {car.isShortTermAvailable && (
+                      <button
+                        id={`car-btn-short-term-${car.id}`}
+                        onClick={() => {
+                          startTransition(() => setIsShortTermModalOpen(true));
+                        }}
+                        className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-stone-800 bg-stone-100 rounded-xl shadow-xs hover:shadow-md hover:bg-stone-200 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer border border-stone-200"
+                      >
+                        Short Term Rent
+                      </button>
+                    )}
                     <button
                       id={`car-btn-rent-${car.id}`}
                       onClick={() => {
@@ -1860,6 +1863,80 @@ Description: ${formattedDesc}`;
             </motion.div>
           </div>
         )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Short Term Price List Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {isShortTermModalOpen && (
+            <div
+              id={`short-term-modal-${car.id}`}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+              onClick={() => setIsShortTermModalOpen(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="bg-white rounded-[2rem] w-full max-w-md overflow-hidden shadow-2xl border border-stone-100 flex flex-col max-h-[90vh]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
+                  <div>
+                    <h3 className="font-sans font-black text-xl text-stone-900 tracking-tight">
+                      Short Term Rent
+                    </h3>
+                    <p className="text-xs text-stone-500 font-medium mt-0.5">
+                      {car.name}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsShortTermModalOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center bg-stone-200 text-stone-600 rounded-full hover:bg-stone-300 hover:text-stone-900 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 overflow-y-auto">
+                  <div className="bg-stone-50 rounded-2xl p-5 border border-stone-100">
+                    <h4 className="text-sm font-bold text-stone-800 mb-3 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#4C0027]" />
+                      Price List
+                    </h4>
+                    {car.shortTermPriceList ? (
+                      <div className="whitespace-pre-wrap font-mono text-sm text-stone-700 leading-relaxed">
+                        {car.shortTermPriceList}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-stone-500 italic">No price list provided. Please enquire.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-6 pt-0 mt-auto">
+                  <button
+                    onClick={() => {
+                      setIsShortTermModalOpen(false);
+                      setBookingMode("enquire");
+                      startTransition(() => setIsBookingOpen(true));
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-5 py-3.5 text-sm font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 cursor-pointer"
+                    style={{ backgroundColor: brandPlum }}
+                  >
+                    {t.enquire}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
         </AnimatePresence>,
         document.body
       )}

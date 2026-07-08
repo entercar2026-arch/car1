@@ -14,6 +14,8 @@ export interface Car {
   isAvailable?: boolean;
   videoUrl?: string;
   thumbnail?: string;
+  isShortTermAvailable?: boolean;
+  shortTermPriceList?: string;
   extendedSpecs?: {
     engine?: string;
     horsepower?: string;

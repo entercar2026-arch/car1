@@ -262,6 +262,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formDescription, setFormDescription] = useState("");
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
+  const [formIsShortTermAvailable, setFormIsShortTermAvailable] = useState(false);
+  const [formShortTermPriceList, setFormShortTermPriceList] = useState("");
 
   const estimatedDotCount = useMemo(() => {
     const photosArr = splitUrls(formPhotos);
@@ -520,6 +522,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormDescription("");
     setFormVideoUrl("");
     setFormThumbnail("");
+    setFormIsShortTermAvailable(false);
+    setFormShortTermPriceList("");
     setHasClearedThumbnail(false);
     startTransition(() => {
       setIsFormOpen(true);
@@ -541,6 +545,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormDescription(car.description || "");
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
+      setFormIsShortTermAvailable(car.isShortTermAvailable || false);
+      setFormShortTermPriceList(car.shortTermPriceList || "");
       setHasClearedThumbnail(false);
       setIsFormOpen(true);
     });
@@ -584,6 +590,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           description: formDescription,
           videoUrl: formVideoUrl,
           thumbnail: formThumbnail || undefined,
+          isShortTermAvailable: formIsShortTermAvailable,
+          shortTermPriceList: formShortTermPriceList,
           photos: finalPhotos,
         });
       } else {
@@ -598,6 +606,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           description: formDescription,
           videoUrl: formVideoUrl,
           thumbnail: formThumbnail || undefined,
+          isShortTermAvailable: formIsShortTermAvailable,
+          shortTermPriceList: formShortTermPriceList,
           photos: finalPhotos,
         });
       }
@@ -1657,6 +1667,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none"
                     />
                   </div>
+
+                  <div className="flex flex-col gap-1.5 mt-4">
+                    <label className="flex items-center gap-2 text-xs font-bold text-stone-600 mb-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formIsShortTermAvailable}
+                        onChange={(e) => setFormIsShortTermAvailable(e.target.checked)}
+                        className="w-4 h-4 text-[#4C0027] border-stone-300 rounded focus:ring-[#4C0027]"
+                      />
+                      Available for Short Term Rent
+                    </label>
+                  </div>
+                  
+                  {formIsShortTermAvailable && (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-stone-400 uppercase tracking-wider font-mono flex justify-between">
+                        Short Term Price List
+                      </label>
+                      <OptimizedTextArea
+                        rows={3}
+                        value={formShortTermPriceList}
+                        onChange={(val: any) => setFormShortTermPriceList(val)}
+                        placeholder={`e.g.\n1 Day: $50\n1 Week: $300`}
+                        className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none font-mono"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Confirm banner */}
