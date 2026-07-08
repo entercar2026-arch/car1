@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, startTransition } from "react";
 import { Car, Booking, Review } from "../types";
 import { getFallbackCarThumbnail as getAdminFallbackCarThumbnail } from "../utils/carImage";
 import { getBrandColor, splitCarName } from "../utils/brandColors";
-import { blurLicensePlate } from "../utils/blur-plate";
 import { BrandLogo } from "./BrandLogo";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -376,8 +375,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             let base64 = reader.result;
             if (base64.startsWith("data:image/")) {
               base64 = await resizeImage(base64);
-              const blurred = await blurLicensePlate(base64);
-              setFormImage(blurred);
+              setFormImage(base64);
             } else {
               setFormImage(base64);
             }
@@ -413,8 +411,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 let base64 = reader.result;
                 if (base64.startsWith("data:image/")) {
                   base64 = await resizeImage(base64);
-                  const blurred = await blurLicensePlate(base64);
-                  setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+                  setFormPhotos((prev) => prev ? prev + "\n" + base64 : base64);
                 } else {
                   setFormPhotos((prev) => prev ? prev + "\n" + base64 : base64);
                 }
@@ -452,8 +449,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             let base64 = reader.result;
             if (base64.startsWith("data:image/")) {
               base64 = await resizeImage(base64);
-              const blurred = await blurLicensePlate(base64);
-              setFormImage(blurred);
+              setFormImage(base64);
             } else {
               setFormImage(base64);
             }
@@ -491,8 +487,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 let base64 = reader.result;
                 if (base64.startsWith("data:image/")) {
                   base64 = await resizeImage(base64);
-                  const blurred = await blurLicensePlate(base64);
-                  setFormPhotos((prev) => prev ? prev + "\n" + blurred : blurred);
+                  setFormPhotos((prev) => prev ? prev + "\n" + base64 : base64);
                 } else {
                   setFormPhotos((prev) => prev ? prev + "\n" + base64 : base64);
                 }
