@@ -939,8 +939,8 @@ const PrintPreviewOverlay = React.memo(({
             printedCars={printedCars}
             lang={lang}
             t={t}
-            setLightboxCar={setLightboxCar}
-            setLightboxIndex={setLightboxIndex}
+            setLightboxCar={(car) => openCatalogLightbox(printedCars, printedCars.findIndex(c => c.id === car.id))}
+            setLightboxIndex={() => {}}
           />
         </div>
       </div>
@@ -958,24 +958,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
   const [showWatermark, setShowWatermark] = useState(false);
   const [quoteSearchQuery, setQuoteSearchQuery] = useState("");
 
-  // High-Resolution Lightbox Gallery State
-  const [lightboxCar, setLightboxCar] = useState<Car | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
-
-  const getCarPhotos = (car: Car) => {
-    const list: string[] = [];
-    if (car.thumbnail) list.push(car.thumbnail);
-    if (car.image && car.image !== car.thumbnail) list.push(car.image);
-    if (car.photos && car.photos.length > 0) {
-      car.photos.forEach(p => {
-        if (!list.includes(p)) list.push(p);
-      });
-    }
-    if (list.length === 0) {
-      list.push("https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=800");
-    }
-    return list;
-  };
+  // High-Resolution Lightbox Gallery State (Removed in favor of CatalogLightbox)
 
   const sortedCars = useMemo(() => {
     const list = [...cars];
@@ -1012,63 +995,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
       (car.fuelType && car.fuelType.toLowerCase().includes(query))
     );
   }, [sortedCars, quoteSearchQuery]);
-
-  const currentCarIndex = useMemo(() => {
-    if (!lightboxCar) return -1;
-    return displayedCars.findIndex(c => c.id === lightboxCar.id);
-  }, [lightboxCar, displayedCars]);
-
-  const hasNextCar = currentCarIndex !== -1 && currentCarIndex < displayedCars.length - 1;
-  const hasPrevCar = currentCarIndex > 0;
-
-  const handleLightboxNextCar = () => {
-    if (hasNextCar) {
-      setLightboxCar(displayedCars[currentCarIndex + 1]);
-      setLightboxIndex(0);
-    }
-  };
-
-  const handleLightboxPrevCar = () => {
-    if (hasPrevCar) {
-      setLightboxCar(displayedCars[currentCarIndex - 1]);
-      setLightboxIndex(0);
-    }
-  };
-
-  // Keyboard navigation for High-Resolution Gallery Lightbox
-  useEffect(() => {
-    if (!lightboxCar) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const photos = getCarPhotos(lightboxCar);
-      if (e.key === "ArrowLeft") {
-        if (lightboxIndex > 0) {
-          setLightboxIndex(lightboxIndex - 1);
-        } else if (hasPrevCar) {
-          // Go to previous car, last photo
-          const prevCarPhotos = getCarPhotos(displayedCars[currentCarIndex - 1]);
-          setLightboxCar(displayedCars[currentCarIndex - 1]);
-          setLightboxIndex(prevCarPhotos.length - 1);
-        } else {
-          // Wrap around to last photo of same car
-          setLightboxIndex(photos.length - 1);
-        }
-      } else if (e.key === "ArrowRight") {
-        if (lightboxIndex < photos.length - 1) {
-          setLightboxIndex(lightboxIndex + 1);
-        } else if (hasNextCar) {
-          // Go to next car, first photo
-          handleLightboxNextCar();
-        } else {
-          // Wrap around to first photo of same car
-          setLightboxIndex(0);
-        }
-      } else if (e.key === "Escape") {
-        setLightboxCar(null);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxCar, lightboxIndex, currentCarIndex, hasNextCar, hasPrevCar, displayedCars]);
 
   // Reset or initialize selections when cars change or when the quotation modal opens
   useEffect(() => {
@@ -1294,8 +1220,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                                   {/* Small crisp car thumbnail */}
                                   <div 
                                     onClick={() => {
-                                      setLightboxCar(car);
-                                      setLightboxIndex(0);
+                                      openCatalogLightbox(displayedCars, displayedCars.findIndex(c => c.id === car.id));
                                     }}
                                     className="w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-stone-200 bg-stone-50 shrink-0 shadow-xs group-hover:border-amber-400 group-hover:scale-105 active:scale-95 cursor-zoom-in transition-all relative"
                                     title="Click to zoom gallery lightbox"
@@ -1388,159 +1313,10 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
           printedCars={printedCars}
           lang={lang}
           t={t}
-          setLightboxCar={setLightboxCar}
-          setLightboxIndex={setLightboxIndex}
+          setLightboxCar={(car) => openCatalogLightbox(printedCars, printedCars.findIndex(c => c.id === car.id))}
+          setLightboxIndex={() => {}}
         />
-
-        {/* High-Resolution Gallery Lightbox */}
-        <AnimatePresence>
-          {lightboxCar && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/90 backdrop-blur-md select-none no-print">
-              {/* Close background trigger */}
-              <div className="absolute inset-0 cursor-zoom-out" onClick={() => setLightboxCar(null)} />
-              
-              {/* Main content container */}
-              <div className="relative z-10 max-w-5xl w-full px-4 flex flex-col items-center">
-                
-                {/* Header text with vehicle details */}
-                <div className="w-full flex items-center justify-between text-white mb-4">
-                  <div className="flex flex-col">
-                    <h4 className="text-xl font-extrabold tracking-tight font-sans text-amber-400">
-                      {lightboxCar.name}
-                    </h4>
-                    <p className="text-xs font-mono text-stone-300 uppercase tracking-wider">
-                      {lightboxCar.category} • ${lightboxCar.price.toLocaleString()}/mo • {getCarPhotos(lightboxCar).length} Photos Available
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {/* Previous Car button */}
-                    {hasPrevCar && (
-                      <button
-                        type="button"
-                        onClick={handleLightboxPrevCar}
-                        className="px-3 py-1.5 bg-stone-850 hover:bg-stone-800 text-stone-200 text-xs font-semibold rounded-xl border border-stone-700 hover:border-stone-600 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-                        title="Previous Vehicle"
-                      >
-                        <ChevronLeft className="w-4 h-4 text-stone-300" />
-                        <span>{t.prevCar || "Previous Car"}</span>
-                      </button>
-                    )}
-
-                    {/* Next Car button */}
-                    {hasNextCar && (
-                      <button
-                        type="button"
-                        onClick={handleLightboxNextCar}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-md ${
-                          lightboxIndex === getCarPhotos(lightboxCar).length - 1
-                            ? "bg-amber-400 text-stone-950 border-amber-300 hover:bg-amber-300 animate-pulse font-extrabold"
-                            : "bg-stone-800 hover:bg-stone-750 text-white border-stone-700 hover:border-stone-600"
-                        }`}
-                        title="Next Vehicle"
-                      >
-                        <span>{t.nextCar || "Next Car"}</span>
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    )}
-
-                    {/* Close button */}
-                    <button
-                      type="button"
-                      onClick={() => setLightboxCar(null)}
-                      className="p-2 bg-stone-850 hover:bg-stone-800 text-white rounded-full transition-colors cursor-pointer border border-stone-700 flex items-center justify-center shadow-md active:scale-95"
-                      title="Close Gallery (Esc)"
-                    >
-                      <X className="w-6 h-6 text-stone-200" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Main slide display */}
-                <div className="relative w-full aspect-video md:aspect-[16/10] bg-stone-900 rounded-3xl overflow-hidden border border-stone-800 flex items-center justify-center group shadow-2xl">
-                  <AnimatePresence mode="wait">
-                    <motion.img
-                      key={`${lightboxCar.id}-${lightboxIndex}`}
-                      initial={{ opacity: 0, scale: 0.97 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 1.03 }}
-                      transition={{ duration: 0.2 }}
-                      src={getCarPhotos(lightboxCar)[lightboxIndex]}
-                      alt={`${lightboxCar.name} High Res Photo`}
-                      className="w-full h-full object-contain pointer-events-none"
-                    />
-                  </AnimatePresence>
-
-                  {/* Arrow controls if there are multiple photos or multiple cars */}
-                  {(getCarPhotos(lightboxCar).length > 1 || hasPrevCar || hasNextCar) && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const photos = getCarPhotos(lightboxCar);
-                          if (lightboxIndex > 0) {
-                            setLightboxIndex(lightboxIndex - 1);
-                          } else if (hasPrevCar) {
-                            const prevCarPhotos = getCarPhotos(displayedCars[currentCarIndex - 1]);
-                            setLightboxCar(displayedCars[currentCarIndex - 1]);
-                            setLightboxIndex(prevCarPhotos.length - 1);
-                          } else {
-                            setLightboxIndex(photos.length - 1);
-                          }
-                        }}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-stone-900/60 hover:bg-stone-900/80 border border-stone-700 backdrop-blur-xs text-white opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md"
-                        title="Previous Photo (Left/Right Arrows)"
-                      >
-                        <ChevronLeft className="w-6 h-6 text-white" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const photos = getCarPhotos(lightboxCar);
-                          if (lightboxIndex < photos.length - 1) {
-                            setLightboxIndex(lightboxIndex + 1);
-                          } else if (hasNextCar) {
-                            handleLightboxNextCar();
-                          } else {
-                            setLightboxIndex(0);
-                          }
-                        }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-stone-900/60 hover:bg-stone-900/80 border border-stone-700 backdrop-blur-xs text-white opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md"
-                        title="Next Photo (Left/Right Arrows)"
-                      >
-                        <ChevronRight className="w-6 h-6 text-white" />
-                      </button>
-                    </>
-                  )}
-                </div>
-
-                {/* Carousel indicators dots / thumbnails */}
-                {getCarPhotos(lightboxCar).length > 1 && (
-                  <div className="flex items-center gap-2 mt-5 flex-wrap justify-center max-w-full">
-                    {getCarPhotos(lightboxCar).map((photoUrl, idx) => {
-                      const isActive = idx === lightboxIndex;
-                      return (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setLightboxIndex(idx)}
-                          className={`w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border-2 transition-all relative cursor-pointer ${isActive ? "border-amber-400 scale-105" : "border-stone-700 hover:border-stone-500 opacity-60 hover:opacity-100"}`}
-                        >
-                          <img
-                            src={photoUrl}
-                            alt=""
-                            className="w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </AnimatePresence>
+        {/* High-Resolution Gallery Lightbox has been replaced by CatalogLightbox */}
       </div>
 
       {/* Printable Quotation Document (Beautifully styled & optimized exclusively for Print / Save to PDF) */}
@@ -1549,8 +1325,8 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
           printedCars={printedCars}
           lang={lang}
           t={t}
-          setLightboxCar={setLightboxCar}
-          setLightboxIndex={setLightboxIndex}
+          setLightboxCar={(car) => openCatalogLightbox(printedCars, printedCars.findIndex(c => c.id === car.id))}
+          setLightboxIndex={() => {}}
         />
       </div>
     </>

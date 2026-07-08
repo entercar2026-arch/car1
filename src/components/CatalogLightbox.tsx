@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Play } from "lucide-react";
 import { Car } from "../types";
 import { translations } from "../translations";
 
@@ -16,6 +16,28 @@ export const openCatalogLightbox = (cars: Car[], startIndex: number) => {
   if (lightboxListener) {
     lightboxListener({ cars, startIndex });
   }
+};
+
+const isVideoUrl = (url?: string) => {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  if (lower.startsWith("data:image/")) return false;
+  if (lower.match(/\.(jpg|jpeg|png|gif|webp|avif|heic)(\?.*)?$/i)) return false;
+  return !!(
+    lower.match(/\.(mp4|webm|ogg|quicktime|mov|avi|mkv)(\?.*)?$/i) || 
+    (lower.includes("video") && !lower.startsWith("data:")) || 
+    lower.startsWith("data:video/") || 
+    lower.includes("youtube.com") || 
+    lower.includes("youtu.be") || 
+    (lower.includes("drive.google.com") && (lower.includes("/file/") || lower.includes("id=")))
+  );
+};
+
+const getYoutubeId = (url?: string): string | null => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
 };
 
 export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
@@ -50,9 +72,10 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
   const getCarPhotos = (c: Car | undefined) => {
     if (!c) return [];
     const list: string[] = [];
+    if (c.videoUrl) list.push(c.videoUrl);
     if (c.image) list.push(c.image);
     if (c.photos && c.photos.length > 0) {
-      c.photos.forEach(p => { if (p && p !== c.image) list.push(p); });
+      c.photos.forEach(p => { if (p && p !== c.image && p !== c.videoUrl) list.push(p); });
     }
     return list;
   };
@@ -101,13 +124,17 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
 
   if (!isOpen || !car) return null;
 
+  const currentMediaUrl = allPhotos[photoIndex];
+  const isVideo = isVideoUrl(currentMediaUrl);
+  const ytId = getYoutubeId(currentMediaUrl);
+
   return createPortal(
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[60] flex flex-col items-center justify-between p-4 pb-6 bg-black/90 backdrop-blur-md select-none"
+        className="fixed inset-0 z-[60] flex flex-col items-center justify-between p-4 pb-6 bg-black/95 backdrop-blur-xl select-none"
         onClick={() => startTransition(() => setIsOpen(false))}
       >
-        <div className="w-full max-w-5xl flex items-center justify-between px-4 pt-2 mb-2 z-10" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full max-w-7xl flex items-center justify-between px-4 pt-2 mb-2 z-10" onClick={(e) => e.stopPropagation()}>
           <div className="flex flex-col">
             <span className="text-white font-sans font-bold text-lg">{car.name}</span>
             <span className="text-red-500 font-sans font-bold text-xl">${car.price.toLocaleString()}/mo</span>
@@ -144,52 +171,93 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
           </div>
         </div>
 
-        <div className="relative w-full max-w-5xl flex-1 flex items-center justify-center my-4" onClick={(e) => e.stopPropagation()}>
+        <div className="relative w-full max-w-7xl flex-1 flex items-center justify-center my-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <AnimatePresence mode="wait">
-            <motion.img
+            <motion.div
               key={`${car.id}-${photoIndex}`}
-              src={allPhotos[photoIndex]}
-              alt={`${car.name} view ${photoIndex + 1}`}
               initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-              draggable={false}
-            />
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full h-full flex items-center justify-center"
+            >
+              {ytId ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0`}
+                  className="w-full h-full max-w-5xl aspect-video rounded-xl shadow-2xl bg-black"
+                  allow="autoplay; encrypted-media; fullscreen"
+                  allowFullScreen
+                />
+              ) : isVideo ? (
+                <video
+                  src={currentMediaUrl}
+                  className="max-w-full max-h-full object-contain rounded-xl shadow-2xl bg-black/50"
+                  autoPlay
+                  controls
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={currentMediaUrl}
+                  alt={`${car.name} view ${photoIndex + 1}`}
+                  className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
+                  draggable={false}
+                />
+              )}
+            </motion.div>
           </AnimatePresence>
 
           {(allPhotos.length > 1 || hasPrevCar) && (
             <button
               onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-              className="absolute left-2 sm:left-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
+              className="absolute left-2 sm:left-4 z-20 w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-8 h-8" />
             </button>
           )}
 
           {(allPhotos.length > 1 || hasNextCar) && (
             <button
               onClick={(e) => { e.stopPropagation(); handleNext(); }}
-              className="absolute right-2 sm:right-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
+              className="absolute right-2 sm:right-4 z-20 w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-8 h-8" />
             </button>
           )}
         </div>
 
-        <div className="w-full max-w-3xl overflow-x-auto pb-2 custom-scrollbar flex items-center gap-3 px-4 z-10" onClick={(e) => e.stopPropagation()}>
-          {allPhotos.map((photoUrl, idx) => (
-            <button
-              key={idx}
-              onClick={() => startTransition(() => setPhotoIndex(idx))}
-              className={`relative h-16 sm:h-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shadow-md ${
-                idx === photoIndex ? "border-amber-400 scale-110 z-10 opacity-100" : "border-transparent opacity-50 hover:opacity-100 hover:scale-105"
-              }`}
-            >
-              <img src={photoUrl} alt="Thumbnail" className="h-full w-auto object-cover" draggable={false} />
-            </button>
-          ))}
+        <div className="w-full max-w-5xl overflow-x-auto pb-2 custom-scrollbar flex items-center gap-3 px-4 z-10" onClick={(e) => e.stopPropagation()}>
+          {allPhotos.map((photoUrl, idx) => {
+            const isThumbVideo = isVideoUrl(photoUrl);
+            const isThumbActive = idx === photoIndex;
+            const thumbYtId = getYoutubeId(photoUrl);
+
+            return (
+              <button
+                key={idx}
+                onClick={() => startTransition(() => setPhotoIndex(idx))}
+                className={`relative h-20 sm:h-24 shrink-0 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shadow-md flex items-center justify-center bg-stone-900 ${
+                  isThumbActive ? "border-amber-400 scale-110 z-10 opacity-100" : "border-transparent opacity-50 hover:opacity-100 hover:scale-105"
+                }`}
+                style={{ aspectRatio: "16/9" }}
+              >
+                {thumbYtId ? (
+                  <>
+                    <img src={`https://img.youtube.com/vi/${thumbYtId}/hqdefault.jpg`} alt="YouTube Thumbnail" className="w-full h-full object-cover opacity-70" draggable={false} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Play className="w-8 h-8 text-white opacity-90 fill-white drop-shadow-md" />
+                    </div>
+                  </>
+                ) : isThumbVideo ? (
+                  <div className="flex items-center justify-center w-full h-full bg-stone-800">
+                     <Play className="w-8 h-8 text-white opacity-80 fill-white" />
+                  </div>
+                ) : (
+                  <img src={photoUrl} alt="Thumbnail" className="w-full h-full object-cover" draggable={false} />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </AnimatePresence>,
