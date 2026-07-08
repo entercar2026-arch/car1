@@ -263,8 +263,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
   const [formIsShortTermAvailable, setFormIsShortTermAvailable] = useState(false);
-  const [formShortTermPriceList, setFormShortTermPriceList] = useState("");
-  const [formShortTermDeposit, setFormShortTermDeposit] = useState("");
+  const [formShortTermPricing, setFormShortTermPricing] = useState<{days: string; price: string; deposit: string}[]>([]);
 
   const estimatedDotCount = useMemo(() => {
     const photosArr = splitUrls(formPhotos);
@@ -524,8 +523,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormVideoUrl("");
     setFormThumbnail("");
     setFormIsShortTermAvailable(false);
-    setFormShortTermPriceList("");
-    setFormShortTermDeposit("");
+    setFormShortTermPricing([]);
+    
     setHasClearedThumbnail(false);
     startTransition(() => {
       setIsFormOpen(true);
@@ -536,11 +535,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleOpenEdit = React.useCallback((car: Car) => {
     startTransition(() => {
       setEditingCar(car);
+      console.log("Opening edit form for", car);
       setFormName(car.name);
       setFormCategory(car.category);
       setFormPrice(car.price);
       setFormImage(car.image);
-      setFormPhotos(car.photos ? car.photos.join("\n") : "");
+      setFormPhotos(Array.isArray(car.photos) ? car.photos.join("\n") : (car.photos || ""));
       setFormTransmission(car.transmission);
       setFormSeats(car.seats);
       setFormFuel(car.fuelType);
@@ -548,7 +548,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
       setFormIsShortTermAvailable(car.isShortTermAvailable || false);
-      setFormShortTermPricing(car.shortTermPricing || []);
+      setFormShortTermPricing(Array.isArray(car.shortTermPricing) ? car.shortTermPricing : []);
       
       setHasClearedThumbnail(false);
       setIsFormOpen(true);
