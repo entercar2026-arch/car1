@@ -1984,7 +1984,15 @@ export default function App() {
       if (activeTrans !== "All" && car.transmission !== activeTrans) return false;
 
       // 4. Fuel check
-      if (activeFuel !== "All" && car.fuelType !== activeFuel) return false;
+      if (activeFuel !== "All") {
+        if (activeFuel === "Gasoline") {
+          if (car.fuelType !== "Gasoline" && car.fuelType !== "Gasoline + LPG") return false;
+        } else if (activeFuel === "LPG") {
+          if (car.fuelType !== "LPG" && car.fuelType !== "Gasoline + LPG") return false;
+        } else {
+          if (car.fuelType !== activeFuel) return false;
+        }
+      }
 
       // 5. Seats check
       if (activeSeats !== "All" && String(car.seats) !== activeSeats) return false;
@@ -2772,7 +2780,6 @@ export default function App() {
                         "Gasoline",
                         "Diesel",
                         "LPG",
-                        "Gasoline + LPG",
                         "Hybrid",
                         "Electric",
                       ].map((fuel) => {
