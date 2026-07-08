@@ -72,40 +72,52 @@ async function startServer() {
         }
       }
 
-      let response;
-      try {
-        response = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  inlineData: {
-                    data: base64Data,
-                    mimeType: mimeType
-                  }
-                },
-                {
-                  text: "Find the exact bounding box of the license plate on the car in this image. The license plate may be in English, Cambodian (Khmer, which is a white rectangular plate with a red border, containing blue text like 'ភ្នំពេញ' or other Khmer text on top, and alphanumeric characters like '2CH-5590' or '2CA-0980' on the bottom), or any other language. Look on the front and rear bumpers. Return ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] representing the exact license plate bounding box normalized from 0 to 1000. If no plate is found, return []."
-                }
-              ]
-            }
-          ],
-          config: {
-              temperature: 0.1,
-              responseMimeType: "application/json",
-              responseSchema: {
-                  type: Type.ARRAY,
-                  items: {
-                      type: Type.INTEGER
+      let response = null;
+      let usedModel = "";
+      const modelsToTry = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.5-pro"];
+
+      for (const model of modelsToTry) {
+        try {
+          console.log(`Attempting license plate detection with model: ${model}`);
+          response = await ai.models.generateContent({
+            model: model,
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    inlineData: {
+                      data: base64Data,
+                      mimeType: mimeType
+                    }
                   },
-                  description: "A JSON array of exactly 4 integers [ymin, xmin, ymax, xmax] normalized from 0 to 1000 representing the bounding box of the license plate. Return [] if no license plate is detected."
+                  {
+                    text: "Locate the vehicle's registration license plate. The image shows a car from the front or rear. The license plate is typically a rectangular plate located on the front bumper/grille or rear trunk/bumper. It may be in English, Cambodian (which is a white rectangular plate with a thin red border, containing Khmer characters on top and alphanumeric text like '2CH-5590' or '2CA-0980' below), or any other format.\nFind the EXACT bounding box of this license plate.\nReturn ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] normalized from 0 to 1000 representing the bounding box. If no license plate is found, search carefully for any rectangular plate or registration tag on the car and return its coordinates. Only return [] if there is absolutely no car or no plate in the image."
+                  }
+                ]
               }
-          }
-        });
-      } catch (geminiError: any) {
-        console.error("Gemini Error:", geminiError);
+            ],
+            config: {
+                temperature: 0.1,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.INTEGER
+                    },
+                    description: "A JSON array of exactly 4 integers [ymin, xmin, ymax, xmax] normalized from 0 to 1000 representing the bounding box of the license plate. Return [] if no license plate is detected."
+                }
+            }
+          });
+          usedModel = model;
+          break; // Stop loop if successful
+        } catch (geminiError: any) {
+          console.warn(`Gemini model ${model} failed:`, geminiError.message || geminiError);
+        }
+      }
+
+      if (!response) {
+        console.error("All Gemini models failed for license plate detection.");
         return res.json({ bbox: [], base64Image: fullBase64Image });
       }
 

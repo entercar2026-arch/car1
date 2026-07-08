@@ -63,7 +63,10 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
         console.warn("Failed to detect plate on backend:", await res.text());
       } else {
         const data = await res.json();
-        if (data.bbox) bbox = data.bbox;
+        if (data.bbox && data.bbox.length === 4) {
+          bbox = data.bbox;
+          console.log("Successfully detected license plate bounding box from Gemini API:", bbox);
+        }
         // Do not use data.base64Image, rely on local finalBase64 to avoid truncation
       }
     } catch (apiErr) {
