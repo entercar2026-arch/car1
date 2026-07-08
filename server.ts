@@ -74,7 +74,7 @@ async function startServer() {
 
       let response = null;
       let usedModel = "";
-      const modelsToTry = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.5-pro"];
+      const modelsToTry = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview"];
 
       for (const model of modelsToTry) {
         try {
@@ -92,7 +92,16 @@ async function startServer() {
                     }
                   },
                   {
-                    text: "Locate the vehicle's registration license plate. The image shows a car from the front or rear. The license plate is typically a rectangular plate located on the front bumper/grille or rear trunk/bumper. It may be in English, Cambodian (which is a white rectangular plate with a thin red border, containing Khmer characters on top and alphanumeric text like '2CH-5590' or '2CA-0980' below), or any other format.\nFind the EXACT bounding box of this license plate.\nReturn ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] normalized from 0 to 1000 representing the bounding box. If no license plate is found, search carefully for any rectangular plate or registration tag on the car and return its coordinates. Only return [] if there is absolutely no car or no plate in the image."
+                    text: "You are an expert vehicle registration plate detector. Your job is to locate the exact bounding box of the license plate on the car shown in the image.\n\n" +
+                          "Look extremely closely for the following types of license plates:\n" +
+                          "1. Cambodian (Khmer) plates (highly common): These are horizontal rectangular plates with a white background and a thin red border. They contain Khmer text at the top (e.g., 'ភ្នំពេញ' or other province names) and blue/black alphanumeric text at the bottom (e.g., '2CK-2010', '2CH-5590', '2CA-0980').\n" +
+                          "2. Standard rectangular plates: Any white, yellow, blue, black, or colored license plate on the front bumper/grille or rear trunk/tailgate/bumper.\n\n" +
+                          "License plates on hatchbacks (like a Toyota Prius), SUVs, or vans are often located higher up on the rear trunk/tailgate (directly under the brand logo or between the tail lights), rather than low down on the bumper. Look there carefully.\n\n" +
+                          "Even if the license plate is tilted, angled, or shot from a three-quarters perspective, find its exact boundaries.\n\n" +
+                          "Output requirements:\n" +
+                          "- Find the EXACT boundaries of the license plate.\n" +
+                          "- Return ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] normalized from 0 to 1000 (0 is top/left, 1000 is bottom/right).\n" +
+                          "- Return [] if there is absolutely no car or no license plate visible in the image."
                   }
                 ]
               }
@@ -134,8 +143,8 @@ async function startServer() {
                   bbox = parsed;
                   const height = Math.abs(bbox[2] - bbox[0]);
                   const width = Math.abs(bbox[3] - bbox[1]);
-                  if (height < 10 || width < 10) {
-                      console.warn("Gemini returned a bounding box that is too small, ignoring it", bbox); 
+                  if (height < 1 || width < 1) {
+                      console.warn("Gemini returned an invalid zero-size bounding box, ignoring it", bbox); 
                       bbox = [];
                   }
               }
