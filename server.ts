@@ -74,7 +74,7 @@ async function startServer() {
 
       let response = null;
       let usedModel = "";
-      const modelsToTry = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview"];
+      const modelsToTry = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-3.5-flash", "gemini-3.1-pro-preview"];
 
       for (const model of modelsToTry) {
         try {
