@@ -1341,7 +1341,20 @@ export default function App() {
     const saved = safeStorage.getItem("enter_cars");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsedCars = JSON.parse(saved);
+        // Merge missing properties from INITIAL_CARS (like isShortTermAvailable)
+        return parsedCars.map((car: Car) => {
+          const initialCar = INITIAL_CARS.find((c) => c.id === car.id);
+          if (initialCar) {
+            return {
+              ...initialCar,
+              ...car,
+              isShortTermAvailable: car.isShortTermAvailable ?? initialCar.isShortTermAvailable,
+              shortTermPriceList: car.shortTermPriceList ?? initialCar.shortTermPriceList,
+            };
+          }
+          return car;
+        });
       } catch (e) {
         console.error("Failed to parse saved cars", e);
       }
@@ -1368,9 +1381,23 @@ export default function App() {
             }
             // Fetch again after seeding
             const refreshedData = await db.cars.getAll();
-            if (refreshedData) setCars(refreshedData);
+            if (refreshedData) {
+              setCars(refreshedData.map(car => {
+                const initialCar = INITIAL_CARS.find(c => c.name === car.name);
+                if (initialCar) {
+                  return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPriceList: car.shortTermPriceList || initialCar.shortTermPriceList };
+                }
+                return car;
+              }));
+            }
           } else {
-            setCars(data);
+            setCars(data.map(car => {
+              const initialCar = INITIAL_CARS.find(c => c.name === car.name);
+              if (initialCar) {
+                return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPriceList: car.shortTermPriceList || initialCar.shortTermPriceList };
+              }
+              return car;
+            }));
           }
         }
         setIsLoadingData(false);
