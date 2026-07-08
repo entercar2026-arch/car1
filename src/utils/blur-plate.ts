@@ -75,8 +75,8 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
     if (!bbox || bbox.length !== 4 || bbox.every((val: number) => val === 0)) {
       console.warn("Detection returned empty bounding box or failed, falling back to generic bottom-center blur");
       // Approximate position of a license plate on a car photo (bottom center)
-      // Tightened and centered: ymin: 72%, xmin: 36%, ymax: 82%, xmax: 64%
-      finalBbox = [720, 360, 820, 640];
+      // Tightened and centered to avoid covering other parts: ymin: 74%, xmin: 44%, ymax: 80%, xmax: 56%
+      finalBbox = [740, 440, 800, 560];
       isFallback = true;
     }
 
@@ -107,19 +107,19 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
           let height = ymax - ymin;
           
           if (width <= 0 || height <= 0) {
-            // Invalid bounding box, fallback to bottom center
-            ymin = 0.72 * img.height;
-            xmin = 0.36 * img.width;
-            ymax = 0.82 * img.height;
-            xmax = 0.64 * img.width;
+            // Invalid bounding box, fallback to tight bottom center
+            ymin = 0.74 * img.height;
+            xmin = 0.44 * img.width;
+            ymax = 0.80 * img.height;
+            xmax = 0.56 * img.width;
             width = xmax - xmin;
             height = ymax - ymin;
             isFallback = true;
           }
           
-          // Expand the bounding box by 8% if detected, or 0% if using the generic fallback
-          const expandX = isFallback ? 0 : width * 0.08;
-          const expandY = isFallback ? 0 : height * 0.08;
+          // Expand the bounding box by a tiny 2% if detected, or 0% if using the generic fallback
+          const expandX = isFallback ? 0 : width * 0.02;
+          const expandY = isFallback ? 0 : height * 0.02;
           
           xmin = Math.round(Math.max(0, xmin - expandX));
           ymin = Math.round(Math.max(0, ymin - expandY));
@@ -131,31 +131,37 @@ export async function blurLicensePlate(base64Image: string): Promise<string> {
 
           if (width <= 0 || height <= 0) return resolve(base64Image);
 
-          // Create a temporary canvas for the blur effect
+          // Create a temporary canvas for the downscaled/upscaled blur effect
+          // Scale down to a tiny resolution to blend the details and destroy readable text
           const blurCanvas = document.createElement("canvas");
-          blurCanvas.width = width;
-          blurCanvas.height = height;
+          const tempWidth = 16;
+          const tempHeight = 8;
+          blurCanvas.width = tempWidth;
+          blurCanvas.height = tempHeight;
           const blurCtx = blurCanvas.getContext("2d");
           if (!blurCtx) return resolve(base64Image);
 
-          // Draw the region to blur onto the temp canvas
+          // Draw cropped region shrunk down
           blurCtx.drawImage(
             img,
             xmin, ymin, width, height,
-            0, 0, width, height
+            0, 0, tempWidth, tempHeight
           );
 
-          // Draw a very subtle semi-transparent overlay directly onto the temp canvas
-          // so it is beautifully blurred and feathered at the edges instead of having harsh sharp borders!
-          blurCtx.fillStyle = "rgba(0, 0, 0, 0.35)";
-          blurCtx.fillRect(0, 0, width, height);
+          // Draw a very subtle dark overlay on the shrunk image to ensure obscurity
+          blurCtx.fillStyle = "rgba(0, 0, 0, 0.15)";
+          blurCtx.fillRect(0, 0, tempWidth, tempHeight);
 
-          // Apply blur filter on the main canvas and draw the combined temp canvas
-          ctx.filter = `blur(${Math.max(width, height) * 0.25}px)`;
-          ctx.drawImage(blurCanvas, xmin, ymin);
-          ctx.filter = 'none';
+          // Draw it back stretched to original size (which blurs it beautifully and works cross-browser)
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(
+            blurCanvas,
+            0, 0, tempWidth, tempHeight,
+            xmin, ymin, width, height
+          );
 
-          resolve(canvas.toDataURL("image/jpeg", 0.6));
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
         } catch (e) {
           console.warn("Failed to blur plate locally due to CORS taint, image will remain unblurred", e);
           resolve(base64Image);

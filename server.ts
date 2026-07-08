@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 async function startServer() {
   const app = express();
@@ -75,7 +75,7 @@ async function startServer() {
       let response;
       try {
         response = await ai.models.generateContent({
-          model: "gemini-2.5-pro",
+          model: "gemini-3.5-flash",
           contents: [
             {
               role: "user",
@@ -87,13 +87,21 @@ async function startServer() {
                   }
                 },
                 {
-                  text: "Find the exact bounding box of the license plate on the car in this image. The license plate may be in English, Cambodian (Khmer, which is a white rectangular plate with a red border, containing blue text like 'ភ្នំពេញ' or other Khmer text on top, and alphanumeric characters like '2CH-5590' or '2CA-0980' on the bottom), or any other language. Look on the front and rear bumpers. Return ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] normalized from 0 to 1000. For example: [600, 400, 700, 600]. If no license plate is found, return []."
+                  text: "Find the exact bounding box of the license plate on the car in this image. The license plate may be in English, Cambodian (Khmer, which is a white rectangular plate with a red border, containing blue text like 'ភ្នំពេញ' or other Khmer text on top, and alphanumeric characters like '2CH-5590' or '2CA-0980' on the bottom), or any other language. Look on the front and rear bumpers. Return ONLY a JSON array of 4 integers: [ymin, xmin, ymax, xmax] representing the exact license plate bounding box normalized from 0 to 1000. If no plate is found, return []."
                 }
               ]
             }
           ],
           config: {
               temperature: 0.1,
+              responseMimeType: "application/json",
+              responseSchema: {
+                  type: Type.ARRAY,
+                  items: {
+                      type: Type.INTEGER
+                  },
+                  description: "A JSON array of exactly 4 integers [ymin, xmin, ymax, xmax] normalized from 0 to 1000 representing the bounding box of the license plate. Return [] if no license plate is detected."
+              }
           }
         });
       } catch (geminiError: any) {
@@ -107,23 +115,17 @@ async function startServer() {
       let bbox: number[] = [];
       if (text) {
           try {
-              const cleanText = text.replace(/\x60\x60\x60(json)?/g, '').trim();
-              let parsed = JSON.parse(cleanText);
+              const cleanText = text.trim();
+              const parsed = JSON.parse(cleanText);
               
-              if (Array.isArray(parsed) && parsed.length === 1 && parsed[0].box_2d) {
-                  parsed = parsed[0].box_2d;
-              } else if (parsed.box_2d) {
-                  parsed = parsed.box_2d;
-              }
-              
-              if (Array.isArray(parsed) && parsed.length >= 4) {
-                 bbox = [parsed[0], parsed[1], parsed[2], parsed[3]];
-                 const height = Math.abs(bbox[2] - bbox[0]);
-                 const width = Math.abs(bbox[3] - bbox[1]);
-                 if (height < 10 || width < 10) {
-                     console.warn("Gemini returned a bounding box that is too small, ignoring it", bbox); 
-                     bbox = [];
-                 }
+              if (Array.isArray(parsed) && parsed.length === 4) {
+                  bbox = parsed;
+                  const height = Math.abs(bbox[2] - bbox[0]);
+                  const width = Math.abs(bbox[3] - bbox[1]);
+                  if (height < 10 || width < 10) {
+                      console.warn("Gemini returned a bounding box that is too small, ignoring it", bbox); 
+                      bbox = [];
+                  }
               }
           } catch(e) {
               console.error("JSON parse error:", e);
