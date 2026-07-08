@@ -7,6 +7,8 @@ const dbToCar = (dbCar: any): Car => {
   let photos: string[] | undefined = undefined;
   let videoUrl = dbCar.video_url || dbCar.videoUrl || "";
   let thumbnail = dbCar.thumbnail || "";
+  let isShortTermAvailable = false;
+  let shortTermPriceList = "";
 
   // Parse metadata from description if present
   if (description.includes("|||META:")) {
@@ -17,6 +19,8 @@ const dbToCar = (dbCar: any): Car => {
       if (meta.photos) photos = meta.photos;
       if (meta.videoUrl) videoUrl = meta.videoUrl;
       if (meta.thumbnail) thumbnail = meta.thumbnail;
+      if (meta.isShortTermAvailable !== undefined) isShortTermAvailable = meta.isShortTermAvailable;
+      if (meta.shortTermPriceList !== undefined) shortTermPriceList = meta.shortTermPriceList;
     } catch (e) {
       console.error("Failed to parse car metadata", e);
     }
@@ -35,6 +39,8 @@ const dbToCar = (dbCar: any): Car => {
     videoUrl: videoUrl,
     thumbnail: thumbnail || undefined,
     photos: photos,
+    isShortTermAvailable,
+    shortTermPriceList,
   };
 };
 
@@ -42,7 +48,9 @@ const carToDb = (car: Omit<Car, 'id'>) => {
   const meta: any = {};
   if (car.photos) meta.photos = car.photos;
   if (car.videoUrl) meta.videoUrl = car.videoUrl;
-  if (car.thumbnail) meta.thumbnail = car.thumbnail;
+  if (car.thumbnail) meta.thumbnail = car.thumbnail; if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable; if (car.shortTermPriceList !== undefined) meta.shortTermPriceList = car.shortTermPriceList;
+  if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable;
+  if (car.shortTermPriceList !== undefined) meta.shortTermPriceList = car.shortTermPriceList;
 
   const descSuffix = ` |||META:${JSON.stringify(meta)}`;
   const fullDescription = (car.description || "") + descSuffix;
@@ -87,11 +95,11 @@ export const db = {
       if (car.seats) payload.seats = car.seats;
       if (car.fuelType) payload.fuel_type = car.fuelType;
 
-      if (car.description !== undefined || car.photos !== undefined || car.videoUrl !== undefined || car.thumbnail !== undefined) {
+      if (car.description !== undefined || car.photos !== undefined || car.videoUrl !== undefined || car.thumbnail !== undefined || car.isShortTermAvailable !== undefined || car.shortTermPriceList !== undefined) {
         const meta: any = {};
         if (car.photos) meta.photos = car.photos;
         if (car.videoUrl) meta.videoUrl = car.videoUrl;
-        if (car.thumbnail) meta.thumbnail = car.thumbnail;
+        if (car.thumbnail) meta.thumbnail = car.thumbnail; if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable; if (car.shortTermPriceList !== undefined) meta.shortTermPriceList = car.shortTermPriceList;
 
         const descSuffix = ` |||META:${JSON.stringify(meta)}`;
         payload.description = (car.description !== undefined ? car.description : "") + descSuffix;
