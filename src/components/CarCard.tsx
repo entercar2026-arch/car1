@@ -1926,9 +1926,9 @@ Description: ${formattedDesc}`;
                         </svg>
                         Security Deposit
                       </h4>
-                      <p className="text-sm font-mono text-amber-800 font-bold">
+                      <div className="whitespace-pre-wrap font-mono text-sm text-amber-800 leading-relaxed font-bold">
                         {car.shortTermDeposit}
-                      </p>
+                      </div>
                     </div>
                   )}
                 </div>

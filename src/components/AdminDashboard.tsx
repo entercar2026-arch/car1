@@ -1701,14 +1701,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-stone-400 uppercase tracking-wider font-mono flex justify-between">
-                          Security Deposit
+                          Security Deposit Details
                         </label>
-                        <input
-                          type="text"
+                        <OptimizedTextArea
+                          rows={2}
                           value={formShortTermDeposit}
-                          onChange={(e) => setFormShortTermDeposit(e.target.value)}
-                          placeholder="e.g. $500"
-                          className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all font-mono"
+                          onChange={(val: any) => setFormShortTermDeposit(val)}
+                          placeholder={`e.g.\n1 Day: $500\n1 Week: $1,000`}
+                          className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none font-mono"
                         />
                       </div>
                     </div>

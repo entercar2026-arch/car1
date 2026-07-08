@@ -8,7 +8,7 @@ const dbToCar = (dbCar: any): Car => {
   let videoUrl = dbCar.video_url || dbCar.videoUrl || "";
   let thumbnail = dbCar.thumbnail || "";
   let isShortTermAvailable = true;
-  let shortTermPriceList = "1 Day: $150\n1 Week: $800"; let shortTermDeposit = "";
+  let shortTermPriceList = "1 Day: $150\n1 Week: $800"; let shortTermDeposit = "1 Day: \$200\n1 Week: \$500";
 
   // Parse metadata from description if present
   if (description.includes("|||META:")) {
