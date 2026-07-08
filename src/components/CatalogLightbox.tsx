@@ -40,6 +40,19 @@ const getYoutubeId = (url?: string): string | null => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
+const getGoogleDriveId = (url?: string): string | null => {
+  if (!url || !url.includes("drive.google.com")) return null;
+  const fileDMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileDMatch && fileDMatch[1]) {
+    return fileDMatch[1];
+  }
+  const idParamMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idParamMatch && idParamMatch[1]) {
+    return idParamMatch[1];
+  }
+  return null;
+};
+
 export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [cars, setCars] = useState<Car[]>([]);
@@ -125,8 +138,9 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
   if (!isOpen || !car) return null;
 
   const currentMediaUrl = allPhotos[photoIndex];
-  const isVideo = isVideoUrl(currentMediaUrl);
+  const isVideo = currentMediaUrl === car.videoUrl || isVideoUrl(currentMediaUrl);
   const ytId = getYoutubeId(currentMediaUrl);
+  const driveId = getGoogleDriveId(currentMediaUrl);
 
   return createPortal(
     <AnimatePresence>
@@ -188,6 +202,13 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
                   allow="autoplay; encrypted-media; fullscreen"
                   allowFullScreen
                 />
+              ) : driveId ? (
+                <iframe
+                  src={`https://drive.google.com/file/d/${driveId}/preview`}
+                  className="w-full h-full max-w-5xl aspect-video rounded-xl shadow-2xl border-none bg-black"
+                  allow="autoplay"
+                  allowFullScreen
+                />
               ) : isVideo ? (
                 <video
                   src={currentMediaUrl}
@@ -228,9 +249,10 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
 
         <div className="w-full max-w-5xl overflow-x-auto pb-2 custom-scrollbar flex items-center gap-3 px-4 z-10" onClick={(e) => e.stopPropagation()}>
           {allPhotos.map((photoUrl, idx) => {
-            const isThumbVideo = isVideoUrl(photoUrl);
+            const isThumbVideo = photoUrl === car.videoUrl || isVideoUrl(photoUrl);
             const isThumbActive = idx === photoIndex;
             const thumbYtId = getYoutubeId(photoUrl);
+            const thumbDriveId = getGoogleDriveId(photoUrl);
 
             return (
               <button
@@ -248,7 +270,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
                       <Play className="w-8 h-8 text-white opacity-90 fill-white drop-shadow-md" />
                     </div>
                   </>
-                ) : isThumbVideo ? (
+                ) : (isThumbVideo || thumbDriveId) ? (
                   <div className="flex items-center justify-center w-full h-full bg-stone-800">
                      <Play className="w-8 h-8 text-white opacity-80 fill-white" />
                   </div>
