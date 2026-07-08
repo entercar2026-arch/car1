@@ -1350,10 +1350,10 @@ export default function App() {
               ...initialCar,
               ...car,
               isShortTermAvailable: car.isShortTermAvailable ?? initialCar.isShortTermAvailable,
-              shortTermPriceList: car.shortTermPriceList ?? initialCar.shortTermPriceList, shortTermDeposit: car.shortTermDeposit ?? initialCar.shortTermDeposit,
+              shortTermPricing: car.shortTermPricing ?? initialCar.shortTermPricing,
             };
           }
-          return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPriceList: car.shortTermPriceList ?? "1 Day: $150\n1 Week: $800", shortTermDeposit: car.shortTermDeposit ?? "$500" };
+          return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPricing: car.shortTermPricing ?? [{ days: "1 Day", price: "$150", deposit: "$500" }, { days: "1 Week", price: "$800", deposit: "$500" }] };
         });
       } catch (e) {
         console.error("Failed to parse saved cars", e);
@@ -1385,18 +1385,18 @@ export default function App() {
               setCars(refreshedData.map(car => {
                 const initialCar = INITIAL_CARS.find(c => c.name === car.name);
                 if (initialCar) {
-                  return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPriceList: car.shortTermPriceList || initialCar.shortTermPriceList, shortTermDeposit: car.shortTermDeposit || initialCar.shortTermDeposit };
+                  return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPricing: car.shortTermPricing || initialCar.shortTermPricing };
                 }
-                return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPriceList: car.shortTermPriceList ?? "1 Day: $150\n1 Week: $800", shortTermDeposit: car.shortTermDeposit ?? "$500" };
+                return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPricing: car.shortTermPricing ?? [{ days: "1 Day", price: "$150", deposit: "$500" }, { days: "1 Week", price: "$800", deposit: "$500" }] };
               }));
             }
           } else {
             setCars(data.map(car => {
               const initialCar = INITIAL_CARS.find(c => c.name === car.name);
               if (initialCar) {
-                return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPriceList: car.shortTermPriceList || initialCar.shortTermPriceList, shortTermDeposit: car.shortTermDeposit || initialCar.shortTermDeposit };
+                return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPricing: car.shortTermPricing || initialCar.shortTermPricing };
               }
-              return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPriceList: car.shortTermPriceList ?? "1 Day: $150\n1 Week: $800", shortTermDeposit: car.shortTermDeposit ?? "$500" };
+              return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPricing: car.shortTermPricing ?? [{ days: "1 Day", price: "$150", deposit: "$500" }, { days: "1 Week", price: "$800", deposit: "$500" }] };
             }));
           }
         }

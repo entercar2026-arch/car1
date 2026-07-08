@@ -17,7 +17,10 @@ export const INITIAL_CARS: Car[] = [
     seats: 4,
     fuelType: 'Gasoline',
     isShortTermAvailable: true,
-    shortTermPriceList: "1 Day: $200\n1 Week: $1,200",
+    shortTermPricing: [
+      { days: '1 Day', price: '$200', deposit: '$1,000' },
+      { days: '1 Week', price: '$1,200', deposit: '$1,000' }
+    ],
     description: 'The ultimate sports driving experience. Timeless style meets peerless precision and pure mechanical thrill.',
     videoUrl: 'https://youtube.com/watch?v=dQw4w9WgXcQ',
     extendedSpecs: {
@@ -47,7 +50,10 @@ export const INITIAL_CARS: Car[] = [
     seats: 5,
     fuelType: 'Electric',
     isShortTermAvailable: true,
-    shortTermPriceList: "1 Day: $150\n1 Week: $800",
+    shortTermPricing: [
+      { days: '1 Day', price: '$150', deposit: '$500' },
+      { days: '1 Week', price: '$800', deposit: '$500' }
+    ],
     description: 'Unmatched electric range meets hypercar-level acceleration. Step into the cockpit of the future.',
     extendedSpecs: {
       engine: 'Tri-Motor All-Electric Powertrain',

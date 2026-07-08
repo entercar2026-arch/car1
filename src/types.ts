@@ -15,8 +15,11 @@ export interface Car {
   videoUrl?: string;
   thumbnail?: string;
   isShortTermAvailable?: boolean;
-  shortTermPriceList?: string;
-  shortTermDeposit?: string;
+  shortTermPricing?: {
+    days: string;
+    price: string;
+    deposit: string;
+  }[];
   extendedSpecs?: {
     engine?: string;
     horsepower?: string;

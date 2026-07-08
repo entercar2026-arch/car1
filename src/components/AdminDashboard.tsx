@@ -548,8 +548,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
       setFormIsShortTermAvailable(car.isShortTermAvailable || false);
-      setFormShortTermPriceList(car.shortTermPriceList || "");
-      setFormShortTermDeposit(car.shortTermDeposit || "");
+      setFormShortTermPricing(car.shortTermPricing || []);
+      
       setHasClearedThumbnail(false);
       setIsFormOpen(true);
     });
@@ -594,8 +594,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           videoUrl: formVideoUrl,
           thumbnail: formThumbnail || undefined,
           isShortTermAvailable: formIsShortTermAvailable,
-          shortTermPriceList: formShortTermPriceList,
-          shortTermDeposit: formShortTermDeposit,
+          shortTermPricing: formShortTermPricing,
+          
           photos: finalPhotos,
         });
       } else {
@@ -611,8 +611,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           videoUrl: formVideoUrl,
           thumbnail: formThumbnail || undefined,
           isShortTermAvailable: formIsShortTermAvailable,
-          shortTermPriceList: formShortTermPriceList,
-          shortTermDeposit: formShortTermDeposit,
+          shortTermPricing: formShortTermPricing,
+          
           photos: finalPhotos,
         });
       }
@@ -1689,27 +1689,89 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <div className="flex flex-col gap-3">
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-stone-400 uppercase tracking-wider font-mono flex justify-between">
-                          Short Term Rent Price List
+                          Short Term Pricing
                         </label>
-                        <OptimizedTextArea
-                          rows={3}
-                          value={formShortTermPriceList}
-                          onChange={(val: any) => setFormShortTermPriceList(val)}
-                          placeholder={`e.g.\n1 Day: $50\n1 Week: $300`}
-                          className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none font-mono"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-stone-400 uppercase tracking-wider font-mono flex justify-between">
-                          Security Deposit Details
-                        </label>
-                        <OptimizedTextArea
-                          rows={2}
-                          value={formShortTermDeposit}
-                          onChange={(val: any) => setFormShortTermDeposit(val)}
-                          placeholder={`e.g.\n1 Day: $500\n1 Week: $1,000`}
-                          className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none font-mono"
-                        />
+                        <div className="border border-stone-200 rounded-xl overflow-hidden bg-stone-50">
+                          <table className="w-full text-left border-collapse">
+                            <thead>
+                              <tr className="bg-stone-100/50">
+                                <th className="px-3 py-2 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-r border-stone-200">Days</th>
+                                <th className="px-3 py-2 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-r border-stone-200">Price</th>
+                                <th className="px-3 py-2 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-r border-stone-200">Deposit</th>
+                                <th className="px-3 py-2 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-stone-200 text-center w-8"></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {formShortTermPricing.map((item, index) => (
+                                <tr key={index} className="border-b border-stone-100 last:border-b-0">
+                                  <td className="p-0 border-r border-stone-200">
+                                    <input
+                                      type="text"
+                                      value={item.days}
+                                      onChange={(e) => {
+                                        const newPricing = [...formShortTermPricing];
+                                        newPricing[index].days = e.target.value;
+                                        setFormShortTermPricing(newPricing);
+                                      }}
+                                      placeholder="1 Day"
+                                      className="w-full px-3 py-2 bg-transparent text-xs outline-none font-mono"
+                                    />
+                                  </td>
+                                  <td className="p-0 border-r border-stone-200">
+                                    <input
+                                      type="text"
+                                      value={item.price}
+                                      onChange={(e) => {
+                                        const newPricing = [...formShortTermPricing];
+                                        newPricing[index].price = e.target.value;
+                                        setFormShortTermPricing(newPricing);
+                                      }}
+                                      placeholder="$150"
+                                      className="w-full px-3 py-2 bg-transparent text-xs outline-none font-mono"
+                                    />
+                                  </td>
+                                  <td className="p-0 border-r border-stone-200">
+                                    <input
+                                      type="text"
+                                      value={item.deposit}
+                                      onChange={(e) => {
+                                        const newPricing = [...formShortTermPricing];
+                                        newPricing[index].deposit = e.target.value;
+                                        setFormShortTermPricing(newPricing);
+                                      }}
+                                      placeholder="$500"
+                                      className="w-full px-3 py-2 bg-transparent text-xs outline-none font-mono"
+                                    />
+                                  </td>
+                                  <td className="p-0 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newPricing = [...formShortTermPricing];
+                                        newPricing.splice(index, 1);
+                                        setFormShortTermPricing(newPricing);
+                                      }}
+                                      className="p-2 text-rose-500 hover:bg-rose-50 transition-colors w-full h-full flex justify-center items-center"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          <div className="p-2 border-t border-stone-200 bg-white">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormShortTermPricing([...formShortTermPricing, { days: "", price: "", deposit: "" }]);
+                              }}
+                              className="text-[10px] font-bold text-[#4C0027] bg-[#4C0027]/5 hover:bg-[#4C0027]/10 px-3 py-1.5 rounded-lg transition-colors w-full"
+                            >
+                              + Add Row
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}

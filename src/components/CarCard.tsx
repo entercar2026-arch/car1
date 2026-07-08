@@ -1909,28 +1909,31 @@ Description: ${formattedDesc}`;
                       <Calendar className="w-4 h-4 text-[#4C0027]" />
                       Rent Price List
                     </h4>
-                    {car.shortTermPriceList ? (
-                      <div className="whitespace-pre-wrap font-mono text-sm text-stone-700 leading-relaxed">
-                        {car.shortTermPriceList}
+                    {car.shortTermPricing && car.shortTermPricing.length > 0 ? (
+                      <div className="border border-stone-200 rounded-xl overflow-hidden bg-white">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-stone-100/50">
+                              <th className="px-3 py-2 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-r border-stone-200">Days</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-r border-stone-200">Price</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-stone-500 uppercase tracking-wider border-b border-stone-200">Deposit</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {car.shortTermPricing.map((item, index) => (
+                              <tr key={index} className="border-b border-stone-100 last:border-b-0">
+                                <td className="px-3 py-2 text-xs font-medium text-stone-900 border-r border-stone-200">{item.days}</td>
+                                <td className="px-3 py-2 text-xs font-mono text-stone-700 border-r border-stone-200">{item.price}</td>
+                                <td className="px-3 py-2 text-xs font-mono text-amber-700 font-semibold">{item.deposit}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     ) : (
                       <p className="text-sm text-stone-500 italic">No price list provided. Please enquire.</p>
                     )}
                   </div>
-
-                  {car.shortTermDeposit && (
-                    <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100">
-                      <h4 className="text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
-                        <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        Security Deposit
-                      </h4>
-                      <div className="whitespace-pre-wrap font-mono text-sm text-amber-800 leading-relaxed font-bold">
-                        {car.shortTermDeposit}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Footer */}

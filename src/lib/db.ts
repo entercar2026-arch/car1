@@ -8,7 +8,10 @@ const dbToCar = (dbCar: any): Car => {
   let videoUrl = dbCar.video_url || dbCar.videoUrl || "";
   let thumbnail = dbCar.thumbnail || "";
   let isShortTermAvailable = true;
-  let shortTermPriceList = "1 Day: $150\n1 Week: $800"; let shortTermDeposit = "1 Day: \$200\n1 Week: \$500";
+  let shortTermPricing = [
+    { days: "1 Day", price: "$150", deposit: "$500" },
+    { days: "1 Week", price: "$800", deposit: "$500" }
+  ];
 
   // Parse metadata from description if present
   if (description.includes("|||META:")) {
@@ -20,7 +23,7 @@ const dbToCar = (dbCar: any): Car => {
       if (meta.videoUrl) videoUrl = meta.videoUrl;
       if (meta.thumbnail) thumbnail = meta.thumbnail;
       if (meta.isShortTermAvailable !== undefined) isShortTermAvailable = meta.isShortTermAvailable;
-      if (meta.shortTermPriceList !== undefined) shortTermPriceList = meta.shortTermPriceList; if (meta.shortTermDeposit !== undefined) shortTermDeposit = meta.shortTermDeposit;
+      if (meta.shortTermPricing !== undefined) shortTermPricing = meta.shortTermPricing;
     } catch (e) {
       console.error("Failed to parse car metadata", e);
     }
@@ -40,7 +43,7 @@ const dbToCar = (dbCar: any): Car => {
     thumbnail: thumbnail || undefined,
     photos: photos,
     isShortTermAvailable,
-    shortTermPriceList, shortTermDeposit,
+    shortTermPricing,
   };
 };
 
@@ -48,9 +51,9 @@ const carToDb = (car: Omit<Car, 'id'>) => {
   const meta: any = {};
   if (car.photos) meta.photos = car.photos;
   if (car.videoUrl) meta.videoUrl = car.videoUrl;
-  if (car.thumbnail) meta.thumbnail = car.thumbnail; if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable; if (car.shortTermPriceList !== undefined) meta.shortTermPriceList = car.shortTermPriceList; if (car.shortTermDeposit !== undefined) meta.shortTermDeposit = car.shortTermDeposit;
+  if (car.thumbnail) meta.thumbnail = car.thumbnail; if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable; if (car.shortTermPricing !== undefined) meta.shortTermPricing = car.shortTermPricing;
   if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable;
-  if (car.shortTermPriceList !== undefined) meta.shortTermPriceList = car.shortTermPriceList; if (car.shortTermDeposit !== undefined) meta.shortTermDeposit = car.shortTermDeposit;
+  if (car.shortTermPricing !== undefined) meta.shortTermPricing = car.shortTermPricing;
 
   const descSuffix = ` |||META:${JSON.stringify(meta)}`;
   const fullDescription = (car.description || "") + descSuffix;
@@ -95,11 +98,11 @@ export const db = {
       if (car.seats) payload.seats = car.seats;
       if (car.fuelType) payload.fuel_type = car.fuelType;
 
-      if (car.description !== undefined || car.photos !== undefined || car.videoUrl !== undefined || car.thumbnail !== undefined || car.isShortTermAvailable !== undefined || car.shortTermPriceList !== undefined || car.shortTermDeposit !== undefined) {
+      if (car.description !== undefined || car.photos !== undefined || car.videoUrl !== undefined || car.thumbnail !== undefined || car.isShortTermAvailable !== undefined || car.shortTermPricing !== undefined) {
         const meta: any = {};
         if (car.photos) meta.photos = car.photos;
         if (car.videoUrl) meta.videoUrl = car.videoUrl;
-        if (car.thumbnail) meta.thumbnail = car.thumbnail; if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable; if (car.shortTermPriceList !== undefined) meta.shortTermPriceList = car.shortTermPriceList; if (car.shortTermDeposit !== undefined) meta.shortTermDeposit = car.shortTermDeposit;
+        if (car.thumbnail) meta.thumbnail = car.thumbnail; if (car.isShortTermAvailable !== undefined) meta.isShortTermAvailable = car.isShortTermAvailable; if (car.shortTermPricing !== undefined) meta.shortTermPricing = car.shortTermPricing;
 
         const descSuffix = ` |||META:${JSON.stringify(meta)}`;
         payload.description = (car.description !== undefined ? car.description : "") + descSuffix;
