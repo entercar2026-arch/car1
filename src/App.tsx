@@ -977,22 +977,6 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
     return list;
   };
 
-  useEffect(() => {
-    if (!lightboxCar) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const photos = getCarPhotos(lightboxCar);
-      if (e.key === "ArrowLeft" && photos.length > 1) {
-        setLightboxIndex((prev) => (prev - 1 + photos.length) % photos.length);
-      } else if (e.key === "ArrowRight" && photos.length > 1) {
-        setLightboxIndex((prev) => (prev + 1) % photos.length);
-      } else if (e.key === "Escape") {
-        setLightboxCar(null);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxCar, lightboxIndex]);
-
   const sortedCars = useMemo(() => {
     const list = [...cars];
     if (sortBy === "price-asc") {
@@ -1028,6 +1012,63 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
       (car.fuelType && car.fuelType.toLowerCase().includes(query))
     );
   }, [sortedCars, quoteSearchQuery]);
+
+  const currentCarIndex = useMemo(() => {
+    if (!lightboxCar) return -1;
+    return displayedCars.findIndex(c => c.id === lightboxCar.id);
+  }, [lightboxCar, displayedCars]);
+
+  const hasNextCar = currentCarIndex !== -1 && currentCarIndex < displayedCars.length - 1;
+  const hasPrevCar = currentCarIndex > 0;
+
+  const handleLightboxNextCar = () => {
+    if (hasNextCar) {
+      setLightboxCar(displayedCars[currentCarIndex + 1]);
+      setLightboxIndex(0);
+    }
+  };
+
+  const handleLightboxPrevCar = () => {
+    if (hasPrevCar) {
+      setLightboxCar(displayedCars[currentCarIndex - 1]);
+      setLightboxIndex(0);
+    }
+  };
+
+  // Keyboard navigation for High-Resolution Gallery Lightbox
+  useEffect(() => {
+    if (!lightboxCar) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const photos = getCarPhotos(lightboxCar);
+      if (e.key === "ArrowLeft") {
+        if (lightboxIndex > 0) {
+          setLightboxIndex(lightboxIndex - 1);
+        } else if (hasPrevCar) {
+          // Go to previous car, last photo
+          const prevCarPhotos = getCarPhotos(displayedCars[currentCarIndex - 1]);
+          setLightboxCar(displayedCars[currentCarIndex - 1]);
+          setLightboxIndex(prevCarPhotos.length - 1);
+        } else {
+          // Wrap around to last photo of same car
+          setLightboxIndex(photos.length - 1);
+        }
+      } else if (e.key === "ArrowRight") {
+        if (lightboxIndex < photos.length - 1) {
+          setLightboxIndex(lightboxIndex + 1);
+        } else if (hasNextCar) {
+          // Go to next car, first photo
+          handleLightboxNextCar();
+        } else {
+          // Wrap around to first photo of same car
+          setLightboxIndex(0);
+        }
+      } else if (e.key === "Escape") {
+        setLightboxCar(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxCar, lightboxIndex, currentCarIndex, hasNextCar, hasPrevCar, displayedCars]);
 
   // Reset or initialize selections when cars change or when the quotation modal opens
   useEffect(() => {
@@ -1371,14 +1412,48 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                       {lightboxCar.category} • ${lightboxCar.price.toLocaleString()}/mo • {getCarPhotos(lightboxCar).length} Photos Available
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setLightboxCar(null)}
-                    className="p-2 bg-stone-850 hover:bg-stone-800 text-white rounded-full transition-colors cursor-pointer border border-stone-700 flex items-center justify-center shadow-md active:scale-95"
-                    title="Close Gallery (Esc)"
-                  >
-                    <X className="w-6 h-6 text-stone-200" />
-                  </button>
+                  
+                  <div className="flex items-center gap-2">
+                    {/* Previous Car button */}
+                    {hasPrevCar && (
+                      <button
+                        type="button"
+                        onClick={handleLightboxPrevCar}
+                        className="px-3 py-1.5 bg-stone-850 hover:bg-stone-800 text-stone-200 text-xs font-semibold rounded-xl border border-stone-700 hover:border-stone-600 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                        title="Previous Vehicle"
+                      >
+                        <ChevronLeft className="w-4 h-4 text-stone-300" />
+                        <span>{t.prevCar || "Previous Car"}</span>
+                      </button>
+                    )}
+
+                    {/* Next Car button */}
+                    {hasNextCar && (
+                      <button
+                        type="button"
+                        onClick={handleLightboxNextCar}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-md ${
+                          lightboxIndex === getCarPhotos(lightboxCar).length - 1
+                            ? "bg-amber-400 text-stone-950 border-amber-300 hover:bg-amber-300 animate-pulse font-extrabold"
+                            : "bg-stone-800 hover:bg-stone-750 text-white border-stone-700 hover:border-stone-600"
+                        }`}
+                        title="Next Vehicle"
+                      >
+                        <span>{t.nextCar || "Next Car"}</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    {/* Close button */}
+                    <button
+                      type="button"
+                      onClick={() => setLightboxCar(null)}
+                      className="p-2 bg-stone-850 hover:bg-stone-800 text-white rounded-full transition-colors cursor-pointer border border-stone-700 flex items-center justify-center shadow-md active:scale-95"
+                      title="Close Gallery (Esc)"
+                    >
+                      <X className="w-6 h-6 text-stone-200" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Main slide display */}
@@ -1396,12 +1471,23 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                     />
                   </AnimatePresence>
 
-                  {/* Arrow controls if there are multiple photos */}
-                  {getCarPhotos(lightboxCar).length > 1 && (
+                  {/* Arrow controls if there are multiple photos or multiple cars */}
+                  {(getCarPhotos(lightboxCar).length > 1 || hasPrevCar || hasNextCar) && (
                     <>
                       <button
                         type="button"
-                        onClick={() => setLightboxIndex((prev) => (prev - 1 + getCarPhotos(lightboxCar).length) % getCarPhotos(lightboxCar).length)}
+                        onClick={() => {
+                          const photos = getCarPhotos(lightboxCar);
+                          if (lightboxIndex > 0) {
+                            setLightboxIndex(lightboxIndex - 1);
+                          } else if (hasPrevCar) {
+                            const prevCarPhotos = getCarPhotos(displayedCars[currentCarIndex - 1]);
+                            setLightboxCar(displayedCars[currentCarIndex - 1]);
+                            setLightboxIndex(prevCarPhotos.length - 1);
+                          } else {
+                            setLightboxIndex(photos.length - 1);
+                          }
+                        }}
                         className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-stone-900/60 hover:bg-stone-900/80 border border-stone-700 backdrop-blur-xs text-white opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md"
                         title="Previous Photo (Left/Right Arrows)"
                       >
@@ -1409,7 +1495,16 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
                       </button>
                       <button
                         type="button"
-                        onClick={() => setLightboxIndex((prev) => (prev + 1) % getCarPhotos(lightboxCar).length)}
+                        onClick={() => {
+                          const photos = getCarPhotos(lightboxCar);
+                          if (lightboxIndex < photos.length - 1) {
+                            setLightboxIndex(lightboxIndex + 1);
+                          } else if (hasNextCar) {
+                            handleLightboxNextCar();
+                          } else {
+                            setLightboxIndex(0);
+                          }
+                        }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-stone-900/60 hover:bg-stone-900/80 border border-stone-700 backdrop-blur-xs text-white opacity-100 xl:opacity-0 xl:group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-md"
                         title="Next Photo (Left/Right Arrows)"
                       >
@@ -1523,6 +1618,9 @@ export default function App() {
     }
     return [];
   });
+
+  // Track which car card's photo gallery modal is currently open
+  const [openPhotosCarId, setOpenPhotosCarId] = useState<string | null>(null);
 
   // Track if clear favorites confirmation modal is open
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -3258,6 +3356,22 @@ export default function App() {
                           lang={lang}
                           onFilterSelect={handleGridFilterSelect}
                           onEdit={handleUpdateCar}
+                          isPhotosOpenProp={openPhotosCarId === car.id}
+                          onPhotosOpenChange={(open) => {
+                            setOpenPhotosCarId(open ? car.id : null);
+                          }}
+                          onShowNextCar={() => {
+                            if (index < paginatedCars.length - 1) {
+                              setOpenPhotosCarId(paginatedCars[index + 1].id);
+                            }
+                          }}
+                          onShowPrevCar={() => {
+                            if (index > 0) {
+                              setOpenPhotosCarId(paginatedCars[index - 1].id);
+                            }
+                          }}
+                          hasNextCar={index < paginatedCars.length - 1}
+                          hasPrevCar={index > 0}
                         />
                       </motion.div>
                     ))}

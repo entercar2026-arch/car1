@@ -193,6 +193,8 @@ export const translations = {
     cancel: "Cancel",
     yesClear: "Yes, Clear",
     copyrightLine: "© 2026 Enter Car Rental Inc. All rights reserved. Managed with strict mechanics parameters. Designed by Chan Heang.",
+    nextCar: "Next Car",
+    prevCar: "Previous Car",
   },
   kh: {
     navHome: "ទំព័រដើម",
@@ -387,6 +389,8 @@ export const translations = {
     cancel: "បោះបង់",
     yesClear: "បាទ, លុបប្រាកដ",
     copyrightLine: "© 2026 ក្រុមហ៊ុន Enter Car Rental។ រក្សាសិទ្ធិគ្រប់យ៉ាង។ រចនាដោយ ចាន់ ហៀង។",
+    nextCar: "ឡានបន្ទាប់",
+    prevCar: "ឡានមុន",
   },
   zh: {
     navHome: "首页",
@@ -582,5 +586,7 @@ export const translations = {
     cancel: "撤销操作",
     yesClear: "确定, 马上清除！",
     copyrightLine: "© 2026 Enter Car 租售与服务Inc有限专营组织。受到国家专利保护。系统构建来自工程者: Chan Heang.",
+    nextCar: "下一辆车",
+    prevCar: "上一辆车",
   }
 };

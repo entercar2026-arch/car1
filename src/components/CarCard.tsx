@@ -149,6 +149,12 @@ export interface CarCardProps {
   onFilterSelect?: (filterType: "category" | "transmission" | "fuelType" | "seats", value: string | number) => void;
   lang?: "en" | "kh";
   onShowToast?: (message: string) => void;
+  isPhotosOpenProp?: boolean;
+  onPhotosOpenChange?: (open: boolean) => void;
+  onShowNextCar?: () => void;
+  onShowPrevCar?: () => void;
+  hasNextCar?: boolean;
+  hasPrevCar?: boolean;
 }
 
 const CarCardComponent: React.FC<CarCardProps> = ({
@@ -165,6 +171,12 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   onFilterSelect,
   lang = "en",
   onShowToast,
+  isPhotosOpenProp,
+  onPhotosOpenChange,
+  onShowNextCar,
+  onShowPrevCar,
+  hasNextCar = false,
+  hasPrevCar = false,
 }) => {
   const t = translations[lang];
 
@@ -534,23 +546,50 @@ const CarCardComponent: React.FC<CarCardProps> = ({
 
   // Reviews flow states
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
-  const [isPhotosOpen, setIsPhotosOpen] = useState(false);
+  const [isPhotosOpenLocal, setIsPhotosOpenLocal] = useState(false);
+  const isPhotosOpen = isPhotosOpenProp !== undefined ? isPhotosOpenProp : isPhotosOpenLocal;
+  const setIsPhotosOpen = (open: boolean) => {
+    if (onPhotosOpenChange) {
+      onPhotosOpenChange(open);
+    } else {
+      setIsPhotosOpenLocal(open);
+    }
+  };
+
+  // Reset index when the active car or photos modal state changes
+  useEffect(() => {
+    if (isPhotosOpen) {
+      setCurrentPhotoIndex(0);
+    }
+  }, [car.id, isPhotosOpen]);
 
   // Keyboard navigation for photo gallery
   useEffect(() => {
     if (!isPhotosOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" && allPhotos.length > 1) {
-        startTransition(() => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length));
-      } else if (e.key === "ArrowRight" && allPhotos.length > 1) {
-        startTransition(() => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length));
+      if (e.key === "ArrowLeft") {
+        if (currentPhotoIndex > 0) {
+          startTransition(() => setCurrentPhotoIndex(currentPhotoIndex - 1));
+        } else if (hasPrevCar && onShowPrevCar) {
+          onShowPrevCar();
+        } else if (allPhotos.length > 1) {
+          startTransition(() => setCurrentPhotoIndex(allPhotos.length - 1));
+        }
+      } else if (e.key === "ArrowRight") {
+        if (currentPhotoIndex < allPhotos.length - 1) {
+          startTransition(() => setCurrentPhotoIndex(currentPhotoIndex + 1));
+        } else if (hasNextCar && onShowNextCar) {
+          onShowNextCar();
+        } else if (allPhotos.length > 1) {
+          startTransition(() => setCurrentPhotoIndex(0));
+        }
       } else if (e.key === "Escape") {
         startTransition(() => setIsPhotosOpen(false));
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPhotosOpen, allPhotos.length]);
+  }, [isPhotosOpen, allPhotos.length, currentPhotoIndex, hasNextCar, hasPrevCar, onShowNextCar, onShowPrevCar]);
 
   // Scroll active thumbnail into view when currentPhotoIndex changes
   useEffect(() => {
@@ -2041,12 +2080,48 @@ Description: ${formattedDesc}`;
                   <span className="text-white font-sans font-bold text-lg">{car.name}</span>
                   <span className="text-red-500 font-sans font-bold text-xl">${car.price.toLocaleString()}/mo</span>
                 </div>
-                <button
-                  onClick={() => startTransition(() => setIsPhotosOpen(false))}
-                  className="text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer border border-white/10 shadow-sm"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Previous Car button */}
+                  {hasPrevCar && onShowPrevCar && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onShowPrevCar();
+                      }}
+                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/10 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                      title="Previous Vehicle"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-stone-200" />
+                      <span>{t.prevCar || "Previous Car"}</span>
+                    </button>
+                  )}
+
+                  {/* Next Car button */}
+                  {hasNextCar && onShowNextCar && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onShowNextCar();
+                      }}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-md ${
+                        currentPhotoIndex === allPhotos.length - 1
+                          ? "bg-amber-400 text-stone-950 border-amber-300 hover:bg-amber-300 animate-pulse font-extrabold"
+                          : "bg-white/10 hover:bg-white/20 text-white border-white/10"
+                      }`}
+                      title="Next Vehicle"
+                    >
+                      <span>{t.nextCar || "Next Car"}</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => startTransition(() => setIsPhotosOpen(false))}
+                    className="text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer border border-white/10 shadow-sm"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Main Content View with Left/Right Arrows */}
@@ -2084,12 +2159,18 @@ Description: ${formattedDesc}`;
                   )}
 
                   {/* Left Arrow Button */}
-                  {allPhotos.length > 1 && (
+                  {(allPhotos.length > 1 || hasPrevCar) && (
                     <button
                       id={`gallery-prev-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        startTransition(() => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length));
+                        if (currentPhotoIndex > 0) {
+                          startTransition(() => setCurrentPhotoIndex(currentPhotoIndex - 1));
+                        } else if (hasPrevCar && onShowPrevCar) {
+                          onShowPrevCar();
+                        } else if (allPhotos.length > 1) {
+                          startTransition(() => setCurrentPhotoIndex(allPhotos.length - 1));
+                        }
                       }}
                       className="absolute left-2 sm:left-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
                       title="Previous Photo"
@@ -2174,12 +2255,18 @@ Description: ${formattedDesc}`;
                   </AnimatePresence>
 
                   {/* Right Arrow Button */}
-                  {allPhotos.length > 1 && (
+                  {(allPhotos.length > 1 || hasNextCar) && (
                     <button
                       id={`gallery-next-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        startTransition(() => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length));
+                        if (currentPhotoIndex < allPhotos.length - 1) {
+                          startTransition(() => setCurrentPhotoIndex(currentPhotoIndex + 1));
+                        } else if (hasNextCar && onShowNextCar) {
+                          onShowNextCar();
+                        } else if (allPhotos.length > 1) {
+                          startTransition(() => setCurrentPhotoIndex(0));
+                        }
                       }}
                       className="absolute right-2 sm:right-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
                       title="Next Photo"
