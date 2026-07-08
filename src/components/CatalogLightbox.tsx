@@ -45,11 +45,10 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
     };
   }, []);
 
-  if (!isOpen || cars.length === 0) return null;
-
   const car = cars[carIndex];
   
-  const getCarPhotos = (c: Car) => {
+  const getCarPhotos = (c: Car | undefined) => {
+    if (!c) return [];
     const list: string[] = [];
     if (c.image) list.push(c.image);
     if (c.photos && c.photos.length > 0) {
@@ -90,6 +89,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
   };
 
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") handlePrev();
       else if (e.key === "ArrowRight") handleNext();
@@ -97,7 +97,9 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [photoIndex, carIndex, allPhotos.length, cars.length]);
+  }, [isOpen, photoIndex, carIndex, allPhotos.length, cars.length]);
+
+  if (!isOpen || !car) return null;
 
   return createPortal(
     <AnimatePresence>
