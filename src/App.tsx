@@ -1557,6 +1557,8 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
   );
 });
 
+import { CatalogLightbox, openCatalogLightbox } from './components/CatalogLightbox';
+
 export default function App() {
   // Cars Fleet State
   const [cars, setCars] = useState<Car[]>(() => {
@@ -1618,9 +1620,6 @@ export default function App() {
     }
     return [];
   });
-
-  // Track which car card's photo gallery modal is currently open
-  const [openPhotosCarId, setOpenPhotosCarId] = useState<string | null>(null);
 
   // Track if clear favorites confirmation modal is open
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -3356,22 +3355,7 @@ export default function App() {
                           lang={lang}
                           onFilterSelect={handleGridFilterSelect}
                           onEdit={handleUpdateCar}
-                          isPhotosOpenProp={openPhotosCarId === car.id}
-                          onPhotosOpenChange={(open) => {
-                            setOpenPhotosCarId(open ? car.id : null);
-                          }}
-                          onShowNextCar={() => {
-                            if (index < paginatedCars.length - 1) {
-                              setOpenPhotosCarId(paginatedCars[index + 1].id);
-                            }
-                          }}
-                          onShowPrevCar={() => {
-                            if (index > 0) {
-                              setOpenPhotosCarId(paginatedCars[index - 1].id);
-                            }
-                          }}
-                          hasNextCar={index < paginatedCars.length - 1}
-                          hasPrevCar={index > 0}
+                          onOpenGallery={() => openCatalogLightbox(paginatedCars, index)}
                         />
                       </motion.div>
                     ))}
@@ -4204,6 +4188,7 @@ export default function App() {
         </button>
       </div>
 
+      <CatalogLightbox lang={lang} />
     </div>
   );
 }

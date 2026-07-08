@@ -149,12 +149,7 @@ export interface CarCardProps {
   onFilterSelect?: (filterType: "category" | "transmission" | "fuelType" | "seats", value: string | number) => void;
   lang?: "en" | "kh";
   onShowToast?: (message: string) => void;
-  isPhotosOpenProp?: boolean;
-  onPhotosOpenChange?: (open: boolean) => void;
-  onShowNextCar?: () => void;
-  onShowPrevCar?: () => void;
-  hasNextCar?: boolean;
-  hasPrevCar?: boolean;
+  onOpenGallery?: () => void;
 }
 
 const CarCardComponent: React.FC<CarCardProps> = ({
@@ -171,12 +166,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   onFilterSelect,
   lang = "en",
   onShowToast,
-  isPhotosOpenProp,
-  onPhotosOpenChange,
-  onShowNextCar,
-  onShowPrevCar,
-  hasNextCar = false,
-  hasPrevCar = false,
+  onOpenGallery,
 }) => {
   const t = translations[lang];
 
@@ -547,13 +537,11 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   // Reviews flow states
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isPhotosOpenLocal, setIsPhotosOpenLocal] = useState(false);
-  const isPhotosOpen = isPhotosOpenProp !== undefined ? isPhotosOpenProp : isPhotosOpenLocal;
+  
+  // Use local state if no external handler is provided
+  const isPhotosOpen = isPhotosOpenLocal;
   const setIsPhotosOpen = (open: boolean) => {
-    if (onPhotosOpenChange) {
-      onPhotosOpenChange(open);
-    } else {
-      setIsPhotosOpenLocal(open);
-    }
+    setIsPhotosOpenLocal(open);
   };
 
   // Reset index when the active car or photos modal state changes
@@ -570,16 +558,12 @@ const CarCardComponent: React.FC<CarCardProps> = ({
       if (e.key === "ArrowLeft") {
         if (currentPhotoIndex > 0) {
           startTransition(() => setCurrentPhotoIndex(currentPhotoIndex - 1));
-        } else if (hasPrevCar && onShowPrevCar) {
-          onShowPrevCar();
         } else if (allPhotos.length > 1) {
           startTransition(() => setCurrentPhotoIndex(allPhotos.length - 1));
         }
       } else if (e.key === "ArrowRight") {
         if (currentPhotoIndex < allPhotos.length - 1) {
           startTransition(() => setCurrentPhotoIndex(currentPhotoIndex + 1));
-        } else if (hasNextCar && onShowNextCar) {
-          onShowNextCar();
         } else if (allPhotos.length > 1) {
           startTransition(() => setCurrentPhotoIndex(0));
         }
@@ -589,7 +573,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPhotosOpen, allPhotos.length, currentPhotoIndex, hasNextCar, hasPrevCar, onShowNextCar, onShowPrevCar]);
+  }, [isPhotosOpen, allPhotos.length, currentPhotoIndex]);
 
   // Scroll active thumbnail into view when currentPhotoIndex changes
   useEffect(() => {
@@ -889,7 +873,11 @@ Description: ${formattedDesc}`;
               className="relative aspect-[16/9] w-full bg-stone-50 overflow-hidden cursor-zoom-in group/media"
               onClick={(e) => { 
                 e.stopPropagation(); 
-                startTransition(() => setIsPhotosOpen(true));
+                if (onOpenGallery) {
+                  onOpenGallery();
+                } else {
+                  startTransition(() => setIsPhotosOpen(true));
+                }
               }}
             >
               {/* Zooming, Tilting & Rolling Scroll-linked Cover Media */}
@@ -1157,7 +1145,11 @@ Description: ${formattedDesc}`;
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        startTransition(() => setIsPhotosOpen(true));
+                        if (onOpenGallery) {
+                          onOpenGallery();
+                        } else {
+                          startTransition(() => setIsPhotosOpen(true));
+                        }
                       }}
                       title={t.viewPhotos || "View Photos"}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
@@ -2081,40 +2073,6 @@ Description: ${formattedDesc}`;
                   <span className="text-red-500 font-sans font-bold text-xl">${car.price.toLocaleString()}/mo</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Previous Car button */}
-                  {hasPrevCar && onShowPrevCar && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onShowPrevCar();
-                      }}
-                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/10 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
-                      title="Previous Vehicle"
-                    >
-                      <ChevronLeft className="w-4 h-4 text-stone-200" />
-                      <span>{t.prevCar || "Previous Car"}</span>
-                    </button>
-                  )}
-
-                  {/* Next Car button */}
-                  {hasNextCar && onShowNextCar && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onShowNextCar();
-                      }}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-md ${
-                        currentPhotoIndex === allPhotos.length - 1
-                          ? "bg-amber-400 text-stone-950 border-amber-300 hover:bg-amber-300 animate-pulse font-extrabold"
-                          : "bg-white/10 hover:bg-white/20 text-white border-white/10"
-                      }`}
-                      title="Next Vehicle"
-                    >
-                      <span>{t.nextCar || "Next Car"}</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  )}
-
                   <button
                     onClick={() => startTransition(() => setIsPhotosOpen(false))}
                     className="text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full backdrop-blur-md transition-colors cursor-pointer border border-white/10 shadow-sm"
@@ -2159,15 +2117,13 @@ Description: ${formattedDesc}`;
                   )}
 
                   {/* Left Arrow Button */}
-                  {(allPhotos.length > 1 || hasPrevCar) && (
+                  {(allPhotos.length > 1) && (
                     <button
                       id={`gallery-prev-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (currentPhotoIndex > 0) {
                           startTransition(() => setCurrentPhotoIndex(currentPhotoIndex - 1));
-                        } else if (hasPrevCar && onShowPrevCar) {
-                          onShowPrevCar();
                         } else if (allPhotos.length > 1) {
                           startTransition(() => setCurrentPhotoIndex(allPhotos.length - 1));
                         }
@@ -2255,15 +2211,13 @@ Description: ${formattedDesc}`;
                   </AnimatePresence>
 
                   {/* Right Arrow Button */}
-                  {(allPhotos.length > 1 || hasNextCar) && (
+                  {(allPhotos.length > 1) && (
                     <button
                       id={`gallery-next-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (currentPhotoIndex < allPhotos.length - 1) {
                           startTransition(() => setCurrentPhotoIndex(currentPhotoIndex + 1));
-                        } else if (hasNextCar && onShowNextCar) {
-                          onShowNextCar();
                         } else if (allPhotos.length > 1) {
                           startTransition(() => setCurrentPhotoIndex(0));
                         }
