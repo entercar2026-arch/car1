@@ -127,9 +127,9 @@ const OptimizedTextArea = ({ id, value, onChange, placeholder, className, rows }
       onChange={(e) => {
         const val = e.target.value;
         setLocalVal(val);
-        startTransition(() => {
+         {
           onChange(val);
-        });
+        }
       }}
       placeholder={placeholder}
       className={className}
@@ -153,9 +153,9 @@ const OptimizedInput = ({ id, type, value, onChange, placeholder, className, req
       onChange={(e) => {
         const val = e.target.value;
         setLocalVal(val);
-        startTransition(() => {
+         {
           onChange(val);
-        });
+        }
       }}
       placeholder={placeholder}
       className={className}
@@ -202,18 +202,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const activeTab = activeTabRaw;
   const setActiveTab = React.useCallback((val: "fleet" | "bookings" | "reviews") => {
-    startTransition(() => {
+     {
       setActiveTabRaw(val);
-    });
+    }
   }, []);
 
   // Search state for cars
   const [searchTermRaw, setSearchTermRaw] = useState("");
   const searchTerm = searchTermRaw;
   const setSearchTerm = React.useCallback((val: string) => {
-    startTransition(() => {
+     {
       setSearchTermRaw(val);
-    });
+    }
   }, []);
 
   const filteredCars = useMemo(() => {
@@ -526,14 +526,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormShortTermPricing([]);
     
     setHasClearedThumbnail(false);
-    startTransition(() => {
+      startTransition(() => {
       setIsFormOpen(true);
     });
   };
 
   // Open edit product form preloaded with details
   const handleOpenEdit = React.useCallback((car: Car) => {
-    startTransition(() => {
+      startTransition(() => {
       setEditingCar(car);
       console.log("Opening edit form for", car);
       setFormName(car.name);
@@ -616,7 +616,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           photos: finalPhotos,
         });
       }
-      
       startTransition(() => {
         setIsFormOpen(false);
       });
@@ -760,7 +759,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <button
               id={`admin-row-delete-${car.id}`}
-              onClick={() => startTransition(() => setCarToDelete(car.id))}
+              onClick={() => setCarToDelete(car.id)}
               title="Delete Vehicle Asset"
               className="p-2 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
             >
@@ -831,7 +830,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   id={`btn-approve-book-${book.id}`}
                   onClick={() =>
-                    startTransition(() => onUpdateBookingStatus(book.id, "Approved"))
+                    onUpdateBookingStatus(book.id, "Approved")
                   }
                   title="Approve Booking"
                   className="p-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-150 shadow-2xs transition-all cursor-pointer"
@@ -845,7 +844,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <button
                   id={`btn-cancel-book-${book.id}`}
                   onClick={() =>
-                    startTransition(() => onUpdateBookingStatus(book.id, "Cancelled"))
+                    onUpdateBookingStatus(book.id, "Cancelled")
                   }
                   title="Cancel Booking"
                   className="p-1 px-2 text-stone-100 bg-stone-500 hover:bg-stone-600 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
@@ -857,7 +856,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {onDeleteBooking && (
               <button
                 id={`btn-delete-book-${book.id}`}
-                onClick={() => startTransition(() => onDeleteBooking(book.id))}
+                onClick={() => onDeleteBooking(book.id)}
                 title="Purge Record"
                 className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-all border border-transparent hover:border-rose-100 cursor-pointer"
               >
@@ -922,7 +921,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {!rev.isApproved && onApproveReview && (
                 <button
                   id={`btn-approve-rev-moderator-${rev.id}`}
-                  onClick={() => startTransition(() => onApproveReview(rev.id))}
+                  onClick={() => onApproveReview(rev.id)}
                   className="p-1 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer shadow-sm"
                 >
                   Approve & Publish
@@ -932,7 +931,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {onDeleteReview && (
                 <button
                   id={`btn-delete-rev-moderator-${rev.id}`}
-                  onClick={() => startTransition(() => onDeleteReview(rev.id))}
+                  onClick={() => onDeleteReview(rev.id)}
                   title="Discard Review Feedback"
                   className="p-1 px-2 bg-[#FAFAF9] hover:bg-rose-50 text-rose-600 border border-stone-205 hover:border-rose-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer"
                 >
@@ -1242,7 +1241,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 <button
                   id="btn-close-form"
-                  onClick={() => startTransition(() => setIsFormOpen(false))}
+                  onClick={() => setIsFormOpen(false)}
                   className="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg text-white transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
@@ -1782,7 +1781,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     id="btn-cancel-modal"
                     type="button"
-                    onClick={() => startTransition(() => setIsFormOpen(false))}
+                    onClick={() => setIsFormOpen(false)}
                     className="px-4 py-2 text-xs font-semibold text-stone-500 bg-stone-100 hover:bg-stone-200 rounded-xl transition-all cursor-pointer"
                   >
                     Discard
