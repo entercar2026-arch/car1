@@ -1903,11 +1903,11 @@ Description: ${formattedDesc}`;
                 </div>
 
                 {/* Body */}
-                <div className="p-6 overflow-y-auto">
+                <div className="p-6 overflow-y-auto space-y-4">
                   <div className="bg-stone-50 rounded-2xl p-5 border border-stone-100">
                     <h4 className="text-sm font-bold text-stone-800 mb-3 flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#4C0027]" />
-                      Price List
+                      Rent Price List
                     </h4>
                     {car.shortTermPriceList ? (
                       <div className="whitespace-pre-wrap font-mono text-sm text-stone-700 leading-relaxed">
@@ -1917,6 +1917,20 @@ Description: ${formattedDesc}`;
                       <p className="text-sm text-stone-500 italic">No price list provided. Please enquire.</p>
                     )}
                   </div>
+
+                  {car.shortTermDeposit && (
+                    <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100">
+                      <h4 className="text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Security Deposit
+                      </h4>
+                      <p className="text-sm font-mono text-amber-800 font-bold">
+                        {car.shortTermDeposit}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Footer */}

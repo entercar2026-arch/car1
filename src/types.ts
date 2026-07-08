@@ -16,6 +16,7 @@ export interface Car {
   thumbnail?: string;
   isShortTermAvailable?: boolean;
   shortTermPriceList?: string;
+  shortTermDeposit?: string;
   extendedSpecs?: {
     engine?: string;
     horsepower?: string;

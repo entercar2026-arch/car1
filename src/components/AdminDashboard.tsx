@@ -264,6 +264,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formThumbnail, setFormThumbnail] = useState("");
   const [formIsShortTermAvailable, setFormIsShortTermAvailable] = useState(false);
   const [formShortTermPriceList, setFormShortTermPriceList] = useState("");
+  const [formShortTermDeposit, setFormShortTermDeposit] = useState("");
 
   const estimatedDotCount = useMemo(() => {
     const photosArr = splitUrls(formPhotos);
@@ -524,6 +525,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormThumbnail("");
     setFormIsShortTermAvailable(false);
     setFormShortTermPriceList("");
+    setFormShortTermDeposit("");
     setHasClearedThumbnail(false);
     startTransition(() => {
       setIsFormOpen(true);
@@ -547,6 +549,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormThumbnail(car.thumbnail || "");
       setFormIsShortTermAvailable(car.isShortTermAvailable || false);
       setFormShortTermPriceList(car.shortTermPriceList || "");
+      setFormShortTermDeposit(car.shortTermDeposit || "");
       setHasClearedThumbnail(false);
       setIsFormOpen(true);
     });
@@ -592,6 +595,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           thumbnail: formThumbnail || undefined,
           isShortTermAvailable: formIsShortTermAvailable,
           shortTermPriceList: formShortTermPriceList,
+          shortTermDeposit: formShortTermDeposit,
           photos: finalPhotos,
         });
       } else {
@@ -608,6 +612,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           thumbnail: formThumbnail || undefined,
           isShortTermAvailable: formIsShortTermAvailable,
           shortTermPriceList: formShortTermPriceList,
+          shortTermDeposit: formShortTermDeposit,
           photos: finalPhotos,
         });
       }
@@ -1681,17 +1686,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                   
                   {formIsShortTermAvailable && (
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-stone-400 uppercase tracking-wider font-mono flex justify-between">
-                        Short Term Price List
-                      </label>
-                      <OptimizedTextArea
-                        rows={3}
-                        value={formShortTermPriceList}
-                        onChange={(val: any) => setFormShortTermPriceList(val)}
-                        placeholder={`e.g.\n1 Day: $50\n1 Week: $300`}
-                        className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none font-mono"
-                      />
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-stone-400 uppercase tracking-wider font-mono flex justify-between">
+                          Short Term Rent Price List
+                        </label>
+                        <OptimizedTextArea
+                          rows={3}
+                          value={formShortTermPriceList}
+                          onChange={(val: any) => setFormShortTermPriceList(val)}
+                          placeholder={`e.g.\n1 Day: $50\n1 Week: $300`}
+                          className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all resize-none font-mono"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-stone-400 uppercase tracking-wider font-mono flex justify-between">
+                          Security Deposit
+                        </label>
+                        <input
+                          type="text"
+                          value={formShortTermDeposit}
+                          onChange={(e) => setFormShortTermDeposit(e.target.value)}
+                          placeholder="e.g. $500"
+                          className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all font-mono"
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
