@@ -7,8 +7,8 @@ const dbToCar = (dbCar: any): Car => {
   let photos: string[] | undefined = undefined;
   let videoUrl = dbCar.video_url || dbCar.videoUrl || "";
   let thumbnail = dbCar.thumbnail || "";
-  let isShortTermAvailable = false;
-  let shortTermPriceList = "";
+  let isShortTermAvailable = true;
+  let shortTermPriceList = "1 Day: $150\n1 Week: $800";
 
   // Parse metadata from description if present
   if (description.includes("|||META:")) {

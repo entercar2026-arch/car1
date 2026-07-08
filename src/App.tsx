@@ -1353,7 +1353,7 @@ export default function App() {
               shortTermPriceList: car.shortTermPriceList ?? initialCar.shortTermPriceList,
             };
           }
-          return car;
+          return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPriceList: car.shortTermPriceList ?? "1 Day: $150\n1 Week: $800" };
         });
       } catch (e) {
         console.error("Failed to parse saved cars", e);
@@ -1387,7 +1387,7 @@ export default function App() {
                 if (initialCar) {
                   return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPriceList: car.shortTermPriceList || initialCar.shortTermPriceList };
                 }
-                return car;
+                return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPriceList: car.shortTermPriceList ?? "1 Day: $150\n1 Week: $800" };
               }));
             }
           } else {
@@ -1396,7 +1396,7 @@ export default function App() {
               if (initialCar) {
                 return { ...initialCar, ...car, isShortTermAvailable: car.isShortTermAvailable || initialCar.isShortTermAvailable, shortTermPriceList: car.shortTermPriceList || initialCar.shortTermPriceList };
               }
-              return car;
+              return { ...car, isShortTermAvailable: car.isShortTermAvailable ?? true, shortTermPriceList: car.shortTermPriceList ?? "1 Day: $150\n1 Week: $800" };
             }));
           }
         }
@@ -1728,13 +1728,17 @@ export default function App() {
       ...fieldsCopy,
       id: `car-${Date.now()}`,
     };
-    setCars((prev) => [freshCar, ...prev]);
+    React.startTransition(() => {
+      setCars((prev) => [freshCar, ...prev]);
+    });
 
     if (supabase) {
       try {
         const dbCar = await db.cars.create(fieldsCopy);
         if (dbCar) {
-          setCars((prev) => prev.map(c => c.id === freshCar.id ? dbCar : c));
+          React.startTransition(() => {
+            setCars((prev) => prev.map(c => c.id === freshCar.id ? dbCar : c));
+          });
         }
       } catch (err: any) {
         console.error("Failed to add car to Supabase", err);
@@ -1747,9 +1751,11 @@ export default function App() {
   const handleUpdateCar = async (updatedCar: Car) => {
     const carCopy = { ...updatedCar };
     
-    setCars((prev) =>
-      prev.map((car) => (car.id === carCopy.id ? carCopy : car)),
-    );
+    React.startTransition(() => {
+      setCars((prev) =>
+        prev.map((car) => (car.id === carCopy.id ? carCopy : car)),
+      );
+    });
     if (supabase) {
       try {
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(carCopy.id);
@@ -1760,7 +1766,9 @@ export default function App() {
           const { id, ...carWithoutId } = carCopy;
           const dbCar = await db.cars.create(carWithoutId as any);
           if (dbCar) {
-            setCars((prev) => prev.map(c => c.id === carCopy.id ? dbCar : c));
+            React.startTransition(() => {
+              setCars((prev) => prev.map(c => c.id === carCopy.id ? dbCar : c));
+            });
           }
         }
       } catch (err: any) {
@@ -1772,7 +1780,9 @@ export default function App() {
 
   // Handle removing a vehicle catalog item
   const handleDeleteCar = async (carId: string) => {
-    setCars((prev) => prev.filter((car) => car.id !== carId));
+    React.startTransition(() => {
+      setCars((prev) => prev.filter((car) => car.id !== carId));
+    });
     if (supabase) {
       try {
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(carId);
