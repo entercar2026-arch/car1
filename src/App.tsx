@@ -1525,6 +1525,14 @@ export default function App() {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       if (url.searchParams.has('wishlist')) {
+        // Scroll to the catalog / category filter container
+        setTimeout(() => {
+          const element = document.getElementById("category-filter-container");
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 300);
+
         url.searchParams.delete('wishlist');
         window.history.replaceState({}, '', url);
       }
