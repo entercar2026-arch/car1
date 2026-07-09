@@ -2593,71 +2593,77 @@ export default function App() {
 
       {/* Main Public Body Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
-        {/* Home Anchor panel wrapper */}
-        <section id="home-panel" className="scroll-mt-24 select-none pb-2">
-          {/* Hero Welcome Banner */}
-          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-200 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs no-print">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
+        {!filters.likedOnly && (
+          <>
+            {/* Home Anchor panel wrapper */}
+            <section id="home-panel" className="scroll-mt-24 select-none pb-2">
+              {/* Hero Welcome Banner */}
+              <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-200 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs no-print">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
 
-            <div className="space-y-4 max-w-3xl flex flex-col items-center">
-              <span className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black bg-yellow-400 text-black border border-yellow-500/20 uppercase tracking-widest shadow-xs">
-                {t.deliveryBadge}
-              </span>
-              <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
-                {t.heroTitle}
-              </h1>
-              <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
-                {t.heroDesc}
-              </p>
+                <div className="space-y-4 max-w-3xl flex flex-col items-center">
+                  <span className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black bg-yellow-400 text-black border border-yellow-500/20 uppercase tracking-widest shadow-xs">
+                    {t.deliveryBadge}
+                  </span>
+                  <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
+                    {t.heroTitle}
+                  </h1>
+                  <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
+                    {t.heroDesc}
+                  </p>
 
-              <div className="pt-2 flex flex-col items-center gap-4 w-full">
-                {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
-                <div className="flex sm:flex-row flex-col items-stretch sm:items-center justify-center gap-3 mt-4 select-none w-full max-w-md">
-                  <button
-                    id="hero-btn-search-trigger"
-                    type="button"
-                    onClick={() => scrollToAnchor("search-filters-container")}
-                    className="flex-1 px-8 py-3.5 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
-                    style={{ backgroundColor: brandPlum }}
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>{t.findBtn}</span>
-                  </button>
+                  <div className="pt-2 flex flex-col items-center gap-4 w-full">
+                    {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
+                    <div className="flex sm:flex-row flex-col items-stretch sm:items-center justify-center gap-3 mt-4 select-none w-full max-w-md">
+                      <button
+                        id="hero-btn-search-trigger"
+                        type="button"
+                        onClick={() => scrollToAnchor("search-filters-container")}
+                        className="flex-1 px-8 py-3.5 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
+                        style={{ backgroundColor: brandPlum }}
+                      >
+                        <Search className="w-4 h-4" />
+                        <span>{t.findBtn}</span>
+                      </button>
 
-                  <button
-                    id="hero-btn-catalog"
-                    type="button"
-                    onClick={() => scrollToAnchor("category-filter-container")}
-                    className="flex-1 px-8 py-3.5 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
-                  >
-                    <span>{t.exploreCatalog}</span>
-                  </button>
+                      <button
+                        id="hero-btn-catalog"
+                        type="button"
+                        onClick={() => scrollToAnchor("category-filter-container")}
+                        className="flex-1 px-8 py-3.5 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
+                      >
+                        <span>{t.exploreCatalog}</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Contract Requirement Visual Highlight Board */}
-          <ContractRequirementSection t={t} cars={cars} lang={lang} likedCars={likedCars} />
-        </section>
+              {/* Contract Requirement Visual Highlight Board */}
+              <ContractRequirementSection t={t} cars={cars} lang={lang} likedCars={likedCars} />
+            </section>
+          </>
+        )}
 
         {/* Catalog Anchor Target */}
         <section id="catalog-section" className="scroll-mt-24">
-          {/* 3. Search parameters panel */}
-          <section
-            id="search-filters-container"
-            className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-4"
-          >
-            <div className="flex flex-col gap-4 select-none">
-              <div className="flex items-center justify-between">
-                <div 
-                  className="flex items-center justify-between pl-1 cursor-pointer group shrink-0"
-                  onClick={() => setIsFiltersOpen(prev => !prev)}
-                >
-                  <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2 group-hover:text-[#4C0027] transition-colors whitespace-nowrap">
-                    <SlidersHorizontal
-                      className="w-5 h-5 text-[#4C0027]"
+          {!filters.likedOnly && (
+            <>
+              {/* 3. Search parameters panel */}
+              <section
+                id="search-filters-container"
+                className="scroll-mt-24 bg-white rounded-3xl p-6 border border-stone-100 shadow-sm mb-8 space-y-4"
+              >
+                <div className="flex flex-col gap-4 select-none">
+                  <div className="flex items-center justify-between">
+                    <div 
+                      className="flex items-center justify-between pl-1 cursor-pointer group shrink-0"
+                      onClick={() => setIsFiltersOpen(prev => !prev)}
+                    >
+                      <h2 className="font-sans font-black text-stone-900 text-lg sm:text-xl tracking-tight flex items-center gap-2 group-hover:text-[#4C0027] transition-colors whitespace-nowrap">
+                        <SlidersHorizontal
+                          className="w-5 h-5 text-[#4C0027]"
                       style={{ color: brandPlum }}
                     />
                     {t.findYourCar}
@@ -3090,9 +3096,11 @@ export default function App() {
               })}
             </div>
           </section>
+          </>
+          )}
 
           {/* 5. Car catalog grid block */}
-          <div id="catalog-header" className="flex flex-col sm:flex-row sm:items-center justify-start gap-4 mb-4 px-2 scroll-mt-24">
+          <div id="catalog-header" className={`flex flex-col sm:flex-row sm:items-center justify-start gap-4 mb-4 px-2 scroll-mt-24 ${filters.likedOnly ? "pt-4 sm:pt-8" : ""}`}>
             <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider font-mono text-white/70 hidden sm:inline-block">
@@ -3101,13 +3109,13 @@ export default function App() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setSortBy(sortBy === "price-asc" ? "default" : "price-asc")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-asc" ? "bg-white text-stone-900 border-white shadow-sm" : "bg-white/10 border-white/20 text-stone-200 hover:bg-white/20 hover:text-white"}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-asc" ? "bg-[#6d0039] text-white border-white/40 shadow-sm" : "border-transparent text-white/50 hover:bg-white/10 hover:text-white/80"}`}
                   >
                     {t.lowestToHighest}
                   </button>
                   <button
                     onClick={() => setSortBy(sortBy === "price-desc" ? "default" : "price-desc")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-desc" ? "bg-white text-stone-900 border-white shadow-sm" : "bg-white/10 border-white/20 text-stone-200 hover:bg-white/20 hover:text-white"}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${sortBy === "price-desc" ? "bg-[#6d0039] text-white border-white/40 shadow-sm" : "border-transparent text-white/50 hover:bg-white/10 hover:text-white/80"}`}
                   >
                     {t.highestToLowest}
                   </button>
