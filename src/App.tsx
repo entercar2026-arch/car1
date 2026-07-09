@@ -53,6 +53,7 @@ import {
   ZoomOut,
   Download,
   FileDown,
+  Share2,
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -1413,15 +1414,38 @@ export default function App() {
 
   // Liked cars state
   const [likedCars, setLikedCars] = useState<string[]>(() => {
+    let savedLikedCars: string[] = [];
     const saved = safeStorage.getItem("enter_liked_cars");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        savedLikedCars = JSON.parse(saved);
       } catch (e) {
         console.error("Failed to parse saved liked cars", e);
       }
     }
-    return [];
+    
+    let urlWishlist: string[] = [];
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const wishlistParam = params.get('wishlist');
+      if (wishlistParam) {
+        urlWishlist = wishlistParam.split(',').filter(Boolean);
+      }
+    }
+
+    const mergedLikedCars = Array.from(new Set([...savedLikedCars, ...urlWishlist]));
+    if (urlWishlist.length > 0) {
+      safeStorage.setItem("enter_liked_cars", JSON.stringify(mergedLikedCars));
+      
+      // Clean up the URL to prevent it from getting stuck or long
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('wishlist');
+        window.history.replaceState({}, '', url);
+      }
+    }
+    
+    return mergedLikedCars;
   });
 
   // Track if clear favorites confirmation modal is open
@@ -1489,6 +1513,8 @@ export default function App() {
   const [filters, setFiltersRaw] = useState<CatalogFilters>(() => {
     const params = new URLSearchParams(window.location.search);
     const initialModel = params.get('model') || "";
+    const hasWishlistParam = !!params.get('wishlist');
+    
     return {
       searchTerm: initialModel,
       category: "All",
@@ -1497,7 +1523,7 @@ export default function App() {
       fuelType: "All",
       seats: "All",
       brand: "All",
-      likedOnly: false,
+      likedOnly: hasWishlistParam,
     };
   });
 
@@ -2981,29 +3007,51 @@ export default function App() {
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {/* Liked Filter Button */}
-              <button
-                id="filter-liked-cars"
-                onClick={() => {
-  // Helper to handle like filter selection
-                if (likedCars.length === 0) {
-                  setFilters((prev) => ({ ...prev, likedOnly: false, category: "All", searchTerm: "" }));
-                } else {
-                  setFilters((prev) => ({
-                    ...prev,
-                    likedOnly: !prev.likedOnly,
-                    searchTerm: "",
-                    ...(!prev.likedOnly ? { category: "All" } : {})
-                  }));
-                }
-              }}
-                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
-              >
-                <Heart className={`w-3.5 h-3.5 ${filters.likedOnly ? "fill-current" : ""}`} />
-                <span>{t.liked}</span>
-                <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${filters.likedOnly ? "bg-rose-200/50 text-rose-700" : "bg-stone-100 text-stone-400"}`}>
-                  {likedCars.length}
-                </span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  id="filter-liked-cars"
+                  onClick={() => {
+    // Helper to handle like filter selection
+                  if (likedCars.length === 0) {
+                    setFilters((prev) => ({ ...prev, likedOnly: false, category: "All", searchTerm: "" }));
+                  } else {
+                    setFilters((prev) => ({
+                      ...prev,
+                      likedOnly: !prev.likedOnly,
+                      searchTerm: "",
+                      ...(!prev.likedOnly ? { category: "All" } : {})
+                    }));
+                  }
+                }}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border ${filters.likedOnly ? "bg-rose-100/50 text-rose-600 border-rose-200 shadow-sm" : "bg-white border-stone-200 text-stone-500 hover:bg-stone-50"}`}
+                >
+                  <Heart className={`w-3.5 h-3.5 ${filters.likedOnly ? "fill-current" : ""}`} />
+                  <span>{t.liked}</span>
+                  <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${filters.likedOnly ? "bg-rose-200/50 text-rose-700" : "bg-stone-100 text-stone-400"}`}>
+                    {likedCars.length}
+                  </span>
+                </button>
+                
+                {/* Share Wishlist Button */}
+                {filters.likedOnly && likedCars.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('wishlist', likedCars.join(','));
+                        navigator.clipboard.writeText(url.toString());
+                        setBookingToast("Wishlist link copied to clipboard!");
+                        setTimeout(() => setBookingToast(null), 3000);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 shadow-sm"
+                    title="Share Wishlist"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>Share</span>
+                  </button>
+                )}
+              </div>
 
               <div className="w-[1px] h-6 bg-stone-200 mx-2 hidden sm:block"></div>
 
