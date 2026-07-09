@@ -2645,6 +2645,9 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                               <p className="text-xs text-emerald-700 mt-0.5">
                                 Your browser supports direct file sharing. Share to Telegram directly!
                               </p>
+                              <div className="mt-2 text-[10px] bg-emerald-100/50 text-emerald-800 p-2 rounded-lg font-medium">
+                                <strong>Important:</strong> We will copy the caption to your clipboard. If Telegram leaves the caption empty, just <strong>PASTE</strong> it!
+                              </div>
                             </div>
                             <button
                               onClick={async () => {
@@ -2652,7 +2655,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                                   const captionText = (document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement)?.value || "";
                                   // As a fallback for apps that drop text when sharing files, copy to clipboard
                                   navigator.clipboard.writeText(captionText);
-                                  if (onShowToast) onShowToast("Caption copied to clipboard just in case!");
+                                  if (onShowToast) onShowToast("Caption copied! Please paste it in Telegram if it's empty.");
                                   
                                   await navigator.share({
                                     files: telegramPreparedFiles,
@@ -2674,7 +2677,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                         {/* Step 1 */}
                         <div className="space-y-2">
                           <label className="text-xs font-extrabold text-stone-700 uppercase tracking-wider flex items-center justify-between">
-                            <span>1. Copy Caption Text</span>
+                            <span>1. Caption Text (Auto-Copied)</span>
                             {hasCopiedCaption && (
                               <span className="text-emerald-600 normal-case flex items-center gap-1">
                                 <Check className="w-3 h-3" /> Copied!
@@ -2694,6 +2697,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                                   navigator.clipboard.writeText(ta.value);
                                   setHasCopiedCaption(true);
                                   setTimeout(() => setHasCopiedCaption(false), 2000);
+                                  if (onShowToast) onShowToast("Caption copied to clipboard!");
                                 }
                               }}
                               className="absolute bottom-2.5 right-2.5 px-3 py-1.5 bg-[#0088cc] hover:bg-[#0088cc]/90 text-white rounded-lg text-[10px] font-bold transition-colors cursor-pointer flex items-center gap-1"
@@ -2725,7 +2729,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                             3. Upload & Share on Telegram
                           </label>
                           <div className="bg-stone-50 rounded-xl p-3 border border-stone-200/60 text-[11px] text-stone-600 font-medium leading-relaxed">
-                            Open Telegram, select multiple downloaded photos/video, and drag them into the chat. Paste the copied caption into the message field to group them as a single gorgeous album!
+                            Open Telegram, select multiple downloaded photos/video, and drag them into the chat. <strong className="text-stone-900">We automatically copied the description to your clipboard. Just PASTE it into the "Add a caption..." field to group them as a single album!</strong>
                           </div>
                           <a
                             href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent((document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement)?.value || `Check out this ${car.name}!`)}`}
