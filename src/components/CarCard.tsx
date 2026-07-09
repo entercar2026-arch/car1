@@ -40,6 +40,9 @@ import {
   Scan,
   ChevronLeft,
   ChevronRight,
+  Copy,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 
 const getOptimizedImageUrl = (
@@ -538,6 +541,109 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   // Reviews flow states
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
   const [isPhotosOpenLocal, setIsPhotosOpenLocal] = useState(false);
+
+  // Telegram Share Modal states
+  const [isTelegramModalOpen, setIsTelegramModalOpen] = useState(false);
+  const [isTelegramPreparing, setIsTelegramPreparing] = useState(false);
+  const [telegramPreparedFiles, setTelegramPreparedFiles] = useState<File[]>([]);
+  const [telegramShareStatus, setTelegramShareStatus] = useState<string>("");
+  const [hasCopiedCaption, setHasCopiedCaption] = useState(false);
+
+  // Computed formatted description
+  const formattedDesc = useMemo(() => {
+    const cleanDescription = (car.description || "A great car for you.").trim();
+    return cleanDescription.endsWith(".") ? cleanDescription : `${cleanDescription}.`;
+  }, [car.description]);
+
+  const prepareTelegramMedia = React.useCallback(async () => {
+    setIsTelegramPreparing(true);
+    setTelegramShareStatus("Extracting images and videos...");
+    setTelegramPreparedFiles([]);
+
+    const files: File[] = [];
+
+    // Helper to turn URL/base64 into File
+    const addFileFromUrl = async (url: string, prefix: string, index: number) => {
+      if (!url) return;
+      try {
+        if (url.startsWith("data:")) {
+          // Parse base64
+          const parts = url.split(',');
+          const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+          const bstr = atob(parts[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const extension = mime.split('/')[1] || 'jpg';
+          const filename = `${car.name.replace(/\s+/g, "_")}_${prefix}_${index}.${extension}`;
+          files.push(new File([u8arr], filename, { type: mime }));
+        } else {
+          // It's a remote URL. Let's fetch it as a blob
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const mime = blob.type || 'image/jpeg';
+          const extension = mime.split('/')[1] || 'jpg';
+          const filename = `${car.name.replace(/\s+/g, "_")}_${prefix}_${index}.${extension}`;
+          files.push(new File([blob], filename, { type: mime }));
+        }
+      } catch (err) {
+        console.error("Failed to prepare file:", url, err);
+      }
+    };
+
+    // 1. Primary image
+    if (car.image) {
+      await addFileFromUrl(car.image, "photo", 1);
+    }
+
+    // 2. Extra Photos
+    if (car.photos && Array.isArray(car.photos)) {
+      // Limit to max 9 additional photos to not hit sharing size limits
+      const photosToPrepare = car.photos.slice(0, 9);
+      for (let i = 0; i < photosToPrepare.length; i++) {
+        setTelegramShareStatus(`Extracting photo ${i + 2} of ${photosToPrepare.length + 1}...`);
+        await addFileFromUrl(photosToPrepare[i], "photo", i + 2);
+      }
+    }
+
+    // 3. Video
+    if (effectiveVideoUrl) {
+      setTelegramShareStatus("Extracting video...");
+      await addFileFromUrl(effectiveVideoUrl, "video", 1);
+    }
+
+    setTelegramPreparedFiles(files);
+    setIsTelegramPreparing(false);
+    setTelegramShareStatus("");
+  }, [car, effectiveVideoUrl]);
+
+  const handleDownloadAllMedia = React.useCallback(() => {
+    if (telegramPreparedFiles.length === 0) {
+      if (onShowToast) {
+        onShowToast("No media files prepared yet.");
+      } else {
+        alert("No media files prepared yet.");
+      }
+      return;
+    }
+    telegramPreparedFiles.forEach((file, index) => {
+      setTimeout(() => {
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, index * 400); // Stagger downloads to prevent browser blocking multiple downloads
+    });
+    if (onShowToast) {
+      onShowToast(`Downloading ${telegramPreparedFiles.length} media files...`);
+    }
+  }, [telegramPreparedFiles, onShowToast]);
   
   // Use local state if no external handler is provided
   const isPhotosOpen = isPhotosOpenLocal;
@@ -1223,18 +1329,20 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     >
                       <Share2 className="w-3.5 h-3.5 text-current" />
                     </button>
-                    <a
-                      href={telegramShareLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
+                     <button
+                      id={`share-telegram-${car.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsTelegramModalOpen(true);
+                        prepareTelegramMedia();
+                      }}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-[#0088cc]/5 hover:bg-[#0088cc]/10 transition-colors border border-[#0088cc]/20 cursor-pointer shadow-xs text-[#0088cc]"
                       title="Share on Telegram"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/>
                       </svg>
-                    </a>
+                    </button>
                     <a
                       href={whatsAppShareLink}
                       target="_blank"
@@ -2420,6 +2528,210 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                   </div>
                 )}
               </div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Telegram Share Modal */}
+      {createPortal(
+        <AnimatePresence>
+          {isTelegramModalOpen && (
+            <div
+              id={`telegram-share-modal-${car.id}`}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+              onClick={() => {
+                setIsTelegramModalOpen(false);
+                setHasCopiedCaption(false);
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="bg-white rounded-[2rem] w-full max-w-lg overflow-hidden shadow-2xl border border-stone-100 flex flex-col max-h-[90vh]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-full bg-[#0088cc]/10 flex items-center justify-center text-[#0088cc]">
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-sans font-black text-lg text-stone-900 tracking-tight leading-none">
+                        Share Album on Telegram
+                      </h3>
+                      <p className="text-xs text-stone-500 font-medium mt-1">
+                        Send photos & videos as a beautiful grouped album
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsTelegramModalOpen(false);
+                      setHasCopiedCaption(false);
+                    }}
+                    className="w-8 h-8 flex items-center justify-center bg-stone-100 text-stone-600 rounded-full hover:bg-stone-200 hover:text-stone-900 transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 overflow-y-auto space-y-5">
+                  {/* Preparation status */}
+                  {isTelegramPreparing ? (
+                    <div className="bg-stone-50 rounded-2xl p-6 border border-stone-100 flex flex-col items-center justify-center py-10 space-y-4">
+                      <Loader2 className="w-8 h-8 text-[#0088cc] animate-spin" />
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-stone-800 animate-pulse">
+                          {telegramShareStatus}
+                        </p>
+                        <p className="text-xs text-stone-500 mt-1">
+                          Gathering vehicle media assets...
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Media Files Overview */}
+                      <div className="bg-stone-50 rounded-2xl p-4 border border-stone-100">
+                        <h4 className="text-xs font-extrabold text-stone-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                          <Images className="w-3.5 h-3.5 text-[#0088cc]" />
+                          Prepared Media Album ({telegramPreparedFiles.length} items)
+                        </h4>
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                          {telegramPreparedFiles.map((file, idx) => {
+                            const isVideo = file.type.startsWith("video/");
+                            const fileUrl = URL.createObjectURL(file);
+                            return (
+                              <div key={idx} className="relative w-16 h-16 rounded-xl border border-stone-200 bg-stone-900 flex-shrink-0 overflow-hidden group">
+                                {isVideo ? (
+                                  <div className="w-full h-full flex items-center justify-center bg-stone-800">
+                                    <Play className="w-5 h-5 text-white fill-current" />
+                                  </div>
+                                ) : (
+                                  <img src={fileUrl} className="w-full h-full object-cover" />
+                                )}
+                                <span className="absolute bottom-1 right-1 bg-black/70 text-[8px] font-black text-white px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                                  {isVideo ? "Video" : `Photo ${idx + 1}`}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Step-by-Step Guide */}
+                      <div className="space-y-4">
+                        {/* Native Share option if supported */}
+                        {navigator.share && navigator.canShare && navigator.canShare({ files: telegramPreparedFiles }) && (
+                          <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center text-center space-y-3">
+                            <div className="text-center">
+                              <h5 className="text-sm font-bold text-emerald-900">⚡ Direct Mobile Sharing Available!</h5>
+                              <p className="text-xs text-emerald-700 mt-0.5">
+                                Your browser supports direct file sharing. Share to Telegram directly!
+                              </p>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const captionText = (document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement)?.value || "";
+                                  await navigator.share({
+                                    files: telegramPreparedFiles,
+                                    title: car.name,
+                                    text: captionText,
+                                  });
+                                } catch (err) {
+                                  console.error("Direct share failed, falling back", err);
+                                }
+                              }}
+                              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                            >
+                              <Send className="w-4 h-4 fill-current" />
+                              Send Album to Telegram Chat
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Step 1 */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-extrabold text-stone-700 uppercase tracking-wider flex items-center justify-between">
+                            <span>1. Copy Caption Text</span>
+                            {hasCopiedCaption && (
+                              <span className="text-emerald-600 normal-case flex items-center gap-1">
+                                <Check className="w-3 h-3" /> Copied!
+                              </span>
+                            )}
+                          </label>
+                          <div className="relative">
+                            <textarea
+                              id={`telegram-caption-${car.id}`}
+                              className="w-full h-24 p-3 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#0088cc] focus:border-[#0088cc] font-medium resize-none text-stone-800"
+                              defaultValue={`Check out this ${car.name}!\nPrice: $${car.price.toLocaleString()} / month\nDescription: ${formattedDesc}`}
+                            />
+                            <button
+                              onClick={() => {
+                                const ta = document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement;
+                                if (ta) {
+                                  navigator.clipboard.writeText(ta.value);
+                                  setHasCopiedCaption(true);
+                                  setTimeout(() => setHasCopiedCaption(false), 2000);
+                                }
+                              }}
+                              className="absolute bottom-2.5 right-2.5 px-3 py-1.5 bg-[#0088cc] hover:bg-[#0088cc]/90 text-white rounded-lg text-[10px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-extrabold text-stone-700 uppercase tracking-wider block">
+                            2. Download Album Media
+                          </label>
+                          <button
+                            onClick={handleDownloadAllMedia}
+                            className="w-full py-3 bg-[#4C0027] hover:bg-[#4C0027]/90 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg cursor-pointer"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                            Download All Photos & Video ({telegramPreparedFiles.length} files)
+                          </button>
+                        </div>
+
+                        {/* Step 3 */}
+                        <div className="space-y-2 pt-1">
+                          <label className="text-xs font-extrabold text-stone-700 uppercase tracking-wider block">
+                            3. Upload & Share on Telegram
+                          </label>
+                          <div className="bg-stone-50 rounded-xl p-3 border border-stone-200/60 text-[11px] text-stone-600 font-medium leading-relaxed">
+                            Open Telegram, select multiple downloaded photos/video, and drag them into the chat. Paste the copied caption into the message field to group them as a single gorgeous album!
+                          </div>
+                          <a
+                            href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent((document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement)?.value || `Check out this ${car.name}!`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-3 bg-[#0088cc] hover:bg-[#0088cc]/90 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg cursor-pointer"
+                          >
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/>
+                            </svg>
+                            Open Telegram and Select Chat
+                          </a>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </motion.div>
             </div>
           )}
         </AnimatePresence>,
