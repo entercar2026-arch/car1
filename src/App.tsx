@@ -1436,13 +1436,6 @@ export default function App() {
     const mergedLikedCars = Array.from(new Set([...savedLikedCars, ...urlWishlist]));
     if (urlWishlist.length > 0) {
       safeStorage.setItem("enter_liked_cars", JSON.stringify(mergedLikedCars));
-      
-      // Clean up the URL to prevent it from getting stuck or long
-      if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('wishlist');
-        window.history.replaceState({}, '', url);
-      }
     }
     
     return mergedLikedCars;
@@ -1526,6 +1519,17 @@ export default function App() {
       likedOnly: hasWishlistParam,
     };
   });
+
+  // Clean up the URL to prevent wishlist from getting stuck in URL
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('wishlist')) {
+        url.searchParams.delete('wishlist');
+        window.history.replaceState({}, '', url);
+      }
+    }
+  }, []);
 
   const setFilters = React.useCallback((action: any) => {
     setFiltersRaw(action);
