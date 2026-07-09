@@ -628,6 +628,14 @@ const CarCardComponent: React.FC<CarCardProps> = ({
       }
       return;
     }
+
+    const ta = document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement;
+    if (ta) {
+      navigator.clipboard.writeText(ta.value);
+      setHasCopiedCaption(true);
+      setTimeout(() => setHasCopiedCaption(false), 2000);
+    }
+
     telegramPreparedFiles.forEach((file, index) => {
       setTimeout(() => {
         const url = URL.createObjectURL(file);
@@ -641,9 +649,9 @@ const CarCardComponent: React.FC<CarCardProps> = ({
       }, index * 400); // Stagger downloads to prevent browser blocking multiple downloads
     });
     if (onShowToast) {
-      onShowToast(`Downloading ${telegramPreparedFiles.length} media files...`);
+      onShowToast(`Copied caption to clipboard & downloading ${telegramPreparedFiles.length} media files...`);
     }
-  }, [telegramPreparedFiles, onShowToast]);
+  }, [telegramPreparedFiles, onShowToast, car.id]);
   
   // Use local state if no external handler is provided
   const isPhotosOpen = isPhotosOpenLocal;
@@ -2642,6 +2650,10 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                               onClick={async () => {
                                 try {
                                   const captionText = (document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement)?.value || "";
+                                  // As a fallback for apps that drop text when sharing files, copy to clipboard
+                                  navigator.clipboard.writeText(captionText);
+                                  if (onShowToast) onShowToast("Caption copied to clipboard just in case!");
+                                  
                                   await navigator.share({
                                     files: telegramPreparedFiles,
                                     title: car.name,
@@ -2719,6 +2731,15 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                             href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent((document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement)?.value || `Check out this ${car.name}!`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => {
+                              const ta = document.getElementById(`telegram-caption-${car.id}`) as HTMLTextAreaElement;
+                              if (ta) {
+                                navigator.clipboard.writeText(ta.value);
+                                setHasCopiedCaption(true);
+                                setTimeout(() => setHasCopiedCaption(false), 2000);
+                                if (onShowToast) onShowToast("Caption copied to clipboard!");
+                              }
+                            }}
                             className="w-full py-3 bg-[#0088cc] hover:bg-[#0088cc]/90 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg cursor-pointer"
                           >
                             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
