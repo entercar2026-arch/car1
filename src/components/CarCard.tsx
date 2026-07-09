@@ -2059,7 +2059,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                             {car.shortTermPricing.map((item, index) => (
                               <tr key={index} className="border-b border-stone-100 last:border-b-0">
                                 <td className="px-3 py-2 text-xs font-medium text-stone-900 border-r border-stone-200">{item.days}</td>
-                                <td className="px-3 py-2 text-xs font-mono text-stone-700 border-r border-stone-200">{item.price}</td>
+                                <td className="px-3 py-2 text-xs font-mono text-red-600 font-semibold border-r border-stone-200">{item.price}</td>
                                 <td className="px-3 py-2 text-xs font-mono text-amber-700 font-semibold">{item.deposit}</td>
                               </tr>
                             ))}
