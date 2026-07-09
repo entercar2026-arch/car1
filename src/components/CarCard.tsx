@@ -1456,9 +1456,9 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                         onClick={() => {
                           startTransition(() => setIsShortTermModalOpen(true));
                         }}
-                        className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-stone-800 bg-stone-100 rounded-xl shadow-xs hover:shadow-md hover:bg-stone-200 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer border border-stone-200"
+                        className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-black text-black bg-yellow-400 rounded-xl shadow-xs hover:shadow-md hover:bg-yellow-500 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer border border-yellow-500"
                       >
-                        Short Term Rent
+                        Short Term
                       </button>
                     )}
                     <button
