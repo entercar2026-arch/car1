@@ -1131,7 +1131,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
           stiffness: 300,
           damping: 20
         }}
-        className="relative w-full h-[515px] group"
+        className="relative w-full h-[430px] group"
         style={{ perspective: 1200 }}
       >
         <motion.div
@@ -1368,11 +1368,11 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
             {/* Narrative & Info */}
             <div
               id={`car-body-${car.id}`}
-              className="p-4 flex-1 flex flex-col justify-between pt-2"
+              className="p-3 flex-1 flex flex-col justify-between pt-1.5"
             >
               <div>
-                <div className="flex justify-between items-center mb-2 w-full min-h-[28px] gap-2 relative">
-                  <div className="flex items-center gap-0.5 overflow-x-auto hide-scrollbar flex-nowrap flex-1 min-w-0 pb-1 pt-1">
+                <div className="flex justify-between items-center mb-1 w-full min-h-[24px] gap-1.5 relative">
+                  <div className="flex items-center gap-0.5 overflow-x-auto hide-scrollbar flex-nowrap flex-1 min-w-0 pb-0.5 pt-0.5">
                     {(allPhotos.length > 1 || hasVideo) && allPhotos.slice(0, 11).map((itemUrl, idx) => {
                       const isActive = idx === currentPhotoIndex;
                       const isItemVideo = (idx === 0 && !!effectiveVideoUrl) || isVideoUrl(itemUrl);
@@ -1391,7 +1391,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                                 setIsPlaying(true);
                               }
                             }}
-                            className={`w-6 h-6 shrink-0 mr-0.5 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-sm hover:scale-105 ${
+                            className={`w-5 h-5 shrink-0 mr-0.5 rounded-full flex items-center justify-center transition-all cursor-pointer border shadow-xs hover:scale-105 ${
                               isActive
                                 ? "bg-stone-900 text-white border-stone-900 ring-2 ring-stone-900/20"
                                 : "bg-white text-stone-900 border-stone-200"
@@ -1399,11 +1399,11 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                             title={isActive && isPlaying ? "Pause Video" : "Play Video"}
                           >
                             {isActive && isPlaying ? (
-                              <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current">
+                              <svg viewBox="0 0 24 24" className="w-2 h-2 fill-current">
                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                               </svg>
                             ) : (
-                              <Play className="w-2.5 h-2.5 fill-current text-current ml-[1px]" />
+                              <Play className="w-2 h-2 fill-current text-current ml-[1px]" />
                             )}
                           </button>
                         );
@@ -1417,17 +1417,17 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                             startTransition(() => setCurrentPhotoIndex(idx));
                             setIsPlaying(false);
                           }}
-                          className="w-3.5 h-3.5 shrink-0 flex items-center justify-center cursor-pointer group"
+                          className="w-3 h-3 shrink-0 flex items-center justify-center cursor-pointer group"
                           title={`Go to photo ${idx + 1}`}
                         >
                           <div className={`rounded-full transition-all ${
-                            isActive ? "w-3 h-3 bg-stone-800 scale-110 shadow-sm" : "w-2.5 h-2.5 bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
+                            isActive ? "w-2.5 h-2.5 bg-stone-800 scale-110 shadow-xs" : "w-2 h-2 bg-stone-300 group-hover:bg-stone-400 group-hover:scale-110"
                           }`} />
                         </button>
                       );
                     })}
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                  <div className="flex items-center gap-1 shrink-0 ml-auto">
                     {initialCar.variants && initialCar.variants.length > 1 && (
                       <div className="relative">
                         {isColorDropdownOpen && (
@@ -1446,10 +1446,10 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                             setIsColorDropdownOpen(!isColorDropdownOpen);
                           }}
                           title="Select color"
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027] hover:scale-110 active:scale-95 relative z-50"
+                          className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027] hover:scale-110 active:scale-95 relative z-50"
                         >
                           <span 
-                            className="w-4 h-4 rounded-full border border-stone-300 shadow-xs transition-transform" 
+                            className="w-3.5 h-3.5 rounded-full border border-stone-300 shadow-xs transition-transform" 
                             style={{ backgroundColor: getCarColorInfo(car).hex }}
                           />
                         </button>
@@ -1461,7 +1461,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: -8 }}
                               transition={{ duration: 0.15 }}
-                              className="absolute right-0 mt-1.5 min-w-[130px] bg-white rounded-xl shadow-xl border border-stone-100/80 p-1.5 z-50 flex flex-col gap-1"
+                              className="absolute right-0 mt-1 min-w-[130px] bg-white rounded-xl shadow-xl border border-stone-100/80 p-1.5 z-50 flex flex-col gap-1"
                             >
                               {initialCar.variants.map((v) => {
                                 const vColor = getCarColorInfo(v);
@@ -1477,14 +1477,14 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                                       setIsPlaying(false);
                                       setIsColorDropdownOpen(false);
                                     }}
-                                    className={`flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-left text-xs font-medium transition-colors cursor-pointer ${
+                                    className={`flex items-center gap-2 w-full px-2 py-1 rounded-lg text-left text-xs font-medium transition-colors cursor-pointer ${
                                       isCurrent 
                                         ? "bg-stone-50 text-[#4C0027] font-semibold" 
                                         : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
                                     }`}
                                   >
                                     <span 
-                                      className="w-3.5 h-3.5 rounded-full border border-stone-300/80 shrink-0"
+                                      className="w-3 h-3 rounded-full border border-stone-300/80 shrink-0"
                                       style={{ backgroundColor: vColor.hex }}
                                     />
                                     <span className="truncate">{vColor.name}</span>
@@ -1506,9 +1506,9 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                         }
                       }}
                       title={t.viewPhotos || "View Photos"}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
                     >
-                      <Scan className="w-4 h-4 text-current" />
+                      <Scan className="w-3.5 h-3.5 text-current" />
                     </button>
                     <button
                       onClick={(e) => {
@@ -1516,10 +1516,10 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                         onToggleLike && onToggleLike(car.id);
                       }}
                       title={(t as any).liked || "Wishlist"}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600"
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600"
                     >
                       <Heart
-                        className={`w-4 h-4 transition-colors ${
+                        className={`w-3.5 h-3.5 transition-colors ${
                           isLiked
                             ? "fill-rose-500 text-rose-500"
                             : "text-stone-500 hover:text-rose-500"
@@ -1548,19 +1548,19 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                           }
                         }
                       }}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-colors border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027]"
                       title="Share"
                     >
-                      <Share2 className="w-3.5 h-3.5 text-current" />
+                      <Share2 className="w-3 h-3 text-current" />
                     </button>
                   </div>
                 </div>
-                <div className="mb-1 w-full">
+                <div className="mb-0.5 w-full">
                   <h3
                     id={`car-title-${car.id}`}
-                    className="font-sans font-extrabold text-stone-900 text-lg tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate"
+                    className="font-sans font-extrabold text-stone-900 text-base tracking-tight hover:text-[#4C0027] transition-colors leading-snug flex items-center gap-1.5 truncate"
                   >
-                    <BrandIcon brand={car.name} className="w-5 h-5 fill-current shrink-0" />
+                    <BrandIcon brand={car.name} className="w-4 h-4 fill-current shrink-0" />
                     {(() => {
                       const { brand, model } = splitCarName(car.name);
                       const brandColor = getBrandColor(brand);
@@ -1573,63 +1573,61 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     })()}
                   </h3>
                 </div>
-                  <div className="mb-2">
-                    {car.description && (
-                      <p className="text-xs text-stone-500 mb-1 line-clamp-2" title={car.description}>
-                        {car.description}
-                      </p>
-                    )}
+                {car.description && (
+                  <div className="mb-1">
+                    <p className="text-[11px] text-stone-500 line-clamp-1 leading-normal" title={car.description}>
+                      {car.description}
+                    </p>
                   </div>
+                )}
 
-
-
-                  {/* Highlights Info Grid (Technical) */}
+                {/* Highlights Info Grid (Technical) */}
                 <div
                   id={`car-specs-${car.id}`}
-                  className="grid grid-cols-4 gap-1 py-2 border-y border-stone-200 mb-2 bg-stone-100/50 rounded-xl px-1"
+                  className="grid grid-cols-4 gap-0.5 py-1 border-y border-stone-200/60 mb-1.5 bg-stone-100/50 rounded-lg px-0.5"
                 >
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
-                    <CarIcon className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                  <div className="flex flex-col items-center justify-center p-0.5 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-md transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('category', car.category); }}>
+                    <CarIcon className="w-3.5 h-3.5 text-stone-700 mb-0.5" />
+                    <span className="text-[9px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.category === 'Sedan' ? t.sedan : car.category === 'SUV' ? t.suv : car.category === 'MPV' ? t.mpv : car.category === 'Pickup' ? t.pickup : car.category === 'Truck' ? t.truck : car.category}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('seats', car.seats); }}>
-                    <Users className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[10px] font-mono text-stone-900 font-extrabold">
+                  <div className="flex flex-col items-center justify-center p-0.5 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-md transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('seats', car.seats); }}>
+                    <Users className="w-3.5 h-3.5 text-stone-700 mb-0.5" />
+                    <span className="text-[9px] font-mono text-stone-900 font-extrabold">
                        {t.formatSeats(car.seats.toString())}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('transmission', car.transmission); }}>
-                    <Settings2 className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[10px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
+                  <div className="flex flex-col items-center justify-center p-0.5 border-r border-stone-200 cursor-pointer hover:bg-stone-200/50 rounded-md transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('transmission', car.transmission); }}>
+                    <Settings2 className="w-3.5 h-3.5 text-stone-700 mb-0.5" />
+                    <span className="text-[9px] font-mono text-stone-900 font-extrabold truncate max-w-full text-center">
                       {car.transmission === 'Automatic' ? t.automatic : car.transmission === 'Manual' ? t.manual : car.transmission}
                     </span>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center p-1 cursor-pointer hover:bg-stone-200/50 rounded-lg transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('fuelType', car.fuelType); }}>
-                    <Fuel className="w-4 h-4 text-stone-700 mb-1" />
-                    <span className="text-[9px] sm:text-[10px] font-mono text-stone-900 font-extrabold text-center leading-[1.1]">
+                  <div className="flex flex-col items-center justify-center p-0.5 cursor-pointer hover:bg-stone-200/50 rounded-md transition-colors" onClick={(e) => { e.stopPropagation(); onFilterSelect?.('fuelType', car.fuelType); }}>
+                    <Fuel className="w-3.5 h-3.5 text-stone-700 mb-0.5" />
+                    <span className="text-[9px] font-mono text-stone-900 font-extrabold text-center leading-[1.1]">
                       {car.fuelType === 'Gasoline' ? t.gasoline : car.fuelType === 'Electric' ? t.electric : car.fuelType === 'Hybrid' ? t.hybrid : car.fuelType === 'Diesel' ? t.diesel : car.fuelType === 'Gasoline + LPG' ? `${t.gasoline} + LPG` : car.fuelType}
                     </span>
                   </div>
                 </div>
 
                 {/* Additional Technical Specifications Grid */}
-                <div className="grid grid-cols-3 gap-1 mb-2">
-                  <div className="bg-stone-50 border border-stone-100 p-1.5 rounded-lg flex flex-col items-center justify-center">
+                <div className="grid grid-cols-3 gap-1 mb-1.5">
+                  <div className="bg-stone-50 border border-stone-100 p-1 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.engine}</span>
-                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.engine}</span>
+                    <span className="text-[10px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.engine}</span>
                   </div>
-                  <div className="bg-stone-50 border border-stone-100 p-1.5 rounded-lg flex flex-col items-center justify-center">
+                  <div className="bg-stone-50 border border-stone-100 p-1 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">{t.horsepower}</span>
-                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.power}</span>
+                    <span className="text-[10px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.power}</span>
                   </div>
-                  <div className="bg-stone-50 border border-stone-100 p-1.5 rounded-lg flex flex-col items-center justify-center">
+                  <div className="bg-stone-50 border border-stone-100 p-1 rounded-lg flex flex-col items-center justify-center">
                     <span className="text-[9px] text-stone-500 uppercase font-mono font-bold tracking-wider">0-100 km/h</span>
-                    <span className="text-[11px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.accel}</span>
+                    <span className="text-[10px] leading-tight font-black text-stone-800 text-center w-full break-words">{specsDetails.accel}</span>
                   </div>
                 </div>
               </div>
@@ -1637,7 +1635,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
               {/* Booking or Editing CTA Foot */}
               <div
                 id={`car-footer-${car.id}`}
-                className="flex items-center justify-between mt-2 pt-2 gap-2"
+                className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-stone-100/50 gap-2"
               >
                 <div className="flex flex-col">
                   <div className="flex items-baseline gap-0.5 mt-1">

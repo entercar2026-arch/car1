@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, X, Play } from "lucide-react";
 import { Car } from "../types";
 import { translations } from "../translations";
+import { getCarColorInfo } from "./CarCard";
 
 type LightboxEvent = {
   cars: Car[];
@@ -59,6 +60,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
   const [carIndex, setCarIndex] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const [activeVariantId, setActiveVariantId] = useState<string | null>(null);
 
   const t = translations[lang];
 
@@ -81,6 +83,16 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
   }, []);
 
   const car = cars[carIndex];
+
+  useEffect(() => {
+    if (car) {
+      setActiveVariantId(car.id);
+    } else {
+      setActiveVariantId(null);
+    }
+  }, [carIndex, car?.id]);
+
+  const activeCar = car?.variants?.find(v => v.id === activeVariantId) || car;
   
   const getCarPhotos = (c: Car | undefined) => {
     if (!c) return [];
@@ -93,7 +105,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
     return list;
   };
   
-  const allPhotos = getCarPhotos(car);
+  const allPhotos = getCarPhotos(activeCar);
   const hasPrevCar = carIndex > 0;
   const hasNextCar = carIndex < cars.length - 1;
 
@@ -153,10 +165,10 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, photoIndex, carIndex, allPhotos.length, cars.length]);
 
-  if (!isOpen || !car) return null;
+  if (!isOpen || !car || !activeCar) return null;
 
   const currentMediaUrl = allPhotos[photoIndex];
-  const isVideo = currentMediaUrl === car.videoUrl || isVideoUrl(currentMediaUrl);
+  const isVideo = currentMediaUrl === activeCar.videoUrl || isVideoUrl(currentMediaUrl);
   const ytId = getYoutubeId(currentMediaUrl);
   const driveId = getGoogleDriveId(currentMediaUrl);
 
@@ -168,8 +180,50 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
       >
         <div className="w-full max-w-7xl flex items-center justify-between px-4 pt-2 mb-2 z-10" onClick={(e) => e.stopPropagation()}>
           <div className="flex flex-col">
-            <span className="text-white font-sans font-bold text-lg">{car.name}</span>
-            <span className="text-red-500 font-sans font-bold text-xl">${car.price.toLocaleString()}/mo</span>
+            <span className="text-white font-sans font-bold text-lg">{activeCar.name}</span>
+            <div className="flex items-center gap-4">
+              <span className="text-red-500 font-sans font-bold text-xl">${activeCar.price.toLocaleString()}/mo</span>
+              {car.variants && car.variants.length > 1 && (
+                <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
+                  <span className="text-[10px] font-bold text-stone-300 tracking-wider uppercase">
+                    {lang === "en" ? "Color:" : "ពណ៌:"}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {car.variants.map((v) => {
+                      const vColor = getCarColorInfo(v);
+                      const isCurrent = v.id === activeVariantId;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveVariantId(v.id);
+                            setPhotoIndex(0); // Reset carousel to first image when changing color
+                          }}
+                          className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-125 active:scale-95 cursor-pointer ${
+                            isCurrent 
+                              ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-black" 
+                              : "border border-white/30 hover:border-white/60"
+                          }`}
+                          style={{ backgroundColor: vColor.hex }}
+                          title={vColor.name}
+                        >
+                          {isCurrent && (
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              vColor.hex === '#FFFFFF' ? 'bg-[#4C0027]' : 'bg-white'
+                            }`} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className="text-xs font-semibold text-stone-200 ml-1">
+                    {getCarColorInfo(activeCar).name}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {hasPrevCar && (
@@ -206,7 +260,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
         <div className="relative w-full max-w-7xl flex-1 flex items-center justify-center my-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${car.id}-${photoIndex}`}
+              key={`${activeCar.id}-${photoIndex}`}
               initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
@@ -238,7 +292,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
               ) : (
                 <img
                   src={currentMediaUrl}
-                  alt={`${car.name} view ${photoIndex + 1}`}
+                  alt={`${activeCar.name} view ${photoIndex + 1}`}
                   className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
                   draggable={false}
                 />
@@ -267,7 +321,7 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
 
         <div className="w-full max-w-5xl overflow-x-auto pb-2 custom-scrollbar flex items-center gap-3 px-4 z-10" onClick={(e) => e.stopPropagation()}>
           {allPhotos.map((photoUrl, idx) => {
-            const isThumbVideo = photoUrl === car.videoUrl || isVideoUrl(photoUrl);
+            const isThumbVideo = photoUrl === activeCar.videoUrl || isVideoUrl(photoUrl);
             const isThumbActive = idx === photoIndex;
             const thumbYtId = getYoutubeId(photoUrl);
             const thumbDriveId = getGoogleDriveId(photoUrl);
@@ -292,8 +346,8 @@ export const CatalogLightbox = ({ lang }: { lang: "en" | "kh" }) => {
                   <>
                     {thumbDriveId ? (
                       <img src={`https://drive.google.com/thumbnail?id=${thumbDriveId}&sz=w400`} alt="Drive Video Thumbnail" className="w-full h-full object-cover opacity-70" draggable={false} />
-                    ) : car.thumbnail ? (
-                      <img src={car.thumbnail} alt="Video Thumbnail" className="w-full h-full object-cover opacity-70" draggable={false} />
+                    ) : activeCar.thumbnail ? (
+                      <img src={activeCar.thumbnail} alt="Video Thumbnail" className="w-full h-full object-cover opacity-70" draggable={false} />
                     ) : (
                       <div className="flex flex-col items-center justify-center w-full h-full bg-stone-800 gap-1">
                       </div>
