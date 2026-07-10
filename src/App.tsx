@@ -2169,6 +2169,10 @@ export default function App() {
     return groupCarsByName(results, splitCarNames);
   }, [cars, deferredFilters, likedCars, deferredSortBy, splitCarNames]);
 
+  const totalGroupedCarsCount = useMemo(() => {
+    return groupCarsByName(cars, splitCarNames).length;
+  }, [cars, splitCarNames]);
+
   const totalPages = Math.max(1, Math.ceil(filteredCars.length / 12));
 
   const deferredCurrentPage = React.useDeferredValue(currentPage);
@@ -3189,15 +3193,15 @@ export default function App() {
               <div className="text-xs sm:text-sm font-medium text-stone-500 bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-xs">
                 {lang === "en" ? (
                   <>
-                    Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> of <span className="font-bold text-stone-800">{cars.length}</span> vehicles
+                    Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> of <span className="font-bold text-stone-800">{totalGroupedCarsCount}</span> vehicles
                   </>
                 ) : lang === "zh" ? (
                   <>
-                    正在显示 <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> 辆车，共 <span className="font-bold text-stone-800">{cars.length}</span> 辆
+                    正在显示 <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> 辆车，共 <span className="font-bold text-stone-800">{totalGroupedCarsCount}</span> 辆
                   </>
                 ) : (
                   <>
-                    កំពុងបង្ហាញរថយន្ដ <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> នៃ <span className="font-bold text-stone-800">{cars.length}</span>
+                    កំពុងបង្ហាញរថយន្ដ <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> នៃ <span className="font-bold text-stone-800">{totalGroupedCarsCount}</span>
                   </>
                 )}
               </div>
