@@ -155,8 +155,55 @@ export interface CarCardProps {
   onOpenGallery?: () => void;
 }
 
+export interface CarColorInfo {
+  name: string;
+  hex: string;
+}
+
+export function getCarColorInfo(car: Car): CarColorInfo {
+  const textToSearch = `${car.name} ${car.description || ''} ${car.image}`.toLowerCase();
+  
+  if (textToSearch.includes('white')) {
+    return { name: 'White', hex: '#FFFFFF' };
+  }
+  if (textToSearch.includes('silver') || textToSearch.includes('gray') || textToSearch.includes('grey')) {
+    return { name: 'Silver', hex: '#D1D5DB' }; // grey-300
+  }
+  if (textToSearch.includes('black') || textToSearch.includes('dark')) {
+    return { name: 'Black', hex: '#1C1917' }; // stone-900
+  }
+  if (textToSearch.includes('red')) {
+    return { name: 'Red', hex: '#EF4444' }; // red-500
+  }
+  if (textToSearch.includes('blue')) {
+    return { name: 'Blue', hex: '#3B82F6' }; // blue-500
+  }
+  if (textToSearch.includes('gold') || textToSearch.includes('yellow')) {
+    return { name: 'Gold', hex: '#FBBF24' }; // yellow-400
+  }
+  if (textToSearch.includes('green')) {
+    return { name: 'Green', hex: '#10B981' }; // emerald-500
+  }
+  
+  // Default fallbacks based on index or simple hashing of name/id
+  const colors = [
+    { name: 'Silver', hex: '#D1D5DB' },
+    { name: 'White', hex: '#FFFFFF' },
+    { name: 'Charcoal', hex: '#4B5563' },
+    { name: 'Red', hex: '#EF4444' },
+    { name: 'Blue', hex: '#3B82F6' }
+  ];
+  let hash = 0;
+  const str = car.id || car.name || "";
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+}
+
 const CarCardComponent: React.FC<CarCardProps> = ({
-  car,
+  car: initialCar,
   isAdminMode = false,
   onEdit,
   onDelete,
@@ -172,6 +219,21 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   onOpenGallery,
 }) => {
   const t = translations[lang];
+
+  // Active variant state for merged cars
+  const [activeVariantId, setActiveVariantId] = useState(initialCar.id);
+
+  // Reset active variant when initialCar changes
+  useEffect(() => {
+    setActiveVariantId(initialCar.id);
+  }, [initialCar.id]);
+
+  const car = useMemo(() => {
+    if (initialCar.variants && initialCar.variants.length > 0) {
+      return initialCar.variants.find((v) => v.id === activeVariantId) || initialCar;
+    }
+    return initialCar;
+  }, [initialCar, activeVariantId]);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1415,6 +1477,51 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                       </p>
                     )}
                   </div>
+
+                  {/* Color Selector for Merged Cars */}
+                  {initialCar.variants && initialCar.variants.length > 1 && (
+                    <div className="flex flex-col gap-1.5 mb-3 bg-stone-50/80 p-2.5 rounded-xl border border-stone-100/50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-stone-500 tracking-wider uppercase">
+                          {lang === "en" ? "Available Colors" : "ពណ៌ដែលអាចរកបាន"}
+                        </span>
+                        <span className="text-xs font-semibold text-stone-800">
+                          {getCarColorInfo(car).name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {initialCar.variants.map((v) => {
+                          const colorInfo = getCarColorInfo(v);
+                          const isActive = v.id === activeVariantId;
+                          return (
+                            <button
+                              key={v.id}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveVariantId(v.id);
+                                setCurrentPhotoIndex(0); // Reset carousel to first image when changing color
+                                setIsPlaying(false);
+                              }}
+                              className={`relative w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer ${
+                                isActive 
+                                  ? "ring-2 ring-[#4C0027] ring-offset-2" 
+                                  : "border border-stone-300 hover:border-stone-400"
+                              }`}
+                              style={{ backgroundColor: colorInfo.hex }}
+                              title={colorInfo.name}
+                            >
+                              {isActive && (
+                                <span className={`w-2 h-2 rounded-full ${
+                                  colorInfo.hex === '#FFFFFF' ? 'bg-[#4C0027]' : 'bg-white'
+                                }`} />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Highlights Info Grid (Technical) */}
                 <div
