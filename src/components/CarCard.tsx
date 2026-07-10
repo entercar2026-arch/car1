@@ -1130,7 +1130,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
           stiffness: 300,
           damping: 20
         }}
-        className="relative w-full h-[470px] group"
+        className="relative w-full h-[495px] group"
         style={{ perspective: 1200 }}
       >
         <motion.div
