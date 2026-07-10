@@ -273,6 +273,7 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
 
   useEffect(() => {
@@ -1427,33 +1428,74 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     })}
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                    {onToggleSplit && (isSplit ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleSplit(initialCar.name);
-                        }}
-                        title="Merge different colors together"
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-[#4C0027] hover:scale-110 active:scale-95 font-bold text-base"
-                      >
-                        —
-                      </button>
-                    ) : (
-                      initialCar.variants && initialCar.variants.length > 1 && (
+                    {initialCar.variants && initialCar.variants.length > 1 && (
+                      <div className="relative">
+                        {isColorDropdownOpen && (
+                          <div 
+                            className="fixed inset-0 z-40 cursor-default" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsColorDropdownOpen(false);
+                            }}
+                          />
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onToggleSplit(initialCar.name);
+                            setIsColorDropdownOpen(!isColorDropdownOpen);
                           }}
-                          title="Split into individual color cards"
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-[#4C0027] hover:scale-110 active:scale-95 font-bold text-base"
+                          title="Select color"
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027] hover:scale-110 active:scale-95 relative z-50"
                         >
-                          +
+                          <span 
+                            className="w-4 h-4 rounded-full border border-stone-300 shadow-xs transition-transform" 
+                            style={{ backgroundColor: getCarColorInfo(car).hex }}
+                          />
                         </button>
-                      )
-                    ))}
+
+                        <AnimatePresence>
+                          {isColorDropdownOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute right-0 mt-1.5 min-w-[130px] bg-white rounded-xl shadow-xl border border-stone-100/80 p-1.5 z-50 flex flex-col gap-1"
+                            >
+                              {initialCar.variants.map((v) => {
+                                const vColor = getCarColorInfo(v);
+                                const isCurrent = v.id === activeVariantId;
+                                return (
+                                  <button
+                                    key={v.id}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveVariantId(v.id);
+                                      setCurrentPhotoIndex(0); // Reset carousel to first image when changing color
+                                      setIsPlaying(false);
+                                      setIsColorDropdownOpen(false);
+                                    }}
+                                    className={`flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-left text-xs font-medium transition-colors cursor-pointer ${
+                                      isCurrent 
+                                        ? "bg-stone-50 text-[#4C0027] font-semibold" 
+                                        : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                                    }`}
+                                  >
+                                    <span 
+                                      className="w-3.5 h-3.5 rounded-full border border-stone-300/80 shrink-0"
+                                      style={{ backgroundColor: vColor.hex }}
+                                    />
+                                    <span className="truncate">{vColor.name}</span>
+                                  </button>
+                                );
+                              })}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
