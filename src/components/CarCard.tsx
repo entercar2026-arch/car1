@@ -161,6 +161,36 @@ export interface CarColorInfo {
 }
 
 export function getCarColorInfo(car: Car): CarColorInfo {
+  // If the car has an explicitly set color property, prioritize it!
+  if (car.color) {
+    const colLower = car.color.toLowerCase().trim();
+    if (colLower === 'white') return { name: 'White', hex: '#FFFFFF' };
+    if (colLower === 'silver' || colLower === 'grey' || colLower === 'gray') return { name: 'Silver', hex: '#D1D5DB' };
+    if (colLower === 'black' || colLower === 'dark') return { name: 'Black', hex: '#1C1917' };
+    if (colLower === 'red') return { name: 'Red', hex: '#EF4444' };
+    if (colLower === 'blue') return { name: 'Blue', hex: '#3B82F6' };
+    if (colLower === 'gold' || colLower === 'yellow') return { name: 'Gold', hex: '#FBBF24' };
+    if (colLower === 'green') return { name: 'Green', hex: '#10B981' };
+    if (colLower === 'charcoal') return { name: 'Charcoal', hex: '#4B5563' };
+    if (colLower === 'orange') return { name: 'Orange', hex: '#F97316' };
+    if (colLower === 'purple') return { name: 'Purple', hex: '#A855F7' };
+    if (colLower === 'pink') return { name: 'Pink', hex: '#EC4899' };
+    
+    // Check if it is a hex code
+    if (car.color.startsWith('#') && (car.color.length === 4 || car.color.length === 7)) {
+      return { name: car.color, hex: car.color };
+    }
+    
+    // Otherwise, generate a matching color name and custom hex
+    let hash = 0;
+    for (let i = 0; i < car.color.length; i++) {
+      hash = car.color.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = ['#D1D5DB', '#FFFFFF', '#4B5563', '#EF4444', '#3B82F6', '#FBBF24', '#10B981', '#F97316', '#A855F7', '#EC4899'];
+    const hex = colors[Math.abs(hash) % colors.length];
+    return { name: car.color, hex };
+  }
+
   const textToSearch = `${car.name} ${car.description || ''} ${car.image}`.toLowerCase();
   
   if (textToSearch.includes('white')) {

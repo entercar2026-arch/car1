@@ -260,6 +260,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formSeats, setFormSeats] = useState(5);
   const [formFuel, setFormFuel] = useState<Car["fuelType"]>("Gasoline");
   const [formDescription, setFormDescription] = useState("");
+  const [formColor, setFormColor] = useState("");
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formThumbnail, setFormThumbnail] = useState("");
   const [formIsShortTermAvailable, setFormIsShortTermAvailable] = useState(false);
@@ -522,6 +523,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setFormDescription("");
     setFormVideoUrl("");
     setFormThumbnail("");
+    setFormColor("");
     setFormIsShortTermAvailable(false);
     setFormShortTermPricing([]);
     
@@ -547,6 +549,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setFormDescription(car.description || "");
       setFormVideoUrl(car.videoUrl || "");
       setFormThumbnail(car.thumbnail || "");
+      setFormColor(car.color || "");
       setFormIsShortTermAvailable(car.isShortTermAvailable || false);
       setFormShortTermPricing(Array.isArray(car.shortTermPricing) ? car.shortTermPricing : []);
       
@@ -595,7 +598,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           thumbnail: formThumbnail || undefined,
           isShortTermAvailable: formIsShortTermAvailable,
           shortTermPricing: formShortTermPricing,
-          
+          color: formColor,
           photos: finalPhotos,
         });
       } else {
@@ -612,7 +615,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           thumbnail: formThumbnail || undefined,
           isShortTermAvailable: formIsShortTermAvailable,
           shortTermPricing: formShortTermPricing,
-          
+          color: formColor,
           photos: finalPhotos,
         });
       }
@@ -1379,6 +1382,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {formSeats}
                       </span>
                     </div>
+                  </div>
+
+                  {/* Car Color */}
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">
+                      Car Color (e.g. Silver, White, Black, Red)
+                    </label>
+                    <OptimizedInput
+                      id="input-car-color"
+                      type="text"
+                      value={formColor}
+                      onChange={(val: any) => setFormColor(val)}
+                      placeholder="e.g. Silver"
+                      className="w-full px-3.5 py-2 border border-stone-200 bg-stone-50 rounded-xl text-black text-xs focus:bg-white focus:outline-none focus:border-[#4C0027] transition-all"
+                    />
                   </div>
 
                   {/* Visual Image link */}

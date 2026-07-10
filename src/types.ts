@@ -6,6 +6,7 @@ export interface Car {
   image: string; // URL
   altImage?: string; // photo of car in different color
   photos?: string[]; // Array of image URLs for the carousel
+  color?: string; // Color name or hex code (e.g. 'Silver', 'White', '#FFFFFF')
   customColors?: Record<string, string>; // Maps a color name (like 'White', 'Black') to an image URL
   variants?: Car[]; // Merged color variant cars with the same name
   transmission: "Automatic" | "Manual";
