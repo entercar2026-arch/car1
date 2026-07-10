@@ -1672,9 +1672,9 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                         onClick={() => {
                           startTransition(() => setIsShortTermModalOpen(true));
                         }}
-                        className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-black text-black bg-yellow-400 rounded-xl shadow-xs hover:shadow-md hover:bg-yellow-500 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer border border-yellow-500"
+                        className="flex items-center justify-center flex-1 gap-1 px-2 py-2.5 text-[11px] sm:text-xs font-black text-black bg-yellow-400 rounded-xl shadow-xs hover:shadow-md hover:bg-yellow-500 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer border border-yellow-500 whitespace-nowrap"
                       >
-                        Short Term
+                        {(t as any).shortTerm || "Short Term"}
                       </button>
                     )}
                     <button
@@ -1683,7 +1683,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                         setBookingMode("enquire");
                         startTransition(() => setIsBookingOpen(true));
                       }}
-                      className="flex items-center justify-center flex-1 gap-1.5 px-4 py-2.5 text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
+                      className="flex items-center justify-center flex-1 gap-1 px-2 py-2.5 text-[11px] sm:text-xs font-bold text-white rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer whitespace-nowrap"
                       style={{ backgroundColor: brandPlum }}
                     >
                       {t.enquire}
@@ -2240,7 +2240,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                 <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
                   <div>
                     <h3 className="font-sans font-black text-xl text-stone-900 tracking-tight">
-                      Short Term Rent
+                      {(t as any).shortTermRent || "Short Term Rent"}
                     </h3>
                     <p className="text-xs text-stone-500 font-medium mt-0.5">
                       {car.name}
