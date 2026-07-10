@@ -9,6 +9,7 @@ export interface Car {
   color?: string; // Color name or hex code (e.g. 'Silver', 'White', '#FFFFFF')
   customColors?: Record<string, string>; // Maps a color name (like 'White', 'Black') to an image URL
   variants?: Car[]; // Merged color variant cars with the same name
+  isSplit?: boolean; // True if this car card is in a split view
   transmission: "Automatic" | "Manual";
   seats: number;
   fuelType: "Electric" | "Gasoline" | "Hybrid" | "Diesel" | "LPG" | "Gasoline + LPG";

@@ -1347,7 +1347,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
 
 import { CatalogLightbox, openCatalogLightbox } from './components/CatalogLightbox';
 
-const groupCarsByName = (carsList: Car[]): Car[] => {
+const groupCarsByName = (carsList: Car[], splitCarNames: string[] = []): Car[] => {
   const grouped: Car[] = [];
   const map = new Map<string, Car[]>();
   
@@ -1360,14 +1360,26 @@ const groupCarsByName = (carsList: Car[]): Car[] => {
   }
   
   for (const list of map.values()) {
+    const key = list[0].name.trim().toLowerCase();
+    const isSplit = splitCarNames.includes(key);
+    
     if (list.length === 1) {
       grouped.push(list[0]);
+    } else if (isSplit) {
+      for (const item of list) {
+        grouped.push({
+          ...item,
+          isSplit: true,
+          variants: list,
+        });
+      }
     } else {
       const primary = list[0];
       // Merge properties but keep list of variants
       grouped.push({
         ...primary,
         variants: list,
+        isSplit: false,
       });
     }
   }
@@ -1479,6 +1491,16 @@ export default function App() {
     
     return mergedLikedCars;
   });
+
+  // Split car names state
+  const [splitCarNames, setSplitCarNames] = useState<string[]>([]);
+
+  const handleToggleSplit = React.useCallback((carName: string) => {
+    const key = carName.trim().toLowerCase();
+    setSplitCarNames(prev => 
+      prev.includes(key) ? prev.filter(n => n !== key) : [...prev, key]
+    );
+  }, []);
 
   // Track if clear favorites confirmation modal is open
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -2136,16 +2158,16 @@ export default function App() {
     });
 
     if (deferredSortBy === "price-asc") {
-      return groupCarsByName([...results].sort((a, b) => a.price - b.price));
+      return groupCarsByName([...results].sort((a, b) => a.price - b.price), splitCarNames);
     }
     if (deferredSortBy === "price-desc") {
-      return groupCarsByName([...results].sort((a, b) => b.price - a.price));
+      return groupCarsByName([...results].sort((a, b) => b.price - a.price), splitCarNames);
     }
     if (deferredSortBy === "alphabetical") {
-      return groupCarsByName([...results].sort((a, b) => a.name.localeCompare(b.name)));
+      return groupCarsByName([...results].sort((a, b) => a.name.localeCompare(b.name)), splitCarNames);
     }
-    return groupCarsByName(results);
-  }, [cars, deferredFilters, likedCars, deferredSortBy]);
+    return groupCarsByName(results, splitCarNames);
+  }, [cars, deferredFilters, likedCars, deferredSortBy, splitCarNames]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCars.length / 12));
 
@@ -3275,6 +3297,8 @@ export default function App() {
                           onFilterSelect={handleGridFilterSelect}
                           onEdit={handleUpdateCar}
                           onOpenGallery={() => openCatalogLightbox(paginatedCars, index)}
+                          isSplit={car.isSplit}
+                          onToggleSplit={handleToggleSplit}
                         />
                       </motion.div>
                     ))}

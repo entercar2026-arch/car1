@@ -153,6 +153,8 @@ export interface CarCardProps {
   lang?: "en" | "kh";
   onShowToast?: (message: string) => void;
   onOpenGallery?: () => void;
+  isSplit?: boolean;
+  onToggleSplit?: (carName: string) => void;
 }
 
 export interface CarColorInfo {
@@ -247,6 +249,8 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   lang = "en",
   onShowToast,
   onOpenGallery,
+  isSplit = false,
+  onToggleSplit,
 }) => {
   const t = translations[lang];
 
@@ -1126,7 +1130,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
           stiffness: 300,
           damping: 20
         }}
-        className="relative w-full h-[520px] group"
+        className="relative w-full h-[470px] group"
         style={{ perspective: 1200 }}
       >
         <motion.div
@@ -1145,7 +1149,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative aspect-[16/9] w-full bg-stone-50 overflow-hidden cursor-zoom-in group/media touch-pan-y shrink-0"
+              className="relative aspect-[16/9] w-full shrink-0 bg-stone-50 overflow-hidden cursor-zoom-in group/media touch-pan-y"
               onTouchStart={handleTouchStart}
               onTouchEnd={(e) => handleTouchEnd(e, handleNextPhoto, handlePrevPhoto)}
               onClick={(e) => { 
@@ -1423,6 +1427,33 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     })}
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                    {onToggleSplit && (isSplit ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleSplit(initialCar.name);
+                        }}
+                        title="Merge different colors together"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-[#4C0027] hover:scale-110 active:scale-95 font-bold text-base"
+                      >
+                        —
+                      </button>
+                    ) : (
+                      initialCar.variants && initialCar.variants.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSplit(initialCar.name);
+                          }}
+                          title="Split into individual color cards"
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-[#4C0027] hover:scale-110 active:scale-95 font-bold text-base"
+                        >
+                          +
+                        </button>
+                      )
+                    ))}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1509,7 +1540,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                   </div>
 
                   {/* Color Selector for Merged Cars */}
-                  {initialCar.variants && initialCar.variants.length > 1 && (
+                  {!isSplit && initialCar.variants && initialCar.variants.length > 1 && (
                     <div className="flex flex-col gap-1.5 mb-3 bg-stone-50/80 p-2.5 rounded-xl border border-stone-100/50">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-stone-500 tracking-wider uppercase">
