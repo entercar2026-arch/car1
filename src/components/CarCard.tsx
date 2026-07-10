@@ -303,6 +303,51 @@ const CarCardComponent: React.FC<CarCardProps> = ({
   const targetImageSrc = useMemo(() => getOptimizedImageUrl(currentImage, windowWidth, 'cover', connectionStatus), [currentImage, windowWidth, connectionStatus]);
   const renderedImageSrc = targetImageSrc;
 
+  const touchStartX = React.useRef<number | null>(null);
+  const touchStartY = React.useRef<number | null>(null);
+  const isSwipe = React.useRef(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isSwipe.current = false;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, onSwipeLeft: () => void, onSwipeRight: () => void) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    
+    const diffX = touchStartX.current - e.changedTouches[0].clientX;
+    const diffY = touchStartY.current - e.changedTouches[0].clientY;
+    
+    // Check if horizontal swipe is more significant than vertical swipe and exceeds 40px
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+      isSwipe.current = true;
+      e.stopPropagation();
+      if (diffX > 0) {
+        onSwipeLeft();
+      } else {
+        onSwipeRight();
+      }
+    }
+    
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  const handlePrevPhoto = React.useCallback(() => {
+    if (allPhotos.length <= 1) return;
+    startTransition(() => {
+      setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+    });
+  }, [allPhotos.length]);
+
+  const handleNextPhoto = React.useCallback(() => {
+    if (allPhotos.length <= 1) return;
+    startTransition(() => {
+      setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
+    });
+  }, [allPhotos.length]);
+
   // Active Background Image & Thumbnail Preloader for instant caching and flawless transitions
   useEffect(() => {
     if (!allPhotos || allPhotos.length <= 1) return;
@@ -1008,9 +1053,15 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative aspect-[16/9] w-full bg-stone-50 overflow-hidden cursor-zoom-in group/media"
+              className="relative aspect-[16/9] w-full bg-stone-50 overflow-hidden cursor-zoom-in group/media touch-pan-y"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(e) => handleTouchEnd(e, handleNextPhoto, handlePrevPhoto)}
               onClick={(e) => { 
                 e.stopPropagation(); 
+                if (isSwipe.current) {
+                  isSwipe.current = false;
+                  return;
+                }
                 if (onOpenGallery) {
                   onOpenGallery();
                 } else {
@@ -1183,7 +1234,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      startTransition(() => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length));
+                      handlePrevPhoto();
                     }}
                     className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto cursor-pointer"
                     title="Previous Photo"
@@ -1194,7 +1245,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      startTransition(() => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length));
+                      handleNextPhoto();
                     }}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs shadow-md opacity-100 xl:opacity-0 xl:group-hover/media:opacity-100 transition-opacity duration-200 pointer-events-auto cursor-pointer"
                     title="Next Photo"
@@ -2320,7 +2371,11 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                 className="relative max-w-5xl w-full flex-1 flex flex-col items-center justify-center gap-4 py-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="relative w-full group flex items-center justify-center min-h-[40vh]">
+                <div 
+                  className="relative w-full group flex items-center justify-center min-h-[40vh] touch-pan-y"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={(e) => handleTouchEnd(e, handleNextPhoto, handlePrevPhoto)}
+                >
                   {/* Floating Video Actions inside modal */}
                   {!!effectiveVideoUrl && (
                     <div className="absolute top-4 right-4 sm:right-16 flex items-center gap-1.5 z-30">
@@ -2352,11 +2407,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                       id={`gallery-prev-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (currentPhotoIndex > 0) {
-                          startTransition(() => setCurrentPhotoIndex(currentPhotoIndex - 1));
-                        } else if (allPhotos.length > 1) {
-                          startTransition(() => setCurrentPhotoIndex(allPhotos.length - 1));
-                        }
+                        handlePrevPhoto();
                       }}
                       className="absolute left-2 sm:left-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
                       title="Previous Photo"
@@ -2446,11 +2497,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                       id={`gallery-next-${car.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (currentPhotoIndex < allPhotos.length - 1) {
-                          startTransition(() => setCurrentPhotoIndex(currentPhotoIndex + 1));
-                        } else if (allPhotos.length > 1) {
-                          startTransition(() => setCurrentPhotoIndex(0));
-                        }
+                        handleNextPhoto();
                       }}
                       className="absolute right-2 sm:right-4 z-20 w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all cursor-pointer border border-white/10 shadow-lg hover:scale-105 active:scale-95"
                       title="Next Photo"
