@@ -1130,7 +1130,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
           stiffness: 300,
           damping: 20
         }}
-        className="relative w-full h-[530px] group"
+        className="relative w-full h-[470px] group"
         style={{ perspective: 1200 }}
       >
         <motion.div
@@ -1539,50 +1539,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     )}
                   </div>
 
-                  {/* Color Selector for Merged Cars */}
-                  {!isSplit && initialCar.variants && initialCar.variants.length > 1 && (
-                    <div className="flex flex-col gap-1.5 mb-3 bg-stone-50/80 p-2.5 rounded-xl border border-stone-100/50">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-stone-500 tracking-wider uppercase">
-                          {lang === "en" ? "Available Colors" : "ពណ៌ដែលអាចរកបាន"}
-                        </span>
-                        <span className="text-xs font-semibold text-stone-800">
-                          {getCarColorInfo(car).name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {initialCar.variants.map((v) => {
-                          const colorInfo = getCarColorInfo(v);
-                          const isActive = v.id === activeVariantId;
-                          return (
-                            <button
-                              key={v.id}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveVariantId(v.id);
-                                setCurrentPhotoIndex(0); // Reset carousel to first image when changing color
-                                setIsPlaying(false);
-                              }}
-                              className={`relative w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer ${
-                                isActive 
-                                  ? "ring-2 ring-[#4C0027] ring-offset-2" 
-                                  : "border border-stone-300 hover:border-stone-400"
-                              }`}
-                              style={{ backgroundColor: colorInfo.hex }}
-                              title={colorInfo.name}
-                            >
-                              {isActive && (
-                                <span className={`w-2 h-2 rounded-full ${
-                                  colorInfo.hex === '#FFFFFF' ? 'bg-[#4C0027]' : 'bg-white'
-                                }`} />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+
 
                   {/* Highlights Info Grid (Technical) */}
                 <div
