@@ -1368,7 +1368,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
             {/* Narrative & Info */}
             <div
               id={`car-body-${car.id}`}
-              className="p-3 flex-1 flex flex-col justify-between pt-1.5"
+              className="p-3 pb-4 flex-1 flex flex-col justify-between pt-1.5"
             >
               <div>
                 <div className="flex justify-between items-center mb-1 w-full min-h-[24px] gap-1.5 relative">
@@ -1649,7 +1649,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                       /{t.perMonth}
                     </span>
                   </div>
-                  <span className="text-[9px] text-stone-400 mt-0.5 font-sans leading-none">
+                  <span className="text-[10px] text-black font-semibold mt-1.5 font-sans leading-normal">
                     {(t as any).standardPriceNotice}
                   </span>
                 </div>
@@ -1798,7 +1798,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     /{t.perMonth}
                   </span>
                 </div>
-                <span className="text-[8px] text-stone-400 mt-0.5 font-sans leading-none">
+                <span className="text-[10px] text-black font-semibold mt-1.5 font-sans leading-normal">
                   {(t as any).standardPriceNotice}
                 </span>
               </div>
