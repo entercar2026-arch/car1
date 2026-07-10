@@ -2063,12 +2063,13 @@ export default function App() {
 
   // Category statistics counting dynamically based on current fleet state
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { All: cars.length };
-    cars.forEach((car) => {
+    const groupedCars = groupCarsByName(cars, splitCarNames);
+    const counts: Record<string, number> = { All: groupedCars.length };
+    groupedCars.forEach((car) => {
       counts[car.category] = (counts[car.category] || 0) + 1;
     });
     return counts;
-  }, [cars]);
+  }, [cars, splitCarNames]);
 
   // Filter computation logic
   
