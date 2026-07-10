@@ -1145,7 +1145,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
             {/* Visual Header & Image */}
             <div
               id={`car-image-container-${car.id}`}
-              className="relative aspect-[16/9] w-full bg-stone-50 overflow-hidden cursor-zoom-in group/media touch-pan-y"
+              className="relative aspect-[16/9] w-full shrink-0 bg-stone-50 overflow-hidden cursor-zoom-in group/media touch-pan-y"
               onTouchStart={handleTouchStart}
               onTouchEnd={(e) => handleTouchEnd(e, handleNextPhoto, handlePrevPhoto)}
               onClick={(e) => { 
