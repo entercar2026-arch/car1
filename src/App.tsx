@@ -1057,8 +1057,7 @@ const ContractRequirementSection = React.memo(({ t, cars, lang, likedCars = [] }
           <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <span 
-            onClick={() => setIsContractModalOpen(true)}
-            className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs cursor-pointer hover:text-amber-400 select-none flex items-center gap-1.5 transition-colors duration-200"
+            className="text-[10px] sm:text-xs font-bold text-stone-300 uppercase tracking-[0.2em] font-mono mb-2 drop-shadow-xs select-none flex items-center gap-1.5"
           >
             {t.contractRequirement}
           </span>
@@ -2670,55 +2669,6 @@ export default function App() {
 
       {/* Main Public Body Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
-        {/* Home Anchor panel wrapper */}
-        <section id="home-panel" className="scroll-mt-24 select-none pb-2">
-          {/* Hero Welcome Banner */}
-          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-200 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs no-print">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
-
-            <div className="space-y-4 max-w-3xl flex flex-col items-center">
-              <span className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black bg-yellow-400 text-black border border-yellow-500/20 uppercase tracking-widest shadow-xs">
-                {t.deliveryBadge}
-              </span>
-              <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
-                {t.heroTitle}
-              </h1>
-              <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
-                {t.heroDesc}
-              </p>
-
-              <div className="pt-2 flex flex-col items-center gap-4 w-full">
-                {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
-                <div className="flex sm:flex-row flex-col items-stretch sm:items-center justify-center gap-3 mt-4 select-none w-full max-w-md">
-                  <button
-                    id="hero-btn-search-trigger"
-                    type="button"
-                    onClick={() => scrollToAnchor("search-filters-container")}
-                    className="flex-1 px-8 py-3.5 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
-                    style={{ backgroundColor: brandPlum }}
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>{t.findBtn}</span>
-                  </button>
-
-                  <button
-                    id="hero-btn-catalog"
-                    type="button"
-                    onClick={() => scrollToAnchor("category-filter-container")}
-                    className="flex-1 px-8 py-3.5 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
-                  >
-                    <span>{t.exploreCatalog}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Contract Requirement Visual Highlight Board */}
-          <ContractRequirementSection t={t} cars={cars} lang={lang} likedCars={likedCars} />
-        </section>
-
         {/* Catalog Anchor Target */}
         <section id="catalog-section" className="scroll-mt-24">
           {/* 3. Search parameters panel */}
@@ -3383,6 +3333,55 @@ export default function App() {
               </div>
             )}
           </div>
+        </section>
+
+        {/* Home Anchor panel wrapper */}
+        <section id="home-panel" className="scroll-mt-24 select-none pb-2 mt-16">
+          {/* Hero Welcome Banner */}
+          <div className="bg-stone-50 rounded-3xl p-8 sm:p-12 border border-stone-200 flex flex-col items-center text-center justify-center mb-10 overflow-hidden select-none relative max-w-5xl mx-auto shadow-xs no-print">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#4C0027]/3 rounded-bl-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#4C0027]/2 rounded-tr-full pointer-events-none" />
+
+            <div className="space-y-4 max-w-3xl flex flex-col items-center">
+              <span className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black bg-yellow-400 text-black border border-yellow-500/20 uppercase tracking-widest shadow-xs">
+                {t.deliveryBadge}
+              </span>
+              <h1 className="text-3xl sm:text-5xl font-black text-stone-900 tracking-tight leading-tight max-w-2xl">
+                {t.heroTitle}
+              </h1>
+              <p className="text-stone-500 font-medium text-xs sm:text-sm leading-relaxed max-w-xl font-sans text-center">
+                {t.heroDesc}
+              </p>
+
+              <div className="pt-2 flex flex-col items-center gap-4 w-full">
+                {/* Interactive Buttons Group: Find and Explore Catalog side-by-side */}
+                <div className="flex sm:flex-row flex-col items-stretch sm:items-center justify-center gap-3 mt-4 select-none w-full max-w-md">
+                  <button
+                    id="hero-btn-search-trigger"
+                    type="button"
+                    onClick={() => scrollToAnchor("search-filters-container")}
+                    className="flex-1 px-8 py-3.5 bg-[#4C0027] hover:bg-[#5E0030] text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap"
+                    style={{ backgroundColor: brandPlum }}
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>{t.findBtn}</span>
+                  </button>
+
+                  <button
+                    id="hero-btn-catalog"
+                    type="button"
+                    onClick={() => scrollToAnchor("category-filter-container")}
+                    className="flex-1 px-8 py-3.5 border border-[#4C0027]/20 hover:bg-[#4C0027]/5 text-[#4C0027] text-xs sm:text-sm font-extrabold rounded-xl shadow-2xs transition-all duration-150 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer whitespace-nowrap bg-white"
+                  >
+                    <span>{t.exploreCatalog}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contract Requirement Visual Highlight Board */}
+          <ContractRequirementSection t={t} cars={cars} lang={lang} likedCars={likedCars} />
         </section>
 
         {/* About Us Section */}
