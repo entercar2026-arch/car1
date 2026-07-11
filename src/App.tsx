@@ -1561,6 +1561,13 @@ export default function App() {
 
   const t = translations[lang];
 
+  // Dynamic maximum price based on the actual fleet state
+  const absoluteMaxPrice = useMemo(() => {
+    if (!cars || cars.length === 0) return 10000;
+    const maxInDb = Math.max(...cars.map(c => c.price || 0));
+    return Math.max(10000, Math.ceil(maxInDb / 1000) * 1000);
+  }, [cars]);
+
   // Filter criteria state
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filters, setFiltersRaw] = useState<CatalogFilters>(() => {
@@ -1579,6 +1586,16 @@ export default function App() {
       likedOnly: hasWishlistParam,
     };
   });
+
+  // Keep filters.maxPrice in sync with absoluteMaxPrice
+  useEffect(() => {
+    setFiltersRaw(prev => {
+      if (prev.maxPrice === 10000 || prev.maxPrice >= absoluteMaxPrice) {
+        return { ...prev, maxPrice: absoluteMaxPrice };
+      }
+      return prev;
+    });
+  }, [absoluteMaxPrice]);
 
   // Clean up the URL to prevent wishlist from getting stuck in URL
   useEffect(() => {
@@ -2003,7 +2020,7 @@ export default function App() {
     setFilters({
       searchTerm: "",
       category: "All",
-      maxPrice: 10000,
+      maxPrice: absoluteMaxPrice,
       transmission: "All",
       fuelType: "All",
       seats: "All",
@@ -2078,7 +2095,7 @@ export default function App() {
     setFilters({
       searchTerm: "",
       category: "All",
-      maxPrice: 10000,
+      maxPrice: absoluteMaxPrice,
       transmission: "All",
       fuelType: "All",
       seats: "All",
@@ -2087,7 +2104,7 @@ export default function App() {
       [filterType]: value
     });
     scrollToAnchor("category-filter-container");
-  }, []);
+  }, [absoluteMaxPrice]);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -2732,7 +2749,7 @@ export default function App() {
 
                   {/* Quick Range Shortcuts */}
                   <div className="flex gap-2 mb-3">
-                    {[1000, 3000, 5000, 10000].map(val => (
+                    {[1000, 3000, 5000, absoluteMaxPrice].map(val => (
                       <button
                         key={val}
                         type="button"
@@ -2752,7 +2769,7 @@ export default function App() {
                     id="filter-slider-price"
                     type="range"
                     min="300"
-                    max="10000"
+                    max={absoluteMaxPrice}
                     step="100"
                     value={filters.maxPrice}
                     onChange={(e) =>
@@ -2766,7 +2783,7 @@ export default function App() {
                   />
                   <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
                     <span>$300{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
-                    <span>$10,000{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
+                    <span>${absoluteMaxPrice.toLocaleString()}{t.perMonth ? "/" + t.perMonth : "/mo"}</span>
                   </div>
                 </div>
               </div>
@@ -2974,7 +2991,7 @@ export default function App() {
                 const trType = filters.transmission === "Automatic" ? t.automatic : filters.transmission === "Manual" ? t.manual : filters.transmission;
                 activeTags.push({ id: 'transmission', label: `${trType}`, onRemove: () => setFilters(pre => ({ ...pre, transmission: "All" })) });
               }
-              if (filters.maxPrice < 10000) activeTags.push({ id: 'maxPrice', label: `Max $${filters.maxPrice}/mo`, onRemove: () => setFilters(pre => ({ ...pre, maxPrice: 10000 })) });
+              if (filters.maxPrice < absoluteMaxPrice) activeTags.push({ id: 'maxPrice', label: `Max $${filters.maxPrice}/mo`, onRemove: () => setFilters(pre => ({ ...pre, maxPrice: absoluteMaxPrice })) });
               if (filters.seats !== "All") activeTags.push({ id: 'seats', label: `${filters.seats} Seats`, onRemove: () => setFilters(pre => ({ ...pre, seats: "All" })) });
               if (filters.likedOnly) activeTags.push({ id: 'likedOnly', label: `${t.liked || 'Liked'}`, onRemove: () => setFilters(pre => ({ ...pre, likedOnly: false })) });
 
