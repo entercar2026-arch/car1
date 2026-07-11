@@ -2063,13 +2063,12 @@ export default function App() {
 
   // Category statistics counting dynamically based on current fleet state
   const categoryCounts = useMemo(() => {
-    const groupedCars = groupCarsByName(cars, splitCarNames);
-    const counts: Record<string, number> = { All: groupedCars.length };
-    groupedCars.forEach((car) => {
+    const counts: Record<string, number> = { All: cars.length };
+    cars.forEach((car) => {
       counts[car.category] = (counts[car.category] || 0) + 1;
     });
     return counts;
-  }, [cars, splitCarNames]);
+  }, [cars]);
 
   // Filter computation logic
   
@@ -2099,7 +2098,7 @@ export default function App() {
   const deferredSortBy = React.useDeferredValue(sortBy);
 
   const deferredFilters = React.useDeferredValue(filters);
-  const filteredCars = useMemo(() => {
+  const filteredIndividualCars = useMemo(() => {
     const searchPattern = deferredFilters.searchTerm.trim().toLowerCase();
     const activeCategory = deferredFilters.category;
     const activeMaxPrice = deferredFilters.maxPrice;
@@ -2109,7 +2108,7 @@ export default function App() {
     const activeBrand = deferredFilters.brand.toLowerCase();
     const activeLikedOnly = deferredFilters.likedOnly;
 
-    const results = cars.filter((car) => {
+    return cars.filter((car) => {
       // 1. Price check (numeric check is extremely fast, do first to exit early)
       if (car.price > activeMaxPrice) return false;
 
@@ -2156,6 +2155,10 @@ export default function App() {
 
       return true;
     });
+  }, [cars, deferredFilters, likedCars]);
+
+  const filteredCars = useMemo(() => {
+    const results = filteredIndividualCars;
 
     if (deferredSortBy === "price-asc") {
       return groupCarsByName([...results].sort((a, b) => a.price - b.price), splitCarNames);
@@ -2167,11 +2170,9 @@ export default function App() {
       return groupCarsByName([...results].sort((a, b) => a.name.localeCompare(b.name)), splitCarNames);
     }
     return groupCarsByName(results, splitCarNames);
-  }, [cars, deferredFilters, likedCars, deferredSortBy, splitCarNames]);
+  }, [filteredIndividualCars, deferredSortBy, splitCarNames]);
 
-  const totalGroupedCarsCount = useMemo(() => {
-    return groupCarsByName(cars, splitCarNames).length;
-  }, [cars, splitCarNames]);
+  const totalIndividualCarsCount = cars.length;
 
   const totalPages = Math.max(1, Math.ceil(filteredCars.length / 12));
 
@@ -3144,15 +3145,15 @@ export default function App() {
               <div className="text-xs sm:text-sm font-medium text-stone-500 bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-xs">
                 {lang === "en" ? (
                   <>
-                    Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> of <span className="font-bold text-stone-800">{totalGroupedCarsCount}</span> vehicles
+                    Showing <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredIndividualCars.length}</span> of <span className="font-bold text-stone-800">{totalIndividualCarsCount}</span> vehicles
                   </>
                 ) : lang === "zh" ? (
                   <>
-                    正在显示 <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> 辆车，共 <span className="font-bold text-stone-800">{totalGroupedCarsCount}</span> 辆
+                    正在显示 <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredIndividualCars.length}</span> 辆车，共 <span className="font-bold text-stone-800">{totalIndividualCarsCount}</span> 辆
                   </>
                 ) : (
                   <>
-                    កំពុងបង្ហាញរថយន្ដ <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredCars.length}</span> នៃ <span className="font-bold text-stone-800">{totalGroupedCarsCount}</span>
+                    កំពុងបង្ហាញរថយន្ដ <span className="font-bold text-[#4C0027]" style={{ color: brandPlum }}>{filteredIndividualCars.length}</span> នៃ <span className="font-bold text-stone-800">{totalIndividualCarsCount}</span>
                   </>
                 )}
               </div>
