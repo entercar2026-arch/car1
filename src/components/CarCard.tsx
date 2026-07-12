@@ -1649,7 +1649,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                       /{t.perMonth}
                     </span>
                   </div>
-                  <span className="text-[10px] text-black font-semibold mt-1.5 font-sans leading-normal whitespace-pre-line">
+                  <span className="text-[10px] text-stone-400 font-medium mt-1.5 font-sans leading-normal whitespace-pre-line">
                     {(t as any).standardPriceNotice}
                   </span>
                 </div>
@@ -1798,7 +1798,7 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     /{t.perMonth}
                   </span>
                 </div>
-                <span className="text-[10px] text-black font-semibold mt-1.5 font-sans leading-normal whitespace-pre-line">
+                <span className="text-[10px] text-stone-400 font-medium mt-1.5 font-sans leading-normal whitespace-pre-line">
                   {(t as any).standardPriceNotice}
                 </span>
               </div>
