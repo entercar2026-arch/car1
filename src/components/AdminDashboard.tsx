@@ -75,69 +75,57 @@ const drawWatermark = (
   canvasHeight: number,
   watermarkImg: HTMLImageElement | null
 ) => {
-  // Proportional scaling of watermark size based on image canvas size
-  const w = Math.max(160, Math.round(canvasWidth * 0.22));
-  const h = Math.max(48, Math.round(w * 0.35));
-  const rightOffset = Math.round(canvasWidth * 0.03);
-  const bottomOffset = Math.round(canvasHeight * 0.04);
-  const x = canvasWidth - w - rightOffset;
-  const y = canvasHeight - h - bottomOffset;
-
-  // 1. Draw rounded capsule background
+  // Determine size of the Enter key icon based on canvas dimensions
+  const iconSize = Math.max(64, Math.round(canvasWidth * 0.10)); // ~10% of width, e.g. 100px on 1000px canvas
+  const fontHeight = Math.max(10, Math.round(iconSize * 0.18)); // Proportional font height, e.g. 18px
+  const spacing = Math.max(4, Math.round(iconSize * 0.10)); // Spacing between icon and text below
+  
   ctx.save();
-  ctx.fillStyle = "rgba(76, 0, 39, 0.85)"; // Corporate deep plum (#4C0027) with 85% opacity
-  ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 4;
-
-  const radius = h / 2; // Capsule shape!
-  ctx.beginPath();
-  if (ctx.roundRect) {
-    ctx.roundRect(x, y, w, h, radius);
-  } else {
-    // Simple fallback roundRect implementation for older browsers
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + w - radius, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-    ctx.lineTo(x + w, y + h - radius);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-    ctx.lineTo(x + radius, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-  }
-  ctx.fill();
-
-  // Draw a subtle white border around the capsule to make it pop on complex/dark photo regions
-  ctx.shadowColor = "transparent"; // Reset shadow for stroke
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  // 2. Draw Logo Icon
-  let textX = x + h * 0.4;
+  
+  // Set up typography
+  ctx.font = `bold ${fontHeight}px "Inter", "Helvetica Neue", system-ui, -apple-system, sans-serif`;
+  const text = "CAR RENTAL";
+  const textWidth = ctx.measureText(text).width;
+  
+  const blockWidth = Math.max(iconSize, textWidth);
+  const blockHeight = iconSize + spacing + fontHeight;
+  
+  // Margins/Offsets from the bottom-right corner
+  const rightOffset = Math.max(16, Math.round(canvasWidth * 0.04));
+  const bottomOffset = Math.max(16, Math.round(canvasHeight * 0.05));
+  
+  const x = canvasWidth - blockWidth - rightOffset;
+  const y = canvasHeight - blockHeight - bottomOffset;
+  
+  const centerX = x + blockWidth / 2;
+  
+  // 1. Draw the "Enter" key image centered
   if (watermarkImg) {
-    const imgH = h * 0.7;
-    const imgW = imgH; // Maintain aspect ratio
-    const imgX = x + (h - imgH) / 2;
-    const imgY = y + (h - imgH) / 2;
+    const imgX = centerX - iconSize / 2;
+    const imgY = y;
     
-    ctx.drawImage(watermarkImg, imgX, imgY, imgW, imgH);
-    textX = imgX + imgW + (h * 0.2);
+    // Add realistic, beautiful soft shadow for the floating key icon
+    ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 5;
+    
+    ctx.drawImage(watermarkImg, imgX, imgY, iconSize, iconSize);
   }
-
-  // 3. Draw Brand Text
-  ctx.fillStyle = "#FAFAF9"; // Warm off-white
-  ctx.font = `900 ${Math.round(h * 0.36)}px "Inter", system-ui, -apple-system, sans-serif`;
+  
+  // 2. Draw the "CAR RENTAL" text centered directly below the icon
+  ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+  
+  ctx.fillStyle = "#4C0027"; // Corporate plum burgundy color
+  ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.fillText("ENTER", textX, y + h * 0.18);
-
-  ctx.fillStyle = "rgba(250, 250, 249, 0.75)"; // 75% opacity warm off-white for subtitle
-  ctx.font = `bold ${Math.round(h * 0.17)}px "JetBrains Mono", monospace, courier`;
-  ctx.fillText("CAR RENTAL", textX, y + h * 0.60);
-
+  
+  const textY = y + iconSize + spacing;
+  ctx.fillText(text, centerX, textY);
+  
   ctx.restore();
 };
 
