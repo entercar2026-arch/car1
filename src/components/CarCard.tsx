@@ -1324,6 +1324,51 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                 </div>
               )}
 
+              {/* Seating Capacity Tag Overlay OR Car Color Buttons Overlay (Top Left) */}
+              {initialCar.variants && initialCar.variants.length > 1 ? (
+                <div 
+                  id={`car-image-colors-badge-${car.id}`}
+                  className="absolute top-3 left-3 z-30 flex items-center gap-1.5 bg-white/95 backdrop-blur-md border border-stone-200/40 shadow-md rounded-full px-2 py-1.5 transition-all duration-200"
+                >
+                  {initialCar.variants.map((v) => {
+                    const vColor = getCarColorInfo(v);
+                    const isCurrent = v.id === activeVariantId;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveVariantId(v.id);
+                          setCurrentPhotoIndex(0); // Reset carousel to first image when changing color
+                          setIsPlaying(false);
+                        }}
+                        title={`Select ${vColor.name}`}
+                        className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all duration-200 cursor-pointer hover:scale-115 active:scale-90 ${
+                          isCurrent 
+                            ? "border-stone-800 ring-2 ring-stone-900/10 scale-105" 
+                            : "border-stone-300 hover:border-stone-500"
+                        }`}
+                        style={{ borderColor: isCurrent ? brandPlum : undefined, boxShadow: isCurrent ? `0 0 0 2px ${brandPlum}22` : undefined }}
+                      >
+                        <span 
+                          className="w-3.5 h-3.5 rounded-full border border-stone-200/50 block"
+                          style={{ backgroundColor: vColor.hex }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div 
+                  id={`car-image-capacity-badge-${car.id}`}
+                  className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-white/95 backdrop-blur-md text-stone-900 border border-stone-100/80 shadow-sm rounded-lg px-2 py-1 font-bold text-[10px] sm:text-xs select-none pointer-events-none transition-all duration-200"
+                >
+                  <Users className="w-3 h-3 text-[#4C0027] shrink-0" style={{ color: brandPlum }} />
+                  <span className="font-mono text-stone-800">{t.formatSeats(car.seats.toString())}</span>
+                </div>
+              )}
+
               {/* Inline Gallery Navigation Controls */}
               {allPhotos.length > 1 && (
                 <>
@@ -1428,74 +1473,6 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                     })}
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-auto">
-                    {initialCar.variants && initialCar.variants.length > 1 && (
-                      <div className="relative">
-                        {isColorDropdownOpen && (
-                          <div 
-                            className="fixed inset-0 z-40 cursor-default" 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsColorDropdownOpen(false);
-                            }}
-                          />
-                        )}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsColorDropdownOpen(!isColorDropdownOpen);
-                          }}
-                          title="Select color"
-                          className="w-7 h-7 flex items-center justify-center rounded-full bg-stone-50 hover:bg-stone-100 transition-all border border-stone-200 cursor-pointer shadow-xs text-stone-600 hover:text-[#4C0027] hover:scale-110 active:scale-95 relative z-50"
-                        >
-                          <span 
-                            className="w-3.5 h-3.5 rounded-full border border-stone-300 shadow-xs transition-transform" 
-                            style={{ backgroundColor: getCarColorInfo(car).hex }}
-                          />
-                        </button>
-
-                        <AnimatePresence>
-                          {isColorDropdownOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                              transition={{ duration: 0.15 }}
-                              className="absolute right-0 mt-1 min-w-[130px] bg-white rounded-xl shadow-xl border border-stone-100/80 p-1.5 z-50 flex flex-col gap-1"
-                            >
-                              {initialCar.variants.map((v) => {
-                                const vColor = getCarColorInfo(v);
-                                const isCurrent = v.id === activeVariantId;
-                                return (
-                                  <button
-                                    key={v.id}
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActiveVariantId(v.id);
-                                      setCurrentPhotoIndex(0); // Reset carousel to first image when changing color
-                                      setIsPlaying(false);
-                                      setIsColorDropdownOpen(false);
-                                    }}
-                                    className={`flex items-center gap-2 w-full px-2 py-1 rounded-lg text-left text-xs font-medium transition-colors cursor-pointer ${
-                                      isCurrent 
-                                        ? "bg-stone-50 text-[#4C0027] font-semibold" 
-                                        : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
-                                    }`}
-                                  >
-                                    <span 
-                                      className="w-3 h-3 rounded-full border border-stone-300/80 shrink-0"
-                                      style={{ backgroundColor: vColor.hex }}
-                                    />
-                                    <span className="truncate">{vColor.name}</span>
-                                  </button>
-                                );
-                              })}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
