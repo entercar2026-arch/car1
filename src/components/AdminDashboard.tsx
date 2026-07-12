@@ -3,6 +3,8 @@ import { Car, Booking, Review } from "../types";
 import { getFallbackCarThumbnail as getAdminFallbackCarThumbnail } from "../utils/carImage";
 import { getBrandColor, splitCarName } from "../utils/brandColors";
 import { BrandLogo } from "./BrandLogo";
+// @ts-ignore
+import enterlogo from "./Enter-Car-Rental-White1.png";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Plus,
@@ -67,6 +69,78 @@ const isMediaVideo = (url?: string) => {
 };
 
 
+const drawWatermark = (
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  watermarkImg: HTMLImageElement | null
+) => {
+  // Proportional scaling of watermark size based on image canvas size
+  const w = Math.max(160, Math.round(canvasWidth * 0.22));
+  const h = Math.max(48, Math.round(w * 0.35));
+  const rightOffset = Math.round(canvasWidth * 0.03);
+  const bottomOffset = Math.round(canvasHeight * 0.04);
+  const x = canvasWidth - w - rightOffset;
+  const y = canvasHeight - h - bottomOffset;
+
+  // 1. Draw rounded capsule background
+  ctx.save();
+  ctx.fillStyle = "rgba(76, 0, 39, 0.85)"; // Corporate deep plum (#4C0027) with 85% opacity
+  ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 4;
+
+  const radius = h / 2; // Capsule shape!
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(x, y, w, h, radius);
+  } else {
+    // Simple fallback roundRect implementation for older browsers
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  }
+  ctx.fill();
+
+  // Draw a subtle white border around the capsule to make it pop on complex/dark photo regions
+  ctx.shadowColor = "transparent"; // Reset shadow for stroke
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // 2. Draw Logo Icon
+  let textX = x + h * 0.4;
+  if (watermarkImg) {
+    const imgH = h * 0.7;
+    const imgW = imgH; // Maintain aspect ratio
+    const imgX = x + (h - imgH) / 2;
+    const imgY = y + (h - imgH) / 2;
+    
+    ctx.drawImage(watermarkImg, imgX, imgY, imgW, imgH);
+    textX = imgX + imgW + (h * 0.2);
+  }
+
+  // 3. Draw Brand Text
+  ctx.fillStyle = "#FAFAF9"; // Warm off-white
+  ctx.font = `900 ${Math.round(h * 0.36)}px "Inter", system-ui, -apple-system, sans-serif`;
+  ctx.textBaseline = "top";
+  ctx.fillText("ENTER", textX, y + h * 0.18);
+
+  ctx.fillStyle = "rgba(250, 250, 249, 0.75)"; // 75% opacity warm off-white for subtitle
+  ctx.font = `bold ${Math.round(h * 0.17)}px "JetBrains Mono", monospace, courier`;
+  ctx.fillText("CAR RENTAL", textX, y + h * 0.60);
+
+  ctx.restore();
+};
+
 const resizeImage = (dataUrl: string, maxWidth = 1000): Promise<string> => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -106,7 +180,19 @@ const resizeImage = (dataUrl: string, maxWidth = 1000): Promise<string> => {
         } else {
           ctx.drawImage(img, 0, 0, width, height);
         }
-        resolve(canvas.toDataURL("image/jpeg", 0.7));
+
+        // Apply watermark logo in the bottom-right corner asynchronously
+        const watermarkImg = new Image();
+        watermarkImg.onload = () => {
+          drawWatermark(ctx, canvasWidth, canvasHeight, watermarkImg);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        };
+        watermarkImg.onerror = () => {
+          // Fallback to text-only watermark if image fails to load
+          drawWatermark(ctx, canvasWidth, canvasHeight, null);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        };
+        watermarkImg.src = enterlogo;
       } else {
         resolve(dataUrl);
       }
