@@ -1324,11 +1324,11 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                 </div>
               )}
 
-              {/* Seating Capacity Tag Overlay OR Car Color Buttons Overlay (Top Left) */}
-              {initialCar.variants && initialCar.variants.length > 1 ? (
+              {/* Car Color Buttons Overlay (Top Left) - Beautiful transparent backdrop */}
+              {initialCar.variants && initialCar.variants.length > 1 && (
                 <div 
                   id={`car-image-colors-badge-${car.id}`}
-                  className="absolute top-3 left-3 z-30 flex items-center gap-1.5 bg-white/95 backdrop-blur-md border border-stone-200/40 shadow-md rounded-full px-2 py-1.5 transition-all duration-200"
+                  className="absolute top-3 left-3 z-30 flex items-center gap-1.5 bg-white/35 backdrop-blur-md border border-white/20 shadow-md rounded-full px-2 py-1.5 transition-all duration-200"
                 >
                   {initialCar.variants.map((v) => {
                     const vColor = getCarColorInfo(v);
@@ -1358,14 +1358,6 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                       </button>
                     );
                   })}
-                </div>
-              ) : (
-                <div 
-                  id={`car-image-capacity-badge-${car.id}`}
-                  className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-white/95 backdrop-blur-md text-stone-900 border border-stone-100/80 shadow-sm rounded-lg px-2 py-1 font-bold text-[10px] sm:text-xs select-none pointer-events-none transition-all duration-200"
-                >
-                  <Users className="w-3 h-3 text-[#4C0027] shrink-0" style={{ color: brandPlum }} />
-                  <span className="font-mono text-stone-800">{t.formatSeats(car.seats.toString())}</span>
                 </div>
               )}
 
