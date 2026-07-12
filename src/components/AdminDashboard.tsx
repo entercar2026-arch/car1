@@ -76,9 +76,9 @@ const drawWatermark = (
   watermarkImg: HTMLImageElement | null
 ) => {
   // Determine size of the Enter key icon based on canvas dimensions
-  const iconSize = Math.max(64, Math.round(canvasWidth * 0.10)); // ~10% of width, e.g. 100px on 1000px canvas
-  const fontHeight = Math.max(10, Math.round(iconSize * 0.18)); // Proportional font height, e.g. 18px
-  const spacing = Math.max(4, Math.round(iconSize * 0.10)); // Spacing between icon and text below
+  const iconSize = Math.max(48, Math.round(canvasWidth * 0.075)); // Reduced size (~7.5% of width instead of 10%)
+  const fontHeight = Math.max(9, Math.round(iconSize * 0.18)); // Proportional font height
+  const spacing = Math.max(3, Math.round(iconSize * 0.10)); // Spacing between icon and text below
   
   ctx.save();
   
@@ -92,7 +92,7 @@ const drawWatermark = (
   
   // Margins/Offsets from the bottom-right corner
   const rightOffset = Math.max(16, Math.round(canvasWidth * 0.04));
-  const bottomOffset = Math.max(16, Math.round(canvasHeight * 0.05));
+  const bottomOffset = Math.max(32, Math.round(canvasHeight * 0.12)); // Increased from 0.05 to 0.12 to move it higher
   
   const x = canvasWidth - blockWidth - rightOffset;
   const y = canvasHeight - blockHeight - bottomOffset;
