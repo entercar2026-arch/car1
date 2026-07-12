@@ -1324,11 +1324,11 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                 </div>
               )}
 
-              {/* Car Color Buttons Overlay (Top Left) - Beautiful transparent backdrop */}
+              {/* Car Color Buttons Overlay (Top Left) - Clean floating circles without capsule background */}
               {initialCar.variants && initialCar.variants.length > 1 && (
                 <div 
                   id={`car-image-colors-badge-${car.id}`}
-                  className="absolute top-3 left-3 z-30 flex items-center gap-1.5 bg-white/35 backdrop-blur-md border border-white/20 shadow-md rounded-full px-2 py-1.5 transition-all duration-200"
+                  className="absolute top-3 left-3 z-30 flex items-center gap-2 transition-all duration-200"
                 >
                   {initialCar.variants.map((v) => {
                     const vColor = getCarColorInfo(v);
@@ -1344,18 +1344,17 @@ ${videoLink ? `Video Link: ${videoLink}` : ''}`;
                           setIsPlaying(false);
                         }}
                         title={`Select ${vColor.name}`}
-                        className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all duration-200 cursor-pointer hover:scale-115 active:scale-90 ${
+                        className={`w-5.5 h-5.5 rounded-full flex items-center justify-center border transition-all duration-200 cursor-pointer hover:scale-120 active:scale-90 shadow-md ${
                           isCurrent 
-                            ? "border-stone-800 ring-2 ring-stone-900/10 scale-105" 
-                            : "border-stone-300 hover:border-stone-500"
+                            ? "border-white ring-2 scale-110" 
+                            : "border-white/60 hover:border-white opacity-90 hover:opacity-100"
                         }`}
-                        style={{ borderColor: isCurrent ? brandPlum : undefined, boxShadow: isCurrent ? `0 0 0 2px ${brandPlum}22` : undefined }}
-                      >
-                        <span 
-                          className="w-3.5 h-3.5 rounded-full border border-stone-200/50 block"
-                          style={{ backgroundColor: vColor.hex }}
-                        />
-                      </button>
+                        style={{ 
+                          backgroundColor: vColor.hex,
+                          boxShadow: isCurrent ? `0 0 0 2px ${brandPlum}, 0 4px 6px -1px rgb(0 0 0 / 0.1)` : '0 2px 4px 0 rgb(0 0 0 / 0.1)',
+                          borderColor: isCurrent ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)'
+                        }}
+                      />
                     );
                   })}
                 </div>
