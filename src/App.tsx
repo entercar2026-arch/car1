@@ -2147,7 +2147,10 @@ export default function App() {
       }
 
       // 5. Seats check
-      if (activeSeats !== "All" && String(car.seats) !== activeSeats) return false;
+      if (activeSeats !== "All") {
+        const seatsNum = Number(activeSeats);
+        if (!isNaN(seatsNum) && car.seats < seatsNum) return false;
+      }
 
       // 6. Brand check
       if (activeBrand !== "all") {
@@ -2730,8 +2733,39 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 w-full">
-                {/* Search Box - Now in header */}
-                <FilterSectionSearchBar t={t} />
+                {/* Search Box & Transmission Tab Selection */}
+                <div className="flex flex-col gap-4 w-full">
+                  <FilterSectionSearchBar t={t} />
+                  
+                  {/* Transmission - Tab style selection */}
+                  <div className="w-full flex flex-col" onClick={(e) => e.stopPropagation()}>
+                    <label className="text-[10px] sm:text-[11px] font-bold text-[#4C0027] uppercase tracking-wider block mb-1.5 font-mono pl-1" style={{ color: brandPlum }}>
+                      {t.transmission || "Transmission"}
+                    </label>
+                    <div className="flex p-1 bg-stone-100 rounded-xl border border-stone-200/50 shadow-inner">
+                      {["All", "Automatic", "Manual"].map((mode) => {
+                        const isSelected = filters.transmission === mode;
+                        const tMode = mode === "All" ? t.allCategories :
+                                      mode === "Automatic" ? t.automatic :
+                                      mode === "Manual" ? t.manual : mode;
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setFilters((prev) => ({ ...prev, transmission: mode }))}
+                            className={`flex-1 py-2 px-3 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
+                              isSelected
+                                ? "bg-white text-stone-900 shadow-sm border border-stone-200/30 font-bold"
+                                : "text-stone-500 hover:text-stone-800"
+                            }`}
+                          >
+                            {tMode}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
 
                 {/* Max Monthly Fee Slider - Now in header */}
                 <div className="w-full flex flex-col justify-center bg-stone-50 rounded-xl px-5 py-3 border border-stone-100 shadow-sm" onClick={(e) => e.stopPropagation()}>
@@ -2802,173 +2836,151 @@ export default function App() {
                   }}
                   className="overflow-hidden"
                 >
-                  <div className="grid grid-cols-1 gap-4">
-              {/* Row 2: Dropdowns */}
-              <div className="col-span-1 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    {t.brand}
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={filters.brand}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          brand: e.target.value,
-                        }))
-                      }
-                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
-                    >
-                      {dynamicBrands.map((b) => (
-                        <option value={b} key={b}>
-                          {b === "All" ? t.allCategories : b}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
+                  <div className="grid grid-cols-1 gap-6">
+                    {/* Row 2: Dropdowns */}
+                    <div className="col-span-1 lg:col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
+                          {t.brand}
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={filters.brand}
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                brand: e.target.value,
+                              }))
+                            }
+                            className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                          >
+                            {dynamicBrands.map((b) => (
+                              <option value={b} key={b}>
+                                {b === "All" ? t.allCategories : b}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                            <ChevronDown className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </div>
 
-                <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    {t.category}
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={filters.category}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          category: e.target.value as any,
-                          likedOnly: false,
-                        }))
-                      }
-                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
-                    >
-                      {["All", "Sedan", "SUV", "MPV", "Pickup", "Truck"].map(
-                        (cat) => {
-                          const tCat = cat === "All" ? t.allCategories : 
-                           cat === "Sedan" ? t.sedan : 
-                           cat === "SUV" ? t.suv : 
-                           cat === "MPV" ? t.mpv : 
-                           cat === "Pickup" ? t.pickup : 
-                           cat === "Truck" ? t.truck : cat;
-                          return (
-                          <option value={cat} key={cat}>
-                            {tCat}
-                          </option>
-                        )}
-                      )}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
+                      <div>
+                        <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
+                          {t.category}
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={filters.category}
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                category: e.target.value as any,
+                                likedOnly: false,
+                              }))
+                            }
+                            className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                          >
+                            {["All", "Sedan", "SUV", "MPV", "Pickup", "Truck"].map(
+                              (cat) => {
+                                const tCat = cat === "All" ? t.allCategories : 
+                                 cat === "Sedan" ? t.sedan : 
+                                 cat === "SUV" ? t.suv : 
+                                 cat === "MPV" ? t.mpv : 
+                                 cat === "Pickup" ? t.pickup : 
+                                 cat === "Truck" ? t.truck : cat;
+                                return (
+                                <option value={cat} key={cat}>
+                                  {tCat}
+                                </option>
+                              )}
+                            )}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                            <ChevronDown className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </div>
 
-                <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    {t.fuelType}
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={filters.fuelType}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          fuelType: e.target.value as any,
-                        }))
-                      }
-                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
-                    >
-                      {[
-                        "All",
-                        "Gasoline",
-                        "Diesel",
-                        "LPG",
-                        "Hybrid",
-                        "Electric",
-                      ].map((fuel) => {
-                        const tFuel = fuel === "All" ? t.allCategories :
-                                      fuel === "Gasoline" ? t.petrol :
-                                      fuel === "Diesel" ? t.diesel :
-                                      fuel === "LPG" ? "LPG" :
-                                      fuel === "Gasoline + LPG" ? `${t.petrol} + LPG` :
-                                      fuel === "Hybrid" ? t.hybrid :
-                                      fuel === "Electric" ? t.electric : fuel;
-                        return (
-                        <option value={fuel} key={fuel}>
-                          {tFuel}
-                        </option>
-                      )})}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
-                      <ChevronDown className="h-4 w-4" />
+                      <div>
+                        <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
+                          {t.fuelType}
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={filters.fuelType}
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                fuelType: e.target.value as any,
+                              }))
+                            }
+                            className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
+                          >
+                            {[
+                              "All",
+                              "Gasoline",
+                              "Diesel",
+                              "LPG",
+                              "Hybrid",
+                              "Electric",
+                            ].map((fuel) => {
+                              const tFuel = fuel === "All" ? t.allCategories :
+                                            fuel === "Gasoline" ? t.petrol :
+                                            fuel === "Diesel" ? t.diesel :
+                                            fuel === "LPG" ? "LPG" :
+                                            fuel === "Gasoline + LPG" ? `${t.petrol} + LPG` :
+                                            fuel === "Hybrid" ? t.hybrid :
+                                            fuel === "Electric" ? t.electric : fuel;
+                              return (
+                              <option value={fuel} key={fuel}>
+                                {tFuel}
+                              </option>
+                            )})}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
+                            <ChevronDown className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    {t.transmission}
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={filters.transmission}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          transmission: e.target.value as any,
-                        }))
-                      }
-                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
-                    >
-                      {["All", "Automatic", "Manual"].map((mode) => {
-                        const tMode = mode === "All" ? t.allCategories :
-                                      mode === "Automatic" ? t.automatic :
-                                      mode === "Manual" ? t.manual : mode;
-                        return (
-                        <option value={mode} key={mode}>
-                          {tMode}
-                        </option>
-                      )})}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
+                    {/* Seats - Slider Search style with maximum up to 45 */}
+                    <div className="w-full flex flex-col justify-center bg-stone-50 rounded-xl px-5 py-3 border border-stone-100 shadow-sm" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block font-mono">
+                          {t.seats || "Seats"}
+                        </label>
+                        <span
+                          className="text-[11px] font-mono font-bold text-red-600 bg-white px-2.5 py-1 rounded-md border border-stone-200 shadow-sm"
+                        >
+                          {filters.seats === "All" ? (t.allCategories || "Any Seats") : `${filters.seats}+ ${t.seats || "Seats"}`}
+                        </span>
+                      </div>
 
-                <div>
-                  <label className="text-[10px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider block mb-2 font-mono">
-                    {t.seats}
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={filters.seats}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          seats: e.target.value as any,
-                        }))
-                      }
-                      className="w-full appearance-none pl-4 pr-10 py-3 bg-white border border-stone-200 rounded-xl text-stone-800 text-sm focus:bg-white focus:outline-none focus:border-[#4C0027] focus:ring-1 focus:ring-[#4C0027] transition-all font-sans font-medium cursor-pointer hover:border-stone-300"
-                    >
-                      {["All", "2", "4", "5", "7", "8", "9", "10", "12", "15"].map((count) => (
-                        <option value={count} key={count}>
-                          {count === "All" ? t.allCategories : t.formatSeats(count)}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-stone-400">
-                      <ChevronDown className="h-4 w-4" />
+                      <input
+                        id="filter-slider-seats"
+                        type="range"
+                        min="1"
+                        max="45"
+                        step="1"
+                        value={filters.seats === "All" ? 1 : Number(filters.seats)}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setFilters((prev) => ({
+                            ...prev,
+                            seats: val === 1 ? "All" : val,
+                          }));
+                        }}
+                        className="w-full h-1.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#4C0027]"
+                        style={{ accentColor: brandPlum }}
+                      />
+                      <div className="flex justify-between text-[10px] text-stone-400 mt-2 font-mono">
+                        <span>{t.allCategories || "Any"}</span>
+                        <span>45 {t.seats || "Seats"}</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
                   </div>
                 </motion.div>
               )}
@@ -2992,7 +3004,7 @@ export default function App() {
                 activeTags.push({ id: 'transmission', label: `${trType}`, onRemove: () => setFilters(pre => ({ ...pre, transmission: "All" })) });
               }
               if (filters.maxPrice < absoluteMaxPrice) activeTags.push({ id: 'maxPrice', label: `Max $${filters.maxPrice}/mo`, onRemove: () => setFilters(pre => ({ ...pre, maxPrice: absoluteMaxPrice })) });
-              if (filters.seats !== "All") activeTags.push({ id: 'seats', label: `${filters.seats} Seats`, onRemove: () => setFilters(pre => ({ ...pre, seats: "All" })) });
+              if (filters.seats !== "All") activeTags.push({ id: 'seats', label: `${filters.seats}+ ${t.seats || "Seats"}`, onRemove: () => setFilters(pre => ({ ...pre, seats: "All" })) });
               if (filters.likedOnly) activeTags.push({ id: 'likedOnly', label: `${t.liked || 'Liked'}`, onRemove: () => setFilters(pre => ({ ...pre, likedOnly: false })) });
 
               if (activeTags.length === 0) return null;
